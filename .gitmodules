@@ -1,0 +1,3 @@
+[submodule "source/wheelDog_RL/wheelDog_RL/assets/xg_wheel_su_-urdf"]
+	path = source/wheelDog_RL/wheelDog_RL/assets/xg_wheel_su_-urdf
+	url = https://gitee.com/toenails6/xg_wheel_su_-urdf.git
