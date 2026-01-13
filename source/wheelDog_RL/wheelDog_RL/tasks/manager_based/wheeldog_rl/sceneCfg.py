@@ -9,16 +9,28 @@ from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
 
 # Import terrain generator configurations. 
-from Blind_Locomotion_Go1.tasks.manager_based.blind_locomotion_go1.Blind_Locomotion_Terrain import Blind_Locomotion_Terrains_config
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.terrainCfg import allTerrain_config
+
+# Import settings file. 
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import OBS_HISTORY_LEN
 
 @configclass
 class Blind_Locomotion_sceneCfg(InteractiveSceneCfg):
+    # Lighting. 
+    sky_light = AssetBaseCfg(
+        prim_path="/World/skyLight",
+        spawn=sim_utils.DomeLightCfg(
+            intensity=750.0,
+            texture_file=f"{ISAAC_NUCLEUS_DIR}/Materials/Textures/Skies/PolyHaven/kloofendal_43d_clear_puresky_4k.hdr",
+        ),
+    )
+
     # Terrain configurations. 
     terrain = TerrainImporterCfg(
         prim_path="/World/ground",
         terrain_type="generator",
-        terrain_generator=Blind_Locomotion_Terrains_config,
-        max_init_terrain_level=5,
+        terrain_generator=allTerrain_config,
+        max_init_terrain_level=3,
         collision_group=-1,
         physics_material=sim_utils.RigidBodyMaterialCfg(
             friction_combine_mode="multiply",
@@ -31,17 +43,14 @@ class Blind_Locomotion_sceneCfg(InteractiveSceneCfg):
             project_uvw=True,
             texture_scale=(0.25, 0.25),
         ),
-        debug_vis=False,
+        debug_vis=True,
     )
-
-    # Specific robot will be left abstracted. 
-    robot: ArticulationCfg = MISSING
 
     # Sensors.
     # Note here that the primitive base is only a descriptive name. 
     # Different robots have different names for the base. 
     # Unitree Go1 has it as: trunk. 
-    # Remember to modify this in the robot specific environment or scene cfg. 
+    # Remember to modify this in the robot specific configuration. 
     height_scanner = RayCasterCfg(
         prim_path="{ENV_REGEX_NS}/Robot/base",
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 20.0)),
@@ -50,45 +59,8 @@ class Blind_Locomotion_sceneCfg(InteractiveSceneCfg):
         debug_vis=False,
         mesh_prim_paths=["/World/ground"],
     )
-    contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Robot/.*", history_length=3, track_air_time=True)
-    front_left_ray = RayCasterCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/FL_foot",
-        ray_alignment="yaw",
-        pattern_cfg=patterns.GridPatternCfg(resolution=0.04, size=[0.08, 0.08]),
-        max_distance=1.0,
-        debug_vis=True,
-        mesh_prim_paths=["/World/ground"],
-    )
-    front_right_ray = RayCasterCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/FR_foot",
-        ray_alignment="yaw",
-        pattern_cfg=patterns.GridPatternCfg(resolution=0.04, size=[0.08, 0.08]),
-        max_distance=1.0,
-        debug_vis=True,
-        mesh_prim_paths=["/World/ground"],
-    )
-    rear_left_ray = RayCasterCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/RL_foot",
-        ray_alignment="yaw",
-        pattern_cfg=patterns.GridPatternCfg(resolution=0.04, size=[0.08, 0.08]),
-        max_distance=1.0,
-        debug_vis=True,
-        mesh_prim_paths=["/World/ground"],
-    )
-    rear_right_ray = RayCasterCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/RR_foot",
-        ray_alignment="yaw",
-        pattern_cfg=patterns.GridPatternCfg(resolution=0.04, size=[0.08, 0.08]),
-        max_distance=1.0,
-        debug_vis=True,
-        mesh_prim_paths=["/World/ground"],
-    )
+    contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Robot/.*", history_length=OBS_HISTORY_LEN, track_air_time=True)
 
-    # Lighting. 
-    sky_light = AssetBaseCfg(
-        prim_path="/World/skyLight",
-        spawn=sim_utils.DomeLightCfg(
-            intensity=750.0,
-            texture_file=f"{ISAAC_NUCLEUS_DIR}/Materials/Textures/Skies/PolyHaven/kloofendal_43d_clear_puresky_4k.hdr",
-        ),
-    )
+    # Here, the specific robot is left abstracted. 
+    # Robot assignment and tuning are done in the robot configurations. 
+    robot: ArticulationCfg = MISSING
