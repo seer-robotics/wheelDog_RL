@@ -32,15 +32,15 @@ class CommandsCfg:
 
     base_velocity = mdp.UniformVelocityCommandCfg(
         asset_name="robot",
-        resampling_time_range=(10.0, 10.0),
-        rel_standing_envs=0.02,
-        rel_heading_envs=1.0,
-        heading_command=True,
-        heading_control_stiffness=0.5,
+        resampling_time_range=(6.0, 10.0),
+        rel_standing_envs=0.01,
+        rel_heading_envs=0.99,
+        heading_command=False, # Use angular velocity command. 
+        heading_control_stiffness=0.5, # No functional effect when not under heading command. 
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(-1.0, 1.0), lin_vel_y=(-1.0, 1.0), ang_vel_z=(-1.0, 1.0), heading=(-math.pi, math.pi)
-        ),
+            lin_vel_x=(-1.6, 1.6), lin_vel_y=(-0.4, 0.4), ang_vel_z=(-1.0, 1.0), heading=(-math.pi, math.pi)
+        ), # Heading sampling range is also ignored when not under heading command. 
     )
 
 
