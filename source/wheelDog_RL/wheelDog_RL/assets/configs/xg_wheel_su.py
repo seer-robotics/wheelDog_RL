@@ -23,7 +23,7 @@ YOUR_ROBOT_CFG = ArticulationCfg(
     ),
     # Initial States on entity spawn. 
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 0.5),  # Initial position (e.g., above ground)
+        pos=(0.0, 0.0, 1.0),  # Initial position (e.g., above ground)
         joint_pos={
             ".*_ABAD_JOINT": 0.00,
             ".*_HIP_JOINT": 0.40,
