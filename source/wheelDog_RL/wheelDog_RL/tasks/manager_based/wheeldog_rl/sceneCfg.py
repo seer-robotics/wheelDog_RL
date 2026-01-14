@@ -15,7 +15,7 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl.terrainCfg import allTerrain_co
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import OBS_HISTORY_LEN
 
 @configclass
-class Blind_Locomotion_sceneCfg(InteractiveSceneCfg):
+class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
     # Lighting. 
     sky_light = AssetBaseCfg(
         prim_path="/World/skyLight",
@@ -61,7 +61,7 @@ class Blind_Locomotion_sceneCfg(InteractiveSceneCfg):
     )
     base_IMU = ImuCfg(
         prim_path="{ENV_REGEX_NS}/Robot/base",
-        gravity_bias=(0.00, 0.00, -9.81), # Remember to account for gravity bias
+        gravity_bias=(0.00, 0.00, 9.81), # Remember to account for gravity bias
         update_period=0.02,
         history_length=0,
         offset=ImuCfg.OffsetCfg(pos=(0.10, 0.00, 0.05)),

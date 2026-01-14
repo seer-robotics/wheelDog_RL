@@ -1,6 +1,8 @@
 # Library imports. 
 import math
 
+# Isaac Lab imports
+from isaaclab.envs import mdp
 from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab.managers import CurriculumTermCfg as CurrTerm
 from isaaclab.managers import EventTermCfg as EventTerm
@@ -12,11 +14,8 @@ from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.utils import configclass
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 
-import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
-
-
 # Import scene definition. 
-from Blind_Locomotion_Go1.tasks.manager_based.blind_locomotion_go1.Blind_Locomotion_Scene import Blind_Locomotion_sceneCfg
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.sceneCfg import wheelDog_RL_sceneCfg
 
 # Import settings. 
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import OBS_HISTORY_LEN
@@ -216,7 +215,7 @@ class BlindLocomotionCfg(ManagerBasedRLEnvCfg):
     """Configuration for the locomotion velocity-tracking environment."""
 
     # Scene settings
-    scene: Blind_Locomotion_sceneCfg = Blind_Locomotion_sceneCfg(num_envs=4096, env_spacing=2.5)
+    scene: wheelDog_RL_sceneCfg = wheelDog_RL_sceneCfg(num_envs=4096, env_spacing=2.5)
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
