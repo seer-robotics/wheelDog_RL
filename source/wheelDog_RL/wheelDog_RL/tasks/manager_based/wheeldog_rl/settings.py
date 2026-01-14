@@ -1,2 +1,2 @@
 # Parameters and settings. 
-OBS_HISTORY_LEN = 20
+OBS_HISTORY_LEN = 15
