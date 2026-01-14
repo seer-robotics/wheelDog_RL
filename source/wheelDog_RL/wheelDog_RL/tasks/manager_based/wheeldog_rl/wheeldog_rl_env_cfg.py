@@ -48,7 +48,20 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    joint_pos = mdp.JointPositionActionCfg(asset_name="robot", joint_names=[".*"], scale=0.5, use_default_offset=True)
+    # Using velocity action. 
+    # Leaves on-hardware torque-velocity handling for abstraction. 
+    joint_vel = mdp.JointVelocityActionCfg(
+        asset_name="robot",
+        joint_names=[".*"],
+        scale=1.0,
+        use_default_offset=True,
+        clip={
+            ".*_ABAD_JOINT": (-25, 25),
+            ".*_HIP_JOINT": (-25, 25),
+            ".*_KNEE_JOINT": (-25, 25),
+            ".*_FOOT_JOINT": (-160, 160),
+        }
+    )
 
 
 @configclass
