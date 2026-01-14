@@ -3,7 +3,7 @@ from dataclasses import MISSING
 import isaaclab.sim as sim_utils
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg
 from isaaclab.scene import InteractiveSceneCfg
-from isaaclab.sensors import ContactSensorCfg, RayCasterCfg, patterns
+from isaaclab.sensors import ContactSensorCfg, ImuCfg, RayCasterCfg, patterns
 from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
@@ -59,7 +59,20 @@ class Blind_Locomotion_sceneCfg(InteractiveSceneCfg):
         debug_vis=False,
         mesh_prim_paths=["/World/ground"],
     )
-    contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Robot/.*", history_length=OBS_HISTORY_LEN, track_air_time=True)
+    base_IMU = ImuCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/base",
+        gravity_bias=(0.00, 0.00, -9.81), # Remember to account for gravity bias
+        update_period=0.02,
+        history_length=0,
+        offset=ImuCfg.OffsetCfg(pos=(0.10, 0.00, 0.05)),
+        debug_vis=False, 
+    )
+    contact_forces = ContactSensorCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/.*",
+        history_length=6,
+        track_air_time=True,
+        debug_vis=False,
+    )
 
     # Here, the specific robot is left abstracted. 
     # Robot assignment and tuning are done in the robot configurations. 
