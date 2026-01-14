@@ -142,37 +142,62 @@ class ObservationsCfg:
 class EventCfg:
     """Configuration for events."""
 
-    # startup
+    # Startup events
+    # No startup events here. 
+
+    # Reset events
     physics_material = EventTerm(
         func=mdp.randomize_rigid_body_material,
-        mode="startup",
+        mode="reset",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
-            "static_friction_range": (0.8, 0.8),
-            "dynamic_friction_range": (0.6, 0.6),
-            "restitution_range": (0.0, 0.0),
+            "static_friction_range": (0.7, 1.3),
+            "dynamic_friction_range": (1.0, 1.0),
+            "restitution_range": (0.0, 0.1),
             "num_buckets": 64,
         },
     )
 
     add_base_mass = EventTerm(
         func=mdp.randomize_rigid_body_mass,
-        mode="startup",
+        mode="reset",
         params={
-            "asset_cfg": SceneEntityCfg("robot", body_names="base"),
-            "mass_distribution_params": (-5.0, 5.0),
+            "asset_cfg": SceneEntityCfg("robot", body_names="BASE_LINK"),
+            "mass_distribution_params": (-1.0, 2.5),
             "operation": "add",
         },
     )
 
-    # reset
+    add_link_mass = EventTerm(
+        func=mdp.randomize_rigid_body_mass,
+        mode="reset",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", body_names=["F.*", "R.*"]),
+            "mass_distribution_params": (-0.1, 0.1),
+            "operation": "add",
+        },
+    )
+
+    add_joint_friction = EventTerm(
+        func=mdp.randomize_joint_parameters,
+        mode="reset",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
+            "static_friction_distribution_params": (-0.2, 0.2),
+            "dynamic_friction_distribution_params": (-0.1, 0.1),
+            "viscous_friction_distribution_params": (-0.05, 0.05),
+            "operation": "add",
+            "distribution": "uniform",
+        },
+    )
+
     base_external_force_torque = EventTerm(
         func=mdp.apply_external_force_torque,
         mode="reset",
         params={
-            "asset_cfg": SceneEntityCfg("robot", body_names="base"),
-            "force_range": (0.0, 0.0),
-            "torque_range": (-0.0, 0.0),
+            "asset_cfg": SceneEntityCfg("robot", body_names="BASE_LINK"),
+            "force_range": (-2.0, 2.0),
+            "torque_range": (-1.0, 1.0),
         },
     )
 
@@ -193,15 +218,15 @@ class EventCfg:
     )
 
     reset_robot_joints = EventTerm(
-        func=mdp.reset_joints_by_scale,
+        func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
-            "position_range": (0.5, 1.5),
+            "position_range": (-0.25, 0.25),
             "velocity_range": (0.0, 0.0),
         },
     )
 
-    # interval
+    # Interval events
     push_robot = EventTerm(
         func=mdp.push_by_setting_velocity,
         mode="interval",
