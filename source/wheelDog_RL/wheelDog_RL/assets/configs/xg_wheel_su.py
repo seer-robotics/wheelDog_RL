@@ -21,6 +21,7 @@ YOUR_ROBOT_CFG = ArticulationCfg(
             solver_velocity_iteration_count=0
         ),
     ),
+    # Initial States on entity spawn. 
     init_state=ArticulationCfg.InitialStateCfg(
         pos=(0.0, 0.0, 0.5),  # Initial position (e.g., above ground)
         joint_pos={
@@ -31,12 +32,14 @@ YOUR_ROBOT_CFG = ArticulationCfg(
         },  # Default joint positions
         joint_vel={".*": 0.0},
     ),
-    soft_joint_pos_limit_factor=0.95,  # Safety factor for joint limits
+    # Safety factor for joint limits
+    soft_joint_pos_limit_factor=0.95,  
+    # All joints use Implicit Actuator model definition. 
+    # Thus, actuator behavior is handled by the simulation engine. 
+    # Performs continuous-time ideal PD integration. 
+    # We use this given that we trust the OEM supplied joint control API. 
     actuators={
-        # All joints use Implicit Actuator model definition. 
-        # Thus, actuator behavior is handled by the simulation engine. 
-        # Performs continuous-time ideal PD integration. 
-        # We use this given that we trust the OEM supplied joint control API. 
+        
         "legs": ImplicitActuatorCfg(
             joint_names_expr=[".*_ABAD_JOINT", ".*_HIP_JOINT", ".*_KNEE_JOINT"],
             effort_limit=30,
@@ -47,7 +50,7 @@ YOUR_ROBOT_CFG = ArticulationCfg(
         "wheels": ImplicitActuatorCfg(
             joint_names_expr=[".*_FOOT_JOINT"],
             effort_limit=10.5,
-            velocity_limit=28,
+            velocity_limit=165,
             stiffness=0.0,
             damping=1e6 # Empirical range (1e4, 1e6)
         ),
