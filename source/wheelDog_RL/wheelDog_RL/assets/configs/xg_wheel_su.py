@@ -33,12 +33,23 @@ YOUR_ROBOT_CFG = ArticulationCfg(
     ),
     soft_joint_pos_limit_factor=0.95,  # Safety factor for joint limits
     actuators={
-        "legs_and_wheels": ArticulationCfg.ActuatorCfg(  # Customize groups as per your robot
-            joint_names_expr=[".*_HIP_JOINT", ".*_THIGH_JOINT", ".*_CALF_JOINT", ".*_WHEEL_JOINT"],  # Regex for joint names
-            effort_limit=20.0,  # Torque limit (adjust based on hardware)
-            velocity_limit=100.0,  # Speed limit
-            stiffness=80.0,  # PD controller stiffness
-            damping=0.5,  # PD controller damping
+        # All joints use Implicit Actuator model definition. 
+        # Thus, actuator behavior is handled by the simulation engine. 
+        # Performs continuous-time ideal PD integration. 
+        # We use this given that we trust the OEM supplied joint control API. 
+        "legs": ImplicitActuatorCfg(
+            joint_names_expr=[".*_ABAD_JOINT", ".*_HIP_JOINT", ".*_KNEE_JOINT"],
+            effort_limit=30,
+            velocity_limit=28,
+            stiffness=0.0,
+            damping=1e5 # Empirical range (1e4, 1e6)
+        ),
+        "wheels": ImplicitActuatorCfg(
+            joint_names_expr=[".*_FOOT_JOINT"],
+            effort_limit=10.5,
+            velocity_limit=28,
+            stiffness=0.0,
+            damping=1e6 # Empirical range (1e4, 1e6)
         ),
     },
 )
