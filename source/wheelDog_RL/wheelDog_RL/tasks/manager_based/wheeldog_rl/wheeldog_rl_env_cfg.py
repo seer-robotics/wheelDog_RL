@@ -143,44 +143,46 @@ class EventCfg:
     """Configuration for events."""
 
     # Startup events
-    # No startup events here. 
-
-    # Reset events
+    # All these are CPU intensive tasks. 
+    # Do these once on env initialization. 
+    # Make sure the number of envs is high enough for these to show effect. 
     physics_material = EventTerm(
         func=mdp.randomize_rigid_body_material,
-        mode="reset",
+        mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
             "static_friction_range": (0.7, 1.3),
             "dynamic_friction_range": (1.0, 1.0),
             "restitution_range": (0.0, 0.1),
-            "num_buckets": 64,
+            "num_buckets": 256,
         },
     )
 
     add_base_mass = EventTerm(
         func=mdp.randomize_rigid_body_mass,
-        mode="reset",
+        mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names="BASE_LINK"),
             "mass_distribution_params": (-1.0, 2.5),
+            "recompute_inertia": True,
             "operation": "add",
         },
     )
 
     add_link_mass = EventTerm(
         func=mdp.randomize_rigid_body_mass,
-        mode="reset",
+        mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=["F.*", "R.*"]),
             "mass_distribution_params": (-0.1, 0.1),
+            "recompute_inertia": True,
             "operation": "add",
         },
     )
 
     add_joint_friction = EventTerm(
         func=mdp.randomize_joint_parameters,
-        mode="reset",
+        mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
             "static_friction_distribution_params": (-0.2, 0.2),
@@ -191,6 +193,7 @@ class EventCfg:
         },
     )
 
+    # Reset events
     base_external_force_torque = EventTerm(
         func=mdp.apply_external_force_torque,
         mode="reset",
@@ -231,7 +234,7 @@ class EventCfg:
         func=mdp.push_by_setting_velocity,
         mode="interval",
         interval_range_s=(10.0, 15.0),
-        params={"velocity_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5)}},
+        params={"velocity_range": {"x": (-0.4, 0.4), "y": (-0.4, 0.4)}},
     )
 
 
