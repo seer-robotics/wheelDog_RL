@@ -5,6 +5,7 @@ from isaaclab.actuators import ActuatorNetMLPCfg, DCMotorCfg, ImplicitActuatorCf
 XG_WHEEL_SU_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
         usd_path="/home/renda/workspace/Projects/USD_Files/xg_wheel_su_USD/xg_wheel_su.usd",
+        activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
             retain_accelerations=False,
@@ -41,15 +42,15 @@ XG_WHEEL_SU_CFG = ArticulationCfg(
         
         "legs": ImplicitActuatorCfg(
             joint_names_expr=[".*_ABAD_JOINT", ".*_HIP_JOINT", ".*_KNEE_JOINT"],
-            effort_limit=30,
-            velocity_limit=28,
+            effort_limit_sim=30,
+            velocity_limit_sim=28,
             stiffness=0.0,
             damping=1e5 # Empirical range (1e4, 1e6)
         ),
         "wheels": ImplicitActuatorCfg(
             joint_names_expr=[".*_FOOT_JOINT"],
-            effort_limit=10.5,
-            velocity_limit=165,
+            effort_limit_sim=10.5,
+            velocity_limit_sim=165,
             stiffness=0.0,
             damping=1e6 # Empirical range (1e4, 1e6)
         ),
