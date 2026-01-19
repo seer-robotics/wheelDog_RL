@@ -194,11 +194,13 @@ class EventCfg:
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
-            "static_friction_distribution_params": (-0.2, 0.2),
-            "dynamic_friction_distribution_params": (-0.1, 0.1),
-            "viscous_friction_distribution_params": (-0.05, 0.05),
-            "operation": "add",
-            "distribution": "uniform",
+            "friction_distribution_params": {
+                "static_friction_distribution_params": (-0.2, 0.2),
+                "dynamic_friction_distribution_params": (-0.1, 0.1),
+                "viscous_friction_distribution_params": (-0.05, 0.05),
+                "operation": "add",
+                "distribution": "uniform",
+            }
         },
     )
 
