@@ -4,7 +4,7 @@ from isaaclab.actuators import ActuatorNetMLPCfg, DCMotorCfg, ImplicitActuatorCf
 
 XG_WHEEL_SU_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path="~/workspace/Projects/USD_Files/xg_wheel_su_USD/xg_wheel_su.usd",
+        usd_path="/home/renda/workspace/Projects/USD_Files/xg_wheel_su_USD/xg_wheel_su.usd",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
             retain_accelerations=False,
