@@ -1,9 +1,11 @@
 # Library imports. 
 from isaaclab.utils import configclass
-from isaaclab_assets.robots.unitree import UNITREE_GO1_CFG
+
+# Import robot asset configuration. 
+from wheelDog_RL.assets.configs.xg_wheel_su import XG_WHEEL_SU_CFG
 
 # Import training environment definition. 
-from Blind_Locomotion_Go1.tasks.manager_based.blind_locomotion_go1.Blind_Locomotion_env import BlindLocomotionCfg
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.wheeldog_rl_env_cfg import BlindLocomotionCfg
 
 
 @configclass
@@ -12,7 +14,7 @@ class UnitreeGo1_BlindLocomotionEnvCfg(BlindLocomotionCfg):
         # post init of parent
         super().__post_init__()
         # Assign Unitree Go1 Robot assets. 
-        self.scene.robot = UNITREE_GO1_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+        self.scene.robot = XG_WHEEL_SU_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
         # Correct the primitive name for the ray-casters. 
         self.scene.height_scanner.prim_path = "{ENV_REGEX_NS}/Robot/trunk"

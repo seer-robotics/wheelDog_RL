@@ -2,9 +2,8 @@ import isaaclab.sim as sim_utils
 from isaaclab.assets.articulation import ArticulationCfg
 from isaaclab.actuators import ActuatorNetMLPCfg, DCMotorCfg, ImplicitActuatorCfg
 
-YOUR_ROBOT_CFG = ArticulationCfg(
+XG_WHEEL_SU_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        # usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Robots/YourRobot/your_robot.usd",  # Or local path if not on Nucleus
         usd_path="~/workspace/Projects/USD_Files/xg_wheel_su_USD/xg_wheel_su.usd",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
