@@ -9,7 +9,7 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl.wheeldog_rl_env_cfg import Blin
 
 
 @configclass
-class UnitreeGo1_BlindLocomotionEnvCfg(BlindLocomotionCfg):
+class WheelDog_BlindLocomotionEnvCfg(BlindLocomotionCfg):
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
