@@ -65,10 +65,10 @@ class ActionsCfg:
         scale=1.0,
         use_default_offset=True,
         clip={
-            ".*_ABAD_JOINT": (-25, 25),
-            ".*_HIP_JOINT": (-25, 25),
-            ".*_KNEE_JOINT": (-25, 25),
-            ".*_FOOT_JOINT": (-160, 160),
+            ".*_ABAD_JOINT": (-25.0, 25.0),
+            ".*_HIP_JOINT": (-25.0, 25.0),
+            ".*_KNEE_JOINT": (-25.0, 25.0),
+            ".*_FOOT_JOINT": (-160.0, 160.0),
         }
     )
 
@@ -102,11 +102,13 @@ class ObservationsCfg:
         imu_ang_vel = ObsTerm(
             func=mdp.imu_ang_vel,
             noise=Gnoise(mean=0, std=0.035),
+            params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
             history_length=3,
         )
         imu_projected_gravity = ObsTerm(
             func=mdp.imu_projected_gravity,
             noise=Gnoise(mean=0, std=0.06),
+            params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
             history_length=3,
         )
 
@@ -122,8 +124,9 @@ class ObservationsCfg:
         joint_pos = ObsTerm(
             func=mdp.joint_pos_rel, 
             noise=Gnoise(mean=0, std=0.03),
-            params={"joint_names": 
-                [".*_ABAD_JOINT", ".*_HIP_JOINT", ".*_KNEE_JOINT"]
+            params={
+                "asset_cfg": SceneEntityCfg("robot", 
+                    joint_names=[".*_ABAD_JOINT", ".*_HIP_JOINT", ".*_KNEE_JOINT"]),
                 },
             history_length=OBS_HISTORY_LEN,
         )
@@ -194,13 +197,8 @@ class EventCfg:
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
-            "friction_distribution_params": {
-                "static_friction_distribution_params": (-0.2, 0.2),
-                "dynamic_friction_distribution_params": (-0.1, 0.1),
-                "viscous_friction_distribution_params": (-0.05, 0.05),
-                "operation": "add",
-                "distribution": "uniform",
-            }
+            "operation": "add",
+            "friction_distribution_params": (-0.2, 0.2),
         },
     )
 
@@ -270,7 +268,7 @@ class RewardsCfg:
         func=mdp.feet_air_time,
         weight=-0.125,
         params={
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*FOOT"),
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*FOOT_LINK"),
             "command_name": "base_velocity",
             "threshold": 0.5,
         },
