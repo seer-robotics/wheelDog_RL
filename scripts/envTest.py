@@ -11,8 +11,14 @@ parser.add_argument("--num_envs", type=int, default=256, help="Number of environ
 
 # Append cli args to app launcher. 
 AppLauncher.add_app_launcher_args(parser)
+
 # Parse the arguments to a local variable. 
 args_cli = parser.parse_args()
+
+# Setup WebRTC streaming. 
+args_cli.headless = True
+args_cli.livestream = 2
+args_cli.enable_cameras = True
 
 # Launch omniverse app. 
 app_launcher = AppLauncher(args_cli)
