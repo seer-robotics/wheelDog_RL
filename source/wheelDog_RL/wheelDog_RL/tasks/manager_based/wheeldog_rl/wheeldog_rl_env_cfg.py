@@ -17,6 +17,14 @@ from isaaclab.utils.noise import AdditiveGaussianNoiseCfg as Gnoise
 # Import scene definition. 
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.sceneCfg import wheelDog_RL_sceneCfg
 
+# Import custom modules. 
+from customCurriculum import terrain_levels_vel
+from customRewards import feet_air_time
+
+# Apply monkey patches. 
+mdp.terrain_levels_vel = terrain_levels_vel
+mdp.feet_air_time = feet_air_time
+
 # Import settings. 
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import OBS_HISTORY_LEN
 
@@ -30,17 +38,18 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import OBS_HISTORY_LEN
 class CommandsCfg:
     """Command specifications for the MDP."""
 
+    # https://github.com/isaac-sim/IsaacLab/discussions/2620
     base_velocity = mdp.UniformVelocityCommandCfg(
         asset_name="robot",
         resampling_time_range=(6.0, 10.0),
         rel_standing_envs=0.01,
         rel_heading_envs=0.99,
-        heading_command=False, # Use angular velocity command. 
-        heading_control_stiffness=0.5, # No functional effect when not under heading command. 
+        heading_command=True, 
+        heading_control_stiffness=0.5, 
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
             lin_vel_x=(-1.6, 1.6), lin_vel_y=(-0.4, 0.4), ang_vel_z=(-1.0, 1.0), heading=(-math.pi, math.pi)
-        ), # Heading sampling range is also ignored when not under heading command. 
+        ),
     )
 
 
@@ -242,22 +251,22 @@ class EventCfg:
 class RewardsCfg:
     """Reward terms for the MDP."""
 
-    # -- task
+    # -- rewards
     track_lin_vel_xy_exp = RewTerm(
         func=mdp.track_lin_vel_xy_exp, weight=1.0, params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
     track_ang_vel_z_exp = RewTerm(
         func=mdp.track_ang_vel_z_exp, weight=0.5, params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
+    
     # -- penalties
     lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
     ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
-    dof_torques_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-1.0e-5)
-    dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-7)
-    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-0.01)
+    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1.0e-2)
+    dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-1.0e-5)
     feet_air_time = RewTerm(
         func=mdp.feet_air_time,
-        weight=0.125,
+        weight=-0.125,
         params={
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*FOOT"),
             "command_name": "base_velocity",
@@ -267,11 +276,8 @@ class RewardsCfg:
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-1.0,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*THIGH"), "threshold": 1.0},
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_HIP_LINK", ".*_ABAD_LINK"]), "threshold": 1.0},
     )
-    # -- optional penalties
-    flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=0.0)
-    dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=0.0)
 
 
 @configclass
