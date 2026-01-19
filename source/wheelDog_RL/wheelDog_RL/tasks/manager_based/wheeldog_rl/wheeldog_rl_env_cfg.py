@@ -18,8 +18,8 @@ from isaaclab.utils.noise import AdditiveGaussianNoiseCfg as Gnoise
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.sceneCfg import wheelDog_RL_sceneCfg
 
 # Import custom modules. 
-from customCurriculum import terrain_levels_vel
-from customRewards import feet_air_time
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.customCurriculum import terrain_levels_vel
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.customRewards import feet_air_time
 
 # Apply monkey patches. 
 mdp.terrain_levels_vel = terrain_levels_vel
