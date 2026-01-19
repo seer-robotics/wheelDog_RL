@@ -47,12 +47,8 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
     )
 
     # Sensors.
-    # Note here that the primitive base is only a descriptive name. 
-    # Different robots have different names for the base. 
-    # Unitree Go1 has it as: trunk. 
-    # Remember to modify this in the robot specific configuration. 
     height_scanner = RayCasterCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/base",
+        prim_path="{ENV_REGEX_NS}/Robot/BASE_LINK",
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 20.0)),
         ray_alignment="yaw",
         pattern_cfg=patterns.GridPatternCfg(resolution=0.1, size=[1.6, 1.0]),
@@ -60,7 +56,7 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         mesh_prim_paths=["/World/ground"],
     )
     base_IMU = ImuCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/base",
+        prim_path="{ENV_REGEX_NS}/Robot/BASE_LINK",
         gravity_bias=(0.00, 0.00, 9.81), # Remember to account for gravity bias
         update_period=0.02,
         history_length=0,
