@@ -299,11 +299,11 @@ class CurriculumCfg:
     """Curriculum terms for the MDP."""
 
     terrain_levels = CurrTerm(
-        func=mdp.terrain_levels_vel,
-        # params={
-        #     "error_threshold_up": 0.5,
-        #     "error_threshold_down": 2.0,
-        # }
+        func=mdp.terrain_levels_velocityError,
+        params={
+            "error_threshold_up": 0.5,
+            "error_threshold_down": 2.0,
+        }
         )
 
 

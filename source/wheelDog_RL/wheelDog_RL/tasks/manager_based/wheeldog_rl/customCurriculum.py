@@ -110,7 +110,9 @@ def terrain_levels_velocityError(
     terrain.update_env_origins(env_ids, move_up, move_down)
 
     # Return the mean terrain level.
+    print(f"[INFO]: Updated terrain levels, mean levels: {terrain.terrain_levels.float()}")
     return torch.mean(terrain.terrain_levels.float())
+    
 
 
 def terrain_levels_vel(
