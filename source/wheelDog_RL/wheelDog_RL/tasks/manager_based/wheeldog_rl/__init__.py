@@ -14,7 +14,7 @@ from . import agents
 
 gym.register(
     id="Wheeldog-Rl-v0",
-    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    entry_point="wheelDog_RL.tasks.manager_based.wheeldog_rl.envEntry:WheelDog_BlindLocomotionEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": f"{__name__}.robotCfg:WheelDog_BlindLocomotionEnvCfg",

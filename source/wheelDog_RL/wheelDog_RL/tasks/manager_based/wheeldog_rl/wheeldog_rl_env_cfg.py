@@ -4,6 +4,7 @@ import math
 # Isaac Lab imports
 from isaaclab.envs import mdp
 from isaaclab.envs import ManagerBasedRLEnvCfg
+from isaaclab.managers import RecorderTermCfg as  RecTerm
 from isaaclab.managers import CurriculumTermCfg as CurrTerm
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
@@ -18,10 +19,12 @@ from isaaclab.utils.noise import AdditiveGaussianNoiseCfg as Gnoise
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.sceneCfg import wheelDog_RL_sceneCfg
 
 # Import custom modules. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.customCurriculum import terrain_levels_vel
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.customCurriculum import VelocityErrorRecorder
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.customCurriculum import terrain_levels_velocityError, terrain_levels_vel
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.customRewards import feet_air_time
 
 # Apply monkey patches. 
+mdp.terrain_levels_velocityError = terrain_levels_velocityError
 mdp.terrain_levels_vel = terrain_levels_vel
 mdp.feet_air_time = feet_air_time
 
@@ -44,7 +47,7 @@ class CommandsCfg:
         resampling_time_range=(6.0, 10.0),
         rel_standing_envs=0.01,
         rel_heading_envs=0.99,
-        heading_command=True, 
+        heading_command=False, 
         heading_control_stiffness=0.5, 
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
@@ -295,7 +298,13 @@ class TerminationsCfg:
 class CurriculumCfg:
     """Curriculum terms for the MDP."""
 
-    terrain_levels = CurrTerm(func=mdp.terrain_levels_vel)
+    terrain_levels = CurrTerm(
+        func=mdp.terrain_levels_vel,
+        # params={
+        #     "error_threshold_up": 0.5,
+        #     "error_threshold_down": 2.0,
+        # }
+        )
 
 
 ##
@@ -306,7 +315,6 @@ class CurriculumCfg:
 @configclass
 class BlindLocomotionCfg(ManagerBasedRLEnvCfg):
     """Configuration for the locomotion velocity-tracking environment."""
-
     # Scene settings
     scene: wheelDog_RL_sceneCfg = wheelDog_RL_sceneCfg(num_envs=8192, env_spacing=8)
     # State settings
@@ -318,7 +326,9 @@ class BlindLocomotionCfg(ManagerBasedRLEnvCfg):
     terminations: TerminationsCfg = TerminationsCfg()
     events: EventCfg = EventCfg()
     curriculum: CurriculumCfg = CurriculumCfg()
+    # recorder: RecorderCfg = RecorderCfg()
 
+    # Post initialization overrides.
     def __post_init__(self):
         """Post initialization."""
         # Simulation and episode settings

@@ -48,9 +48,6 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg: dict):
     # Create the environment. 
     env = gym.make(args_cli.task, cfg=env_cfg)
 
-    # Reset the environment
-    env.reset()
-
     # Environment and robot preview. 
     count = 0
     while simulation_app.is_running():
