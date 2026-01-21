@@ -149,6 +149,71 @@ class ObservationsCfg:
             self.enable_corruption = True
             self.concatenate_terms = True
 
+    @configclass
+    class CriticCfg(ObsGroup):
+        """Observations for critic group."""
+        # Remember to inherit/concatenate the full policy observations in the training manager. 
+        base_pos_z = ObsTerm(func=mdp.base_pos_z)
+        projected_gravity = ObsTerm(func=mdp.projected_gravity)
+        base_height_scan = ObsTerm(
+            func=mdp.height_scan,
+            params={"sensor_cfg": SceneEntityCfg("height_scanner")},
+            history_length=1,
+        )
+        foot_contact = ObsTerm(
+            # Borrows contact_forces function from the rewards function list
+            func=mdp.contact_forces,
+            params={
+                "threshold": 0,
+                "sensor_cfg": SceneEntityCfg(
+                    "robot",
+                    body_names=[".*_FOOT_LINK"],
+                )
+            },
+            history_length=3,
+        )
+        
+        # Optional: per-foot normal forces or contact probabilities
+        foot_forces = ObsTerm(
+            func=mdp.contact_forces,
+            params={
+                "asset_cfg": SceneEntityCfg("robot"),
+                "body_names": [".*_FOOT"],
+                "filter": "force_norm",  # or raw force vector if needed
+            },
+            history_length=2,
+        )
+        
+        # Dynamics randomization terms (very helpful for robustness)
+        robot_mass = ObsTerm(
+            func=mdp.robot_mass,  # or payload_mass if you randomize added mass
+            history_length=0,
+        )
+        
+        com_displacement = ObsTerm(
+            func=mdp.com_displacement,  # if you randomize CoM shift
+            history_length=0,
+        )
+        
+        ground_friction = ObsTerm(
+            func=mdp.terrain_friction,  # per-environment or averaged friction coeff
+            history_length=0,
+        )
+        
+        # Optional: wheel-specific slip velocity or contact quality
+        wheel_slip = ObsTerm(
+            func=mdp.joint_vel_rel,  # but only for wheel joints, compared against base velocity
+            params={
+                "asset_cfg": SceneEntityCfg("robot",
+                    joint_names=[".*_WHEEL_JOINT"]),  # your wheel joint regex
+            },
+            history_length=3,
+        )  # Alternatively, implement a custom mdp.wheel_slip_velocity term
+        
+        def __post_init__(self):
+            self.enable_corruption = False       # No noise → privileged must be clean
+            self.concatenate_terms = True
+
     # observation groups
     policy: PolicyCfg = PolicyCfg()
 
@@ -268,6 +333,7 @@ class RewardsCfg:
     action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1.0e-2)
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-1.0e-5)
     feet_air_time = RewTerm(
+        # Note here that feet air time is penalized instead of rewarded, as we are training a wheeled robot. The idea is to get it to keep its wheels on the ground. 
         func=mdp.feet_air_time,
         weight=-0.125,
         params={
