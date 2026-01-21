@@ -15,17 +15,17 @@ import torch
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
-from isaaclab.assets import Articulation
-from isaaclab.managers import SceneEntityCfg, ManagerBase
-from isaaclab.terrains import TerrainImporter
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
+    from isaaclab.assets import Articulation
+    from isaaclab.managers import SceneEntityCfg
+    from isaaclab.terrains import TerrainImporter
 
 
 # Manager class that records cumulative velocity error.
 class VelocityErrorRecorder():
-    def __init__(self, config, env):
+    def __init__(self, config: dict, env: ManagerBasedRLEnv):
         self._env = env
         self._num_envs = env.num_envs
         self.device = env.device

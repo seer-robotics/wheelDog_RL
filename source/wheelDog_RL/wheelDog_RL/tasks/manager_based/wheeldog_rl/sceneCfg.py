@@ -1,12 +1,17 @@
+from __future__ import annotations
 from dataclasses import MISSING
+from typing import TYPE_CHECKING
 
 import isaaclab.sim as sim_utils
-from isaaclab.assets import ArticulationCfg, AssetBaseCfg
+from isaaclab.assets import AssetBaseCfg
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sensors import ContactSensorCfg, ImuCfg, RayCasterCfg, patterns
 from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
+
+if TYPE_CHECKING:
+    from isaaclab.assets import ArticulationCfg
 
 # Import terrain generator configurations. 
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.terrainCfg import allTerrain_config
