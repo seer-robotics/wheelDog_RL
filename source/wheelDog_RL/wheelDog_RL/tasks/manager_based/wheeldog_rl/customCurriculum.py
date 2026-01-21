@@ -31,6 +31,7 @@ class VelocityErrorRecorder():
         self.device = env.device
 
         # Integration time step.
+        # Remember that step_dt is sim.dt*decimation
         self.dt = env.step_dt
 
         # Angular velocity error scaling factor.
