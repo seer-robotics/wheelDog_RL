@@ -398,6 +398,7 @@ class BlindLocomotionCfg(ManagerBasedRLEnvCfg):
     def __post_init__(self):
         """Post initialization."""
         # Simulation and episode settings
+        # Note that control period is sim.dt*decimation
         self.sim.dt = 0.005
         self.decimation = 4
         self.episode_length_s = 32.0
