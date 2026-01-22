@@ -55,19 +55,25 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    # Using velocity action. 
+    # Uses position action for non-wheel joints.
+    # Uses velocity action for wheel joints.
     # Leaves on-hardware torque-velocity handling for abstraction. 
-    joint_vel = mdp.JointVelocityActionCfg(
+    joint_pos = mdp.JointPositionActionCfg(
         asset_name="robot",
-        joint_names=[".*"],
+        joint_names=[
+            ".*_ABAD_JOINT",
+            ".*_HIP_JOINT",
+            ".*_KNEE_JOINT",
+        ],
         scale=1.0,
         use_default_offset=True,
-        clip={
-            ".*_ABAD_JOINT": (-25.0, 25.0),
-            ".*_HIP_JOINT": (-25.0, 25.0),
-            ".*_KNEE_JOINT": (-25.0, 25.0),
-            ".*_FOOT_JOINT": (-160.0, 160.0),
-        }
+    )
+    wheel_vel = mdp.JointVelocityActionCfg(
+        asset_name="robot",
+        joint_names=[".*_FOOT_JOINT"],
+        scale=1.0,
+        use_default_offset=True,
+        clip={".*_FOOT_JOINT": (-160.0, 160.0)}
     )
 
 
@@ -147,9 +153,41 @@ class ObservationsCfg:
     @configclass
     class CriticCfg(ObsGroup):
         """Observations for critic group."""
-        # Remember to inherit/concatenate the full policy observations in the training manager. 
+        # Base states history.
         base_pos_z = ObsTerm(func=mdp.base_pos_z)
+        base_lin_vel = ObsTerm(
+            func=mdp.base_lin_vel,
+            history_length=3,
+        )
+        base_ang_vel = ObsTerm(
+            func=mdp.base_ang_vel,
+            history_length=3,
+        )
         projected_gravity = ObsTerm(func=mdp.projected_gravity)
+
+        # Commands.
+        velocity_commands = ObsTerm(
+            func=mdp.generated_commands, 
+            params={"command_name": "base_velocity"},
+            history_length=0,
+        )
+
+        # Joint states history. 
+        # Excludes the wheel positions from the joint positions history. 
+        joint_pos = ObsTerm(
+            func=mdp.joint_pos_rel,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", 
+                    joint_names=[".*_ABAD_JOINT", ".*_HIP_JOINT", ".*_KNEE_JOINT"]),
+                },
+            history_length=OBS_HISTORY_LEN,
+        )
+        joint_vel = ObsTerm(
+            func=mdp.joint_vel_rel,
+            history_length=OBS_HISTORY_LEN,
+        )
+
+        # Priviledged info.
         base_height_scan = ObsTerm(
             func=mdp.height_scan,
             params={"sensor_cfg": SceneEntityCfg("height_scanner")},
