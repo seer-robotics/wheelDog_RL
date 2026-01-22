@@ -19,6 +19,7 @@ from isaaclab.utils.noise import AdditiveGaussianNoiseCfg as Gnoise
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.sceneCfg import wheelDog_RL_sceneCfg
 
 # Import custom modules. 
+from wheelDog_RL.tasks.manager_based.wheeldog_rl import customObservations
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import customCurriculum
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import customRewards
 
@@ -154,62 +155,88 @@ class ObservationsCfg:
             params={"sensor_cfg": SceneEntityCfg("height_scanner")},
             history_length=1,
         )
-        foot_contact = ObsTerm(
-            # Borrows contact_forces function from the rewards function list
-            func=mdp.contact_forces,
+        feet_contacts = ObsTerm(
+            # Feet binary contact states.
+            func=customObservations.contact_states,
             params={
-                "threshold": 0,
+                "threshold": 1,
                 "sensor_cfg": SceneEntityCfg(
-                    "robot",
+                    "contact_forces",
                     body_names=[".*_FOOT_LINK"],
                 )
             },
             history_length=3,
         )
-        
-        # Optional: per-foot normal forces or contact probabilities
-        foot_forces = ObsTerm(
-            func=mdp.contact_forces,
+        feet_forces = ObsTerm(
+            # Feet normal contact forces.
+            func=customObservations.contact_forces,
             params={
-                "asset_cfg": SceneEntityCfg("robot"),
-                "body_names": [".*_FOOT"],
-                "filter": "force_norm",  # or raw force vector if needed
+                "sensor_cfg": SceneEntityCfg(
+                    "contact_forces",
+                    body_names=[".*_FOOT_LINK"],
+                )
             },
+            history_length=3,
+        )
+        fl_feet_normals = ObsTerm(
+            # Terrain normals around front left foot.
+            func=customObservations.terrain_normals,
+            params={"sensor_cfg": SceneEntityCfg("fl_leg_ray")},
+            history_length=2,
+        )
+        rl_feet_normals = ObsTerm(
+            # Terrain normals around rear left foot.
+            func=customObservations.terrain_normals,
+            params={"sensor_cfg": SceneEntityCfg("rl_leg_ray")},
+            history_length=2,
+        )
+        fr_feet_normals = ObsTerm(
+            # Terrain normals around front right foot.
+            func=customObservations.terrain_normals,
+            params={"sensor_cfg": SceneEntityCfg("fr_leg_ray")},
+            history_length=2,
+        )
+        rr_feet_normals = ObsTerm(
+            # Terrain normals around rear right foot.
+            func=customObservations.terrain_normals,
+            params={"sensor_cfg": SceneEntityCfg("rr_leg_ray")},
             history_length=2,
         )
         
         # Dynamics randomization terms (very helpful for robustness)
-        robot_mass = ObsTerm(
-            func=mdp.robot_mass,  # or payload_mass if you randomize added mass
-            history_length=0,
-        )
+        # robot_mass = ObsTerm(
+        #     func=mdp.robot_mass,  # or payload_mass if you randomize added mass
+        #     history_length=0,
+        # )
         
-        com_displacement = ObsTerm(
-            func=mdp.com_displacement,  # if you randomize CoM shift
-            history_length=0,
-        )
+        # com_displacement = ObsTerm(
+        #     func=mdp.com_displacement,  # if you randomize CoM shift
+        #     history_length=0,
+        # )
         
-        ground_friction = ObsTerm(
-            func=mdp.terrain_friction,  # per-environment or averaged friction coeff
-            history_length=0,
-        )
+        # ground_friction = ObsTerm(
+        #     func=mdp.terrain_friction,  # per-environment or averaged friction coeff
+        #     history_length=0,
+        # )
         
-        # Optional: wheel-specific slip velocity or contact quality
-        wheel_slip = ObsTerm(
-            func=mdp.joint_vel_rel,  # but only for wheel joints, compared against base velocity
-            params={
-                "asset_cfg": SceneEntityCfg("robot",
-                    joint_names=[".*_WHEEL_JOINT"]),  # your wheel joint regex
-            },
-            history_length=3,
-        )  # Alternatively, implement a custom mdp.wheel_slip_velocity term
+        # # Optional: wheel-specific slip velocity or contact quality
+        # wheel_slip = ObsTerm(
+        #     func=mdp.joint_vel_rel,  # but only for wheel joints, compared against base velocity
+        #     params={
+        #         "asset_cfg": SceneEntityCfg("robot",
+        #             joint_names=[".*_WHEEL_JOINT"]),  # your wheel joint regex
+        #     },
+        #     history_length=3,
+        # )  # Alternatively, implement a custom mdp.wheel_slip_velocity term
         
         def __post_init__(self):
-            self.enable_corruption = False       # No noise → privileged must be clean
+            # No noise for priviledged information.
+            self.enable_corruption = False
             self.concatenate_terms = True
 
     # observation groups
     policy: PolicyCfg = PolicyCfg()
+    critic: CriticCfg = CriticCfg()
 
 
 @configclass

@@ -118,7 +118,7 @@ def terrain_levels_velocityError(
     #     print(f"[INFO]: Move up: \n{norm_errors}")
     #     print(f"[INFO]: Move down: \n{norm_errors}")
     # print(f"[INFO]: Normalized errors: \n{norm_errors}")
-    print(f"[INFO]: Current mean terrain levels: \n{terrain.terrain_levels.float()}")
+    # print(f"[INFO]: Current mean terrain levels: \n{terrain.terrain_levels.float()}")
 
     # Return the mean terrain level.
     return torch.mean(terrain.terrain_levels.float())
