@@ -15,11 +15,11 @@ import torch
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
+from isaaclab.managers import SceneEntityCfg
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
     from isaaclab.assets import Articulation
-    from isaaclab.managers import SceneEntityCfg
     from isaaclab.terrains import TerrainImporter
 
 
@@ -32,7 +32,7 @@ class VelocityErrorRecorder():
 
         # Integration time step.
         # Remember that step_dt is sim.dt*decimation
-        self.dt = env.step_dt
+        self.step_dt = env.step_dt
 
         # Angular velocity error scaling factor.
         self.angular_scale: dict[str, float] = config.get("angular_scale", 1.0)
@@ -47,11 +47,11 @@ class VelocityErrorRecorder():
 
     def post_physics_step(self):
         # Record cumulative error after physics update.
-        robot_data = self._env.scene["robot"].data
+        robot: Articulation = self._env.scene["robot"]
 
         # Get current actual velocities. 
-        actual_lin_vel = robot_data.root_lin_vel_b[:, :2]
-        actual_ang_vel = robot_data.root_ang_vel_b[:, 2]
+        actual_lin_vel = robot.data.root_lin_vel_b[:, :2]
+        actual_ang_vel = robot.data.root_ang_vel_b[:, 2]
 
         # Get current commands.
         cmd_vel = self._env.command_manager.get_command("base_velocity")
@@ -62,7 +62,7 @@ class VelocityErrorRecorder():
         inst_error = lin_error + ang_error * self.angular_scale
 
         # Accumulate (integrate over time)
-        self._episode_cum_error += inst_error * self.dt
+        self._episode_cum_error += inst_error * self.step_dt
 
     def get_episode_cum_error(self, env_ids: Sequence[int] = None) -> torch.Tensor:
         if env_ids is None:
@@ -70,7 +70,7 @@ class VelocityErrorRecorder():
         return self._episode_cum_error[env_ids].clone()
 
 
-# Distance based curriculum function. 
+# Velocity error based curriculum function. 
 def terrain_levels_velocityError(
     env: ManagerBasedRLEnv,
     env_ids: Sequence[int],
@@ -90,28 +90,37 @@ def terrain_levels_velocityError(
     Returns:
         The mean terrain level for the given environment ids.
     """
-    # Access the recorder manager.
-    # error_recorder = env.managers["velocity_error_recorder"]
-    error_recorder = env.velocity_error_recorder
+    # Access the velocity error recorder manager and acquire the data from specified envs.
+    error_recorder: VelocityErrorRecorder = env.velocity_error_recorder
     cum_errors = error_recorder.get_episode_cum_error(env_ids)
 
-    # Normalize error by episode duration.
-    episode_durations = env.max_episode_length_s * torch.ones_like(cum_errors)  # Approximate; refine if needed.
-    norm_errors = cum_errors / episode_durations
+    # Normalize error by maximum episode duration.
+    norm_errors = cum_errors / env.max_episode_length_s
 
-    # Terrain management.
-    terrain: TerrainImporter = env.scene.terrain
-
-    # Difficulty updates based on normalized error.
+    # Difficulty updates based on episode duration normalized error.
     move_up = norm_errors < error_threshold_up
     move_down = norm_errors > error_threshold_down
     move_down *= ~move_up
 
-    # Update terrain origins.
+    # Filter to only update terrain levels for envs at episode timeout.
+    episode_lengths = env.episode_length_buf[env_ids]
+    non_timeout = (episode_lengths - env.max_episode_length) != 0
+    move_up[non_timeout] = False
+    move_down[non_timeout] = False
+
+    # Update terrain levels.
+    terrain: TerrainImporter = env.scene.terrain
     terrain.update_env_origins(env_ids, move_up, move_down)
 
+    # Debug prints.
+    # if torch.any(move_up) or torch.any(move_down):
+    #     print(f"[INFO]: Env IDs: \n{env_ids}")
+    #     print(f"[INFO]: Move up: \n{norm_errors}")
+    #     print(f"[INFO]: Move down: \n{norm_errors}")
+    # print(f"[INFO]: Normalized errors: \n{norm_errors}")
+    print(f"[INFO]: Current mean terrain levels: \n{terrain.terrain_levels.float()}")
+
     # Return the mean terrain level.
-    print(f"[INFO]: Updated terrain levels, mean levels: {terrain.terrain_levels.float()}")
     return torch.mean(terrain.terrain_levels.float())
     
 
