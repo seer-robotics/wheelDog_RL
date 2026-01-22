@@ -74,6 +74,42 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         track_air_time=True,
         debug_vis=False,
     )
+    fl_leg_ray = RayCasterCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/FBL_FOOT_LINK",
+        offset=RayCasterCfg.OffsetCfg(pos=(0.0, 4.8e-2, 0.0)),
+        ray_alignment="yaw",
+        pattern_cfg=patterns.GridPatternCfg(
+            resolution=8.0e-2, size=[16.0e-2, 16.0e-2]),
+        debug_vis=True,
+        mesh_prim_paths=["/World/ground"],
+    )
+    rl_leg_ray = RayCasterCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/RBL_FOOT_LINK",
+        offset=RayCasterCfg.OffsetCfg(pos=(0.0, 4.8e-2, 0.0)),
+        ray_alignment="yaw",
+        pattern_cfg=patterns.GridPatternCfg(
+            resolution=8.0e-2, size=[16.0e-2, 16.0e-2]),
+        debug_vis=True,
+        mesh_prim_paths=["/World/ground"],
+    )
+    fr_leg_ray = RayCasterCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/FAR_FOOT_LINK",
+        offset=RayCasterCfg.OffsetCfg(pos=(0.0, -4.8e-2, 0.0)),
+        ray_alignment="yaw",
+        pattern_cfg=patterns.GridPatternCfg(
+            resolution=8.0e-2, size=[16.0e-2, 16.0e-2]),
+        debug_vis=True,
+        mesh_prim_paths=["/World/ground"],
+    )
+    rr_leg_ray = RayCasterCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/RAR_FOOT_LINK",
+        offset=RayCasterCfg.OffsetCfg(pos=(0.0, -4.8e-2, 0.0)),
+        ray_alignment="yaw",
+        pattern_cfg=patterns.GridPatternCfg(
+            resolution=8.0e-2, size=[16.0e-2, 16.0e-2]),
+        debug_vis=True,
+        mesh_prim_paths=["/World/ground"],
+    )
 
     # Here, the specific robot is left abstracted. 
     # Robot assignment and tuning are done in the robot configurations. 
