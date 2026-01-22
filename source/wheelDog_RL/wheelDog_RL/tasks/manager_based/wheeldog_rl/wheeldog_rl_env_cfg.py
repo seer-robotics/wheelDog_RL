@@ -19,14 +19,8 @@ from isaaclab.utils.noise import AdditiveGaussianNoiseCfg as Gnoise
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.sceneCfg import wheelDog_RL_sceneCfg
 
 # Import custom modules. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.customCurriculum import VelocityErrorRecorder
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.customCurriculum import terrain_levels_velocityError, terrain_levels_vel
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.customRewards import feet_air_time
-
-# Apply monkey patches. 
-mdp.terrain_levels_velocityError = terrain_levels_velocityError
-mdp.terrain_levels_vel = terrain_levels_vel
-mdp.feet_air_time = feet_air_time
+from wheelDog_RL.tasks.manager_based.wheeldog_rl import customCurriculum
+from wheelDog_RL.tasks.manager_based.wheeldog_rl import customRewards
 
 # Import settings. 
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import OBS_HISTORY_LEN
@@ -334,7 +328,7 @@ class RewardsCfg:
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-1.0e-5)
     feet_air_time = RewTerm(
         # Note here that feet air time is penalized instead of rewarded, as we are training a wheeled robot. The idea is to get it to keep its wheels on the ground. 
-        func=mdp.feet_air_time,
+        func=customRewards.feet_air_time,
         weight=-0.125,
         params={
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*FOOT_LINK"),
@@ -365,7 +359,7 @@ class CurriculumCfg:
     """Curriculum terms for the MDP."""
 
     terrain_levels = CurrTerm(
-        func=mdp.terrain_levels_velocityError,
+        func=customCurriculum.terrain_levels_velocityError,
         params={
             "error_threshold_up": 0.5,
             "error_threshold_down": 2.0,
