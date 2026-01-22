@@ -80,7 +80,7 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         ray_alignment="yaw",
         pattern_cfg=patterns.GridPatternCfg(
             resolution=8.0e-2, size=[16.0e-2, 16.0e-2]),
-        debug_vis=True,
+        debug_vis=False,
         mesh_prim_paths=["/World/ground"],
     )
     rl_leg_ray = RayCasterCfg(
@@ -89,7 +89,7 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         ray_alignment="yaw",
         pattern_cfg=patterns.GridPatternCfg(
             resolution=8.0e-2, size=[16.0e-2, 16.0e-2]),
-        debug_vis=True,
+        debug_vis=False,
         mesh_prim_paths=["/World/ground"],
     )
     fr_leg_ray = RayCasterCfg(
@@ -98,7 +98,7 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         ray_alignment="yaw",
         pattern_cfg=patterns.GridPatternCfg(
             resolution=8.0e-2, size=[16.0e-2, 16.0e-2]),
-        debug_vis=True,
+        debug_vis=False,
         mesh_prim_paths=["/World/ground"],
     )
     rr_leg_ray = RayCasterCfg(
@@ -107,7 +107,7 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         ray_alignment="yaw",
         pattern_cfg=patterns.GridPatternCfg(
             resolution=8.0e-2, size=[16.0e-2, 16.0e-2]),
-        debug_vis=True,
+        debug_vis=False,
         mesh_prim_paths=["/World/ground"],
     )
 
