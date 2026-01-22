@@ -35,6 +35,40 @@ def contact_forces(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.
     base_quats_w = robot.data.root_link_quat_w
 
     # Transform forces to robot base frame and return.
-    return quat_apply_inverse(base_quats_w.unsqueeze(1), wheel_forces_w)
+    return quat_apply_inverse(base_quats_w.unsqueeze(dim=1), wheel_forces_w)
 
     
+def contact_states(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, threshold: float) -> torch.Tensor:
+    """Feet binary contact states.
+
+    Determined by feet z-axis normal contact forces in robot base frame.
+
+    ``threshold``: Base frame feet z-axis normal force above which contact is considered true. 
+    """
+    # Enable type-hinting.
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    robot: Articulation = env.scene["robot"]
+
+    # Normal forces in world frame.
+    net_forces_w = contact_sensor.data.net_forces_w
+    
+    # Isolate data from specified bodies.
+    wheel_ids = sensor_cfg.body_ids
+    wheel_forces_w = net_forces_w[:, wheel_ids]
+    
+    # Acquire robot base frame quarternions. 
+    base_quats_w = robot.data.root_link_quat_w
+
+    # Transform forces to robot base frame.
+    wheel_forces_b = quat_apply_inverse(
+        base_quats_w.unsqueeze(dim=1), wheel_forces_w)
+    
+    # Determine contact state and return.
+    return (wheel_forces_b[..., 2] > threshold).float()
+
+
+def terrain_normals(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Extract the terrain normals around specified bodies."""
+    # Enable type-hinting.
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    robot: Articulation = env.scene["robot"]
