@@ -205,53 +205,56 @@ class ObservationsCfg:
             },
             history_length=3,
         )
-        feet_forces = ObsTerm(
-            # Feet normal contact forces.
+        fl_foot_forces = ObsTerm(
+            # Front left foot normal and tangential contact forces.
             func=customObservations.contact_forces,
-            params={
-                "sensor_cfg": SceneEntityCfg(
-                    "contact_forces",
-                    body_names=[".*_FOOT_LINK"],
-                )
-            },
+            params={"sensor_cfg": SceneEntityCfg("fl_foot_contacts")},
             history_length=3,
         )
-        fl_feet_normals = ObsTerm(
+        rl_foot_forces = ObsTerm(
+            # Rear left foot normal and tangential contact forces.
+            func=customObservations.contact_forces,
+            params={"sensor_cfg": SceneEntityCfg("rl_foot_contacts")},
+            history_length=3,
+        )
+        fr_foot_forces = ObsTerm(
+            # Front right foot normal and tangential contact forces.
+            func=customObservations.contact_forces,
+            params={"sensor_cfg": SceneEntityCfg("fr_foot_contacts")},
+            history_length=3,
+        )
+        rr_foot_forces = ObsTerm(
+            # Rear right foot normal and tangential contact forces.
+            func=customObservations.contact_forces,
+            params={"sensor_cfg": SceneEntityCfg("rr_foot_contacts")},
+            history_length=3,
+        )
+        fl_foot_normals = ObsTerm(
             # Terrain normals around front left foot.
             func=customObservations.terrain_normals,
             params={"sensor_cfg": SceneEntityCfg("fl_leg_ray")},
             history_length=2,
         )
-        rl_feet_normals = ObsTerm(
+        rl_foot_normals = ObsTerm(
             # Terrain normals around rear left foot.
             func=customObservations.terrain_normals,
             params={"sensor_cfg": SceneEntityCfg("rl_leg_ray")},
             history_length=2,
         )
-        fr_feet_normals = ObsTerm(
+        fr_foot_normals = ObsTerm(
             # Terrain normals around front right foot.
             func=customObservations.terrain_normals,
             params={"sensor_cfg": SceneEntityCfg("fr_leg_ray")},
             history_length=2,
         )
-        rr_feet_normals = ObsTerm(
+        rr_foot_normals = ObsTerm(
             # Terrain normals around rear right foot.
             func=customObservations.terrain_normals,
             params={"sensor_cfg": SceneEntityCfg("rr_leg_ray")},
             history_length=2,
         )
         
-        # Dynamics randomization terms (very helpful for robustness)
-        # robot_mass = ObsTerm(
-        #     func=mdp.robot_mass,  # or payload_mass if you randomize added mass
-        #     history_length=0,
-        # )
-        
-        # com_displacement = ObsTerm(
-        #     func=mdp.com_displacement,  # if you randomize CoM shift
-        #     history_length=0,
-        # )
-        
+        # Dynamics randomization terms
         # ground_friction = ObsTerm(
         #     func=mdp.terrain_friction,  # per-environment or averaged friction coeff
         #     history_length=0,

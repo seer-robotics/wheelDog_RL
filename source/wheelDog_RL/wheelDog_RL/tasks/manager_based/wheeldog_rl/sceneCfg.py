@@ -69,12 +69,51 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         debug_vis=False, 
     )
     contact_forces = ContactSensorCfg(
+        # Contact sensors on all robot links.
         prim_path="{ENV_REGEX_NS}/Robot/.*",
         history_length=6,
         track_air_time=True,
+        force_threshold=1,
+        debug_vis=False,
+    )
+    fl_foot_contacts = ContactSensorCfg(
+        # Front left foot filtered contact sensor.
+        prim_path="{ENV_REGEX_NS}/Robot/FBL_FOOT_LINK",
+        filter_prim_paths_expr=["/World/ground"],
+        history_length=6,
+        track_friction_forces=True,
+        max_contact_data_count_per_prim=16,
+        debug_vis=False,
+    )
+    rl_foot_contacts = ContactSensorCfg(
+        # Rear left foot filtered contact sensor.
+        prim_path="{ENV_REGEX_NS}/Robot/RBL_FOOT_LINK",
+        filter_prim_paths_expr=["/World/ground"],
+        history_length=6,
+        track_friction_forces=True,
+        max_contact_data_count_per_prim=16,
+        debug_vis=False,
+    )
+    fr_foot_contacts = ContactSensorCfg(
+        # Front right foot filtered contact sensor.
+        prim_path="{ENV_REGEX_NS}/Robot/FAR_FOOT_LINK",
+        filter_prim_paths_expr=["/World/ground"],
+        history_length=6,
+        track_friction_forces=True,
+        max_contact_data_count_per_prim=16,
+        debug_vis=False,
+    )
+    rr_foot_contacts = ContactSensorCfg(
+        # Rear right foot filtered contact sensor.
+        prim_path="{ENV_REGEX_NS}/Robot/RAR_FOOT_LINK",
+        filter_prim_paths_expr=["/World/ground"],
+        history_length=6,
+        track_friction_forces=True,
+        max_contact_data_count_per_prim=16,
         debug_vis=False,
     )
     fl_leg_ray = RayCasterCfg(
+        # Front left foot terrain scanner.
         prim_path="{ENV_REGEX_NS}/Robot/FBL_FOOT_LINK",
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, 4.8e-2, 0.0)),
         ray_alignment="yaw",
@@ -84,6 +123,7 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         mesh_prim_paths=["/World/ground"],
     )
     rl_leg_ray = RayCasterCfg(
+        # Rear left foot terrain scanner.
         prim_path="{ENV_REGEX_NS}/Robot/RBL_FOOT_LINK",
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, 4.8e-2, 0.0)),
         ray_alignment="yaw",
@@ -93,6 +133,7 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         mesh_prim_paths=["/World/ground"],
     )
     fr_leg_ray = RayCasterCfg(
+        # Front right foot terrain scanner.
         prim_path="{ENV_REGEX_NS}/Robot/FAR_FOOT_LINK",
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, -4.8e-2, 0.0)),
         ray_alignment="yaw",
@@ -102,6 +143,7 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         mesh_prim_paths=["/World/ground"],
     )
     rr_leg_ray = RayCasterCfg(
+        # Rear right foot terrain scanner.
         prim_path="{ENV_REGEX_NS}/Robot/RAR_FOOT_LINK",
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, -4.8e-2, 0.0)),
         ray_alignment="yaw",

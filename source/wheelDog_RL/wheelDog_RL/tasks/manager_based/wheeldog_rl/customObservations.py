@@ -49,22 +49,25 @@ def contact_states(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, threshold
 
 
 def contact_forces(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
-    """Extract the normal contact forces on specified bodies."""
+    """Extract the total contact forces (normal and tangential) on the specified body."""
     # Enable type-hinting.
     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
     robot: Articulation = env.scene["robot"]
 
-    # Normal forces in the world frame.
+    # Normal and tangential forces in the world frame.
     net_forces_w = contact_sensor.data.net_forces_w
+    friction_forces_w = torch.sum(contact_sensor.data.friction_forces_w, dim=2)
     
     # Isolate data from specified bodies.
+    # This doesn't really do anything here, because the sensor currently only supports filtered sensing for one explicit body.
     wheel_ids = sensor_cfg.body_ids
-    wheel_forces_w = net_forces_w[:, wheel_ids]
+    wheel_forces_w = torch.sum(
+        net_forces_w[:, wheel_ids] + friction_forces_w[:, wheel_ids],
+        dim=1)
     
     # Acquire robot base frame quarternions. 
     base_quat_w = robot.data.root_link_quat_w
-    base_quat_w = base_quat_w.unsqueeze(dim=1)
-    base_quat_w = base_quat_w.repeat(1, (wheel_forces_w.shape[1] // base_quat_w.shape[1]), 1)
+    base_quat_w = base_quat_w
 
     # Transform forces to robot base frame and return.
     wheel_forces_b = quat_apply_inverse(base_quat_w, wheel_forces_w)
@@ -95,3 +98,26 @@ def terrain_normals(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch
     # Transform normals to robot base frame.
     normals_b = quat_apply_inverse(base_quat_w, normals_w)
     return normals_b
+
+
+def normal_forces(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Extract the normal contact forces on specified bodies."""
+    # Enable type-hinting.
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    robot: Articulation = env.scene["robot"]
+
+    # Normal forces in the world frame.
+    net_forces_w = contact_sensor.data.net_forces_w
+    
+    # Isolate data from specified bodies.
+    wheel_ids = sensor_cfg.body_ids
+    wheel_forces_w = net_forces_w[:, wheel_ids]
+    
+    # Acquire robot base frame quarternions. 
+    base_quat_w = robot.data.root_link_quat_w
+    base_quat_w = base_quat_w.unsqueeze(dim=1)
+    base_quat_w = base_quat_w.repeat(1, (wheel_forces_w.shape[1] // base_quat_w.shape[1]), 1)
+
+    # Transform forces to robot base frame and return.
+    wheel_forces_b = quat_apply_inverse(base_quat_w, wheel_forces_w)
+    return wheel_forces_b
