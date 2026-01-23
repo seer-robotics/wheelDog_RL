@@ -61,13 +61,17 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg: dict):
 
             # Sample random actions. 
             actions = 0 * torch.rand(env.action_space.shape) - 0
+            
+            # Step the environment. 
+            obs, rew, terminated, truncated, info = env.step(actions)
+
+            # Reference for access env attributes.
+            # sensor = env.env.scene.sensors["height_scanner"]
 
             # Example from cartpole env for printing observations.
             # print current orientation of pole
             # print("[Env 0]: Pole joint: ", obs["policy"][0][1].item())
-            
-            # Step the environment. 
-            obs, rew, terminated, truncated, info = env.step(actions)
+            # extract the used quantities (to enable type-hinting)
 
             # Update counter. 
             count += 1
