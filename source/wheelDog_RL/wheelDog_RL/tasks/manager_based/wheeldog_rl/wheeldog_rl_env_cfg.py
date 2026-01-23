@@ -188,7 +188,11 @@ class ObservationsCfg:
         # Priviledged info.
         base_height_scan = ObsTerm(
             func=mdp.height_scan,
-            params={"sensor_cfg": SceneEntityCfg("height_scanner")},
+            params={
+                "sensor_cfg": SceneEntityCfg("height_scanner"),
+                "offset": 0.5,
+            },
+            clip=(-1.5, 1.5),
             history_length=2,
         )
         feet_contacts = ObsTerm(
