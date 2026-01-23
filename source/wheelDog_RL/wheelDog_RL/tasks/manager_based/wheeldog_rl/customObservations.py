@@ -11,10 +11,11 @@ from typing import TYPE_CHECKING
 
 from isaaclab.utils.math import quat_apply_inverse
 
+from isaaclab.assets import Articulation
+
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
     from isaaclab.managers import SceneEntityCfg
-    from isaaclab.assets import Articulation
     from isaaclab.sensors import ContactSensor, RayCaster
 
 
@@ -98,6 +99,59 @@ def terrain_normals(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch
     # Transform normals to robot base frame.
     normals_b = quat_apply_inverse(base_quat_w, normals_w)
     return normals_b
+
+
+def contact_friction(env: ManagerBasedRLEnv, link_names: list[str]) -> torch.Tensor:
+    """Extract the friction coefficients of the specified bodies.
+
+    ``materials``: Union[np.ndarray, torch.Tensor, wp.array]: An array of material properties with shape (count, max_shapes, 3) where count is the number of rigid objects in the view and max_shapes is the maximum number of shapes in all the rigid objects in the view. The 3 elements of the last dimension are the static friction, dynamic friction, and restitution respectively.
+    """
+    # Enable type-hinting.
+    robot: Articulation = env.scene["robot"]
+
+    # Extract specified body indeces.
+    # Note that currently, there is no collision body for .*_ABAD_LINK.
+    # Obtain number of shapes per body (needed for indexing the material properties correctly).
+    # Note: this is a workaround since the Articulation does not provide a direct way to obtain the number of shapes per body.
+    # We use the physics simulation view to obtain the number of shapes per body.
+    if isinstance(robot, Articulation):
+        num_shapes_per_body = []
+        for link_path in robot.root_physx_view.link_paths[0]:
+            link_physx_view = robot._physics_sim_view.create_rigid_body_view(link_path)  # type: ignore
+            num_shapes_per_body.append(link_physx_view.max_shapes)
+        # ensure the parsing is correct
+        num_shapes = sum(num_shapes_per_body)
+        expected_shapes = robot.root_physx_view.max_shapes
+        if num_shapes != expected_shapes:
+            raise ValueError(
+                "Randomization term 'randomize_rigid_body_material' failed to parse the number of shapes per body."
+                f" Expected total shapes: {expected_shapes}, but got: {num_shapes}."
+            )
+    else:
+        # in this case, we don't need to do special indexing
+        num_shapes_per_body = None
+
+    if num_shapes_per_body != None:
+        shape_mapping: dict[str, list[int]] = {}
+        current_index = 0
+        for name, num_shapes in zip(robot.body_names, num_shapes_per_body):
+            shape_indices = list(range(current_index, current_index + num_shapes))
+            shape_mapping[name] = shape_indices
+            current_index += num_shapes
+        wheel_physx_indeces = [shape_mapping[key] for key in link_names]
+    else:
+        wheel_physx_indeces = [robot.body_names.index(target) for target in link_names]
+
+    # Reference physx indeces info:
+    # num_shapes_per_body: [1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    # body_names: ['BASE_LINK', 'FAR_ABAD_LINK', 'FBL_ABAD_LINK', 'RAR_ABAD_LINK', 'RBL_ABAD_LINK', 'FAR_HIP_LINK', 'FBL_HIP_LINK', 'RAR_HIP_LINK', 'RBL_HIP_LINK', 'FAR_KNEE_LINK', 'FBL_KNEE_LINK', 'RAR_KNEE_LINK', 'RBL_KNEE_LINK', 'FAR_FOOT_LINK', 'FBL_FOOT_LINK', 'RAR_FOOT_LINK', 'RBL_FOOT_LINK']
+    
+    # Extract material properties, shape (N, count, max_shapes, 3) where N is the number of parallel environments, count is the number of rigid objects in the view, and max_shapes is the maximum number of shapes in all the rigid objects in the view.
+    materials: torch.Tensor = robot.root_physx_view.get_material_properties()
+    materials = materials.to(env.device)
+    materials = materials[:, wheel_physx_indeces]
+    materials = materials.flatten(start_dim=1)
+    return materials
 
 
 def normal_forces(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.Tensor:

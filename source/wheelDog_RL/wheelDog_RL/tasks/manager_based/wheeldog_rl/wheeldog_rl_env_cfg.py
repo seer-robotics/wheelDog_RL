@@ -24,7 +24,7 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl import customCurriculum
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import customRewards
 
 # Import settings. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import OBS_HISTORY_LEN
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import OBS_HISTORY_LEN, CPU_POOL_BUCKET_SIZE
 
 
 ##
@@ -42,8 +42,7 @@ class CommandsCfg:
         resampling_time_range=(6.0, 10.0),
         rel_standing_envs=0.01,
         rel_heading_envs=0.99,
-        heading_command=False, 
-        heading_control_stiffness=0.5, 
+        heading_command=False,
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
             lin_vel_x=(-1.6, 1.6), lin_vel_y=(-0.4, 0.4), ang_vel_z=(-1.0, 1.0), heading=(-math.pi, math.pi)
@@ -169,7 +168,6 @@ class ObservationsCfg:
         velocity_commands = ObsTerm(
             func=mdp.generated_commands, 
             params={"command_name": "base_velocity"},
-            history_length=0,
         )
 
         # Joint states history. 
@@ -191,7 +189,7 @@ class ObservationsCfg:
         base_height_scan = ObsTerm(
             func=mdp.height_scan,
             params={"sensor_cfg": SceneEntityCfg("height_scanner")},
-            history_length=1,
+            history_length=2,
         )
         feet_contacts = ObsTerm(
             # Feet binary contact states.
@@ -255,10 +253,17 @@ class ObservationsCfg:
         )
         
         # Dynamics randomization terms
-        # ground_friction = ObsTerm(
-        #     func=mdp.terrain_friction,  # per-environment or averaged friction coeff
-        #     history_length=0,
-        # )
+        contact_friction = ObsTerm(
+            func=customObservations.contact_friction,
+            params={
+                "link_names": [
+                    "FBL_FOOT_LINK",
+                    "FAR_FOOT_LINK",
+                    "RBL_FOOT_LINK",
+                    "RAR_FOOT_LINK",
+                ]
+            },
+        )
         
         # # Optional: wheel-specific slip velocity or contact quality
         # wheel_slip = ObsTerm(
@@ -293,10 +298,11 @@ class EventCfg:
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
+            "make_consistent": True,
             "static_friction_range": (0.7, 1.3),
             "dynamic_friction_range": (1.0, 1.0),
             "restitution_range": (0.0, 0.1),
-            "num_buckets": 256,
+            "num_buckets": CPU_POOL_BUCKET_SIZE,
         },
     )
 
@@ -407,7 +413,7 @@ class RewardsCfg:
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-1.0,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_HIP_LINK", ".*_ABAD_LINK"]), "threshold": 1.0},
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_HIP_LINK"]), "threshold": 1.0},
     )
 
 
