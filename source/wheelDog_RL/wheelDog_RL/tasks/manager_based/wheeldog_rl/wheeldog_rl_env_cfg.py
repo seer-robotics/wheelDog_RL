@@ -93,12 +93,12 @@ class ObservationsCfg:
         base_lin_vel = ObsTerm(
             func=mdp.base_lin_vel, 
             noise=Gnoise(mean=0, std=0.20),
-            history_length=3,
+            history_length=4,
         )
         base_ang_vel = ObsTerm(
             func=mdp.base_ang_vel, 
             noise=Gnoise(mean=0, std=0.08),
-            history_length=3,
+            history_length=4,
         )
 
         # IMU sensor history. 
@@ -106,20 +106,20 @@ class ObservationsCfg:
             func=mdp.imu_ang_vel,
             noise=Gnoise(mean=0, std=0.035),
             params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
-            history_length=3,
+            history_length=4,
         )
         imu_projected_gravity = ObsTerm(
             func=mdp.imu_projected_gravity,
             noise=Gnoise(mean=0, std=0.06),
             params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
-            history_length=3,
+            history_length=4,
         )
 
         # Commands. 
         velocity_commands = ObsTerm(
             func=mdp.generated_commands, 
             params={"command_name": "base_velocity"},
-            history_length=0,
+            history_length=2,
         )
 
         # Joint states history. 
@@ -142,7 +142,7 @@ class ObservationsCfg:
         # Action history. 
         velocity_actions = ObsTerm(
             func=mdp.last_action,
-            history_length=3,
+            history_length=4,
         )
 
         def __post_init__(self):
@@ -156,11 +156,11 @@ class ObservationsCfg:
         base_pos_z = ObsTerm(func=mdp.base_pos_z)
         base_lin_vel = ObsTerm(
             func=mdp.base_lin_vel,
-            history_length=3,
+            history_length=4,
         )
         base_ang_vel = ObsTerm(
             func=mdp.base_ang_vel,
-            history_length=3,
+            history_length=4,
         )
         projected_gravity = ObsTerm(func=mdp.projected_gravity)
 
@@ -190,7 +190,7 @@ class ObservationsCfg:
             func=mdp.height_scan,
             params={
                 "sensor_cfg": SceneEntityCfg("height_scanner"),
-                "offset": 0.5,
+                "offset": 0.8,
             },
             clip=(-1.5, 1.5),
             history_length=2,
@@ -205,31 +205,31 @@ class ObservationsCfg:
                     body_names=[".*_FOOT_LINK"],
                 )
             },
-            history_length=3,
+            history_length=4,
         )
         fl_foot_forces = ObsTerm(
             # Front left foot normal and tangential contact forces.
             func=customObservations.contact_forces,
             params={"sensor_cfg": SceneEntityCfg("fl_foot_contacts")},
-            history_length=3,
+            history_length=4,
         )
         rl_foot_forces = ObsTerm(
             # Rear left foot normal and tangential contact forces.
             func=customObservations.contact_forces,
             params={"sensor_cfg": SceneEntityCfg("rl_foot_contacts")},
-            history_length=3,
+            history_length=4,
         )
         fr_foot_forces = ObsTerm(
             # Front right foot normal and tangential contact forces.
             func=customObservations.contact_forces,
             params={"sensor_cfg": SceneEntityCfg("fr_foot_contacts")},
-            history_length=3,
+            history_length=4,
         )
         rr_foot_forces = ObsTerm(
             # Rear right foot normal and tangential contact forces.
             func=customObservations.contact_forces,
             params={"sensor_cfg": SceneEntityCfg("rr_foot_contacts")},
-            history_length=3,
+            history_length=4,
         )
         fl_foot_normals = ObsTerm(
             # Terrain normals around front left foot.
@@ -268,16 +268,6 @@ class ObservationsCfg:
                 ]
             },
         )
-        
-        # # Optional: wheel-specific slip velocity or contact quality
-        # wheel_slip = ObsTerm(
-        #     func=mdp.joint_vel_rel,  # but only for wheel joints, compared against base velocity
-        #     params={
-        #         "asset_cfg": SceneEntityCfg("robot",
-        #             joint_names=[".*_WHEEL_JOINT"]),  # your wheel joint regex
-        #     },
-        #     history_length=3,
-        # )  # Alternatively, implement a custom mdp.wheel_slip_velocity term
         
         def __post_init__(self):
             # No noise for priviledged information.
@@ -454,7 +444,7 @@ class CurriculumCfg:
 class BlindLocomotionCfg(ManagerBasedRLEnvCfg):
     """Configuration for the locomotion velocity-tracking environment."""
     # Scene settings
-    scene: wheelDog_RL_sceneCfg = wheelDog_RL_sceneCfg(num_envs=8192, env_spacing=8)
+    scene: wheelDog_RL_sceneCfg = wheelDog_RL_sceneCfg(num_envs=4096, env_spacing=8)
     # State settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
@@ -473,7 +463,7 @@ class BlindLocomotionCfg(ManagerBasedRLEnvCfg):
         # Note that control period is sim.dt*decimation
         self.sim.dt = 0.005
         self.decimation = 4
-        self.episode_length_s = 32.0
+        self.episode_length_s = 24.0
         self.sim.render_interval = self.decimation
         self.sim.physics_material = self.scene.terrain.physics_material
         self.sim.physx.gpu_max_rigid_patch_count = 10 * 2**15
