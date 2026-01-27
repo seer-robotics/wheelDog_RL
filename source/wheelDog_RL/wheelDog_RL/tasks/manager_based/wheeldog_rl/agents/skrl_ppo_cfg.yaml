@@ -76,5 +76,5 @@ agent:
 # https://skrl.readthedocs.io/en/latest/api/trainers/sequential.html
 trainer:
   class: SequentialTrainer
-  timesteps: 5e4 # Evenentually move up to 1e7 steps or above.
+  timesteps: 1e5 # Evenentually move up to 1e7 steps or above.
   environment_info: log
