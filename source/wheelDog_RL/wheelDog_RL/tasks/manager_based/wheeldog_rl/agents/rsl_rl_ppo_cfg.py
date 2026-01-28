@@ -10,8 +10,8 @@ from isaaclab_rl.rsl_rl import RslRlOnPolicyRunnerCfg, RslRlPpoActorCriticCfg, R
 
 @configclass
 class PPORunnerCfg(RslRlOnPolicyRunnerCfg):
-    num_steps_per_env = 32
-    max_iterations = 3200
+    num_steps_per_env = 24
+    max_iterations = 1000
     save_interval = 50
     experiment_name = "wheelDog_Blind_Managed"
     policy = RslRlPpoActorCriticCfg(
@@ -22,13 +22,17 @@ class PPORunnerCfg(RslRlOnPolicyRunnerCfg):
         critic_hidden_dims=[512, 256, 128],
         activation="elu",
     )
+    obs_groups = {
+        "policy": ["policy"],
+        "critic": ["policy", "critic"],
+    }
     algorithm = RslRlPpoAlgorithmCfg(
         value_loss_coef=1.0,
         use_clipped_value_loss=True,
         clip_param=0.2,
         entropy_coef=0.01,
         num_learning_epochs=5,
-        num_mini_batches=4,
+        num_mini_batches=8,
         learning_rate=1.0e-3,
         schedule="adaptive",
         gamma=0.99,

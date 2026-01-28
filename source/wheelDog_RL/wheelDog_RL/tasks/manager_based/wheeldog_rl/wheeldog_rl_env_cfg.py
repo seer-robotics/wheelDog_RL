@@ -45,7 +45,7 @@ class CommandsCfg:
         heading_command=False,
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(-1.6, 1.6), lin_vel_y=(-0.4, 0.4), ang_vel_z=(-1.0, 1.0), heading=(-math.pi, math.pi)
+            lin_vel_x=(-1.2, 1.2), lin_vel_y=(-0.4, 0.4), ang_vel_z=(-1.0, 1.0), heading=(-math.pi, math.pi)
         ),
     )
 
@@ -65,8 +65,29 @@ class ActionsCfg:
             ".*_KNEE_JOINT",
         ],
         scale=1.0,
-        use_default_offset=True,
+        preserve_order=True,
+        use_default_offset=False,
+        offset={
+            ".*_ABAD_JOINT": 0.0,
+            ".*_HIP_JOINT": 0.5,
+            ".*_KNEE_JOINT": -1.0,
+        },
+        clip={
+            ".*_ABAD_JOINT": (-0.49, 0.49),
+            ".*_HIP_JOINT": (-1.15, 2.97),
+            ".*_KNEE_JOINT": (-2.72, -0.60),
+        }
     )
+    # joint_pos = mdp.JointPositionToLimitsActionCfg(
+    #     asset_name="robot",
+    #     joint_names=[
+    #         ".*_ABAD_JOINT",
+    #         ".*_HIP_JOINT",
+    #         ".*_KNEE_JOINT",
+    #     ],
+    #     scale=1.0,
+    #     preserve_order=True,
+    # )
     wheel_vel = mdp.JointVelocityActionCfg(
         asset_name="robot",
         joint_names=[".*_FOOT_JOINT"],
@@ -89,7 +110,6 @@ class ObservationsCfg:
         ##
 
         # Base states history
-        # Model these base states with an EKF on the physical robot. 
         base_lin_vel = ObsTerm(
             func=mdp.base_lin_vel, 
             noise=Gnoise(mean=0, std=0.20),
@@ -175,9 +195,15 @@ class ObservationsCfg:
         joint_pos = ObsTerm(
             func=mdp.joint_pos_rel,
             params={
-                "asset_cfg": SceneEntityCfg("robot", 
-                    joint_names=[".*_ABAD_JOINT", ".*_HIP_JOINT", ".*_KNEE_JOINT"]),
-                },
+                "asset_cfg": SceneEntityCfg(
+                    "robot", 
+                    joint_names=[
+                        ".*_ABAD_JOINT", 
+                        ".*_HIP_JOINT", 
+                        ".*_KNEE_JOINT"
+                    ]
+                ),
+            },
             history_length=OBS_HISTORY_LEN,
         )
         joint_vel = ObsTerm(
@@ -190,7 +216,7 @@ class ObservationsCfg:
             func=mdp.height_scan,
             params={
                 "sensor_cfg": SceneEntityCfg("height_scanner"),
-                "offset": 0.8,
+                "offset": 0.5,
             },
             clip=(-1.5, 1.5),
             history_length=2,
