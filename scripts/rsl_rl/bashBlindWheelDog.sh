@@ -5,11 +5,10 @@
 
 # Run the train.py script with arguments
 python scripts/rsl_rl/train.py \
-    --num_envs 2048 \
+    --num_envs 4096 \
     --task Wheeldog-Rl-v0 \
     --headless \
-    --livestream 1 \
-    --enable_cameras
+    --livestream 0
 
 # /home/renda/miniforge3/envs/bin_isaaclab/lib/python3.11/site-packages/rsl_rl/utils/utils.py:245: UserWarning: The observation configuration dictionary 'obs_groups' must contain the 'policy' key. As an observation group with the name 'policy' was found, this is assumed to be the observation set. Consider adding the 'policy' key to the 'obs_groups' dictionary for clarity. This behavior will be removed in a future version.
 #   warnings.warn(
