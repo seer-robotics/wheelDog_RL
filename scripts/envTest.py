@@ -5,8 +5,11 @@ import argparse
 from isaaclab.app import AppLauncher
 
 # add argparse arguments
-parser = argparse.ArgumentParser(description="Wheeled quadruped blind locomotion environment. ")
+parser = argparse.ArgumentParser(description="Wheeled quadruped blind locomotion environment testing. ")
 parser.add_argument("--task", type=str, default="Wheeldog-Rl-v0", help="Name of the task/environment.")
+parser.add_argument(
+    "--agent", type=str, default="rsl_rl_cfg_entry_point", help="Name of the RL agent configuration entry point."
+)
 parser.add_argument("--num_envs", type=int, default=256, help="Number of environments to spawn.")
 
 # Append cli args to app launcher. 
@@ -33,14 +36,11 @@ import torch
 # Import the module to register the gym environment. 
 import wheelDog_RL.tasks  # noqa: F401
 
-# Define entry point. 
-agent_cfg_entry_point = "skrl_cfg_entry_point"
-
 
 # Main function. 
-@hydra_task_config(args_cli.task, agent_cfg_entry_point)
+@hydra_task_config(args_cli.task, args_cli.agent)
 def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg: dict): 
-    # Parse the environment from pseudo cli. 
+    # Parse the environment configuration from pseudo cli.
     print("Preview wheeled quadruped blind locomotion environment. ")
     env_cfg.scene.num_envs = args_cli.num_envs if args_cli.num_envs is not None else env_cfg.scene.num_envs
     env_cfg.sim.device = args_cli.device if args_cli.device is not None else env_cfg.sim.device
