@@ -1,6 +1,6 @@
 import isaaclab.sim as sim_utils
 from isaaclab.assets.articulation import ArticulationCfg
-from isaaclab.actuators import ActuatorNetMLPCfg, DCMotorCfg, ImplicitActuatorCfg
+from isaaclab.actuators import DCMotorCfg
 
 XG_WHEEL_SU_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
@@ -39,20 +39,23 @@ XG_WHEEL_SU_CFG = ArticulationCfg(
     # Performs continuous-time ideal PD integration. 
     # We use this given that we trust the OEM supplied joint control API. 
     actuators={
-        
-        "legs": ImplicitActuatorCfg(
+        "legs": DCMotorCfg(
             joint_names_expr=[".*_ABAD_JOINT", ".*_HIP_JOINT", ".*_KNEE_JOINT"],
-            effort_limit_sim=30,
-            velocity_limit_sim=28,
-            stiffness=0.0,
-            damping=1e5 # Empirical range (1e4, 1e6)
+            effort_limit=33.5,
+            saturation_effort=33.5,
+            velocity_limit=21.0,
+            stiffness=25.0,
+            damping=0.5,
+            friction=0.0,
         ),
-        "wheels": ImplicitActuatorCfg(
+        "wheels": DCMotorCfg(
             joint_names_expr=[".*_FOOT_JOINT"],
-            effort_limit_sim=10.5,
-            velocity_limit_sim=165,
-            stiffness=0.0,
-            damping=1e6 # Empirical range (1e4, 1e6)
+            effort_limit=33.5,
+            saturation_effort=33.5,
+            velocity_limit=21.0,
+            stiffness=50.0,
+            damping=1e1,
+            friction=0.0,
         ),
     },
 )
