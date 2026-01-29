@@ -560,7 +560,16 @@ class RewardsCfg:
         func=customRewards.feet_air_time,
         weight=-1e-1,
         params={
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*FOOT_LINK"),
+            "sensor_cfg": SceneEntityCfg(
+                "contact_forces",
+                body_names=[
+                    "FBL_FOOT_LINK",
+                    "FAR_FOOT_LINK",
+                    "RBL_FOOT_LINK",
+                    "RAR_FOOT_LINK",
+                ],
+                preserve_order=True,
+            ),
             "command_name": "base_velocity",
             "threshold": 0.5,
         },
