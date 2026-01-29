@@ -26,8 +26,8 @@ XG_WHEEL_SU_CFG = ArticulationCfg(
         pos=(0.0, 0.0, 1.0),  # Initial position (e.g., above ground)
         joint_pos={
             ".*_ABAD_JOINT": 0.00,
-            ".*_HIP_JOINT": 0.40,
-            ".*_KNEE_JOINT": -0.80,
+            ".*_HIP_JOINT": 0.65,
+            ".*_KNEE_JOINT": -1.25,
             ".*_FOOT_JOINT": 0.00,
         },  # Default joint positions
         joint_vel={".*": 0.0},
