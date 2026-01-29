@@ -22,3 +22,13 @@ gym.register(
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:PPORunnerCfg",
     },
 )
+
+gym.register(
+    id="Wheeldog-Rl-v0-play",
+    entry_point="wheelDog_RL.tasks.manager_based.wheeldog_rl.envEntry:WheelDog_BlindLocomotionEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.robotCfg:WheelDog_BlindLocomotionEnvPlayCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:PPORunnerCfg",
+    },
+)
