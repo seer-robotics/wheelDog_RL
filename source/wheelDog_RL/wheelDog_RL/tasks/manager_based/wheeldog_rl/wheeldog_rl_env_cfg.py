@@ -67,14 +67,7 @@ class ActionsCfg:
         ],
         scale=1.0,
         preserve_order=True,
-        use_default_offset=False,
-        offset=0.0,
-        clip={
-            "FBL_ABAD_JOINT": (-0.49, 0.49),
-            "FAR_ABAD_JOINT": (-0.49, 0.49),
-            "RBL_ABAD_JOINT": (-0.49, 0.49),
-            "RAR_ABAD_JOINT": (-0.49, 0.49),
-        }
+        use_default_offset=True,
     )
     hip_joint_pos = mdp.JointPositionActionCfg(
         asset_name="robot",
@@ -86,14 +79,7 @@ class ActionsCfg:
         ],
         scale=1.0,
         preserve_order=True,
-        use_default_offset=False,
-        offset=0.5,
-        clip={
-            "FBL_HIP_JOINT": (-1.15, 2.97),
-            "FAR_HIP_JOINT": (-1.15, 2.97),
-            "RBL_HIP_JOINT": (-1.15, 2.97),
-            "RAR_HIP_JOINT": (-1.15, 2.97),
-        }
+        use_default_offset=True,
     )
     knee_joint_pos = mdp.JointPositionActionCfg(
         asset_name="robot",
@@ -105,14 +91,7 @@ class ActionsCfg:
         ],
         scale=1.0,
         preserve_order=True,
-        use_default_offset=False,
-        offset=-1.0,
-        clip={
-            "FBL_KNEE_JOINT": (-2.72, -0.60),
-            "FAR_KNEE_JOINT": (-2.72, -0.60),
-            "RBL_KNEE_JOINT": (-2.72, -0.60),
-            "RAR_KNEE_JOINT": (-2.72, -0.60),
-        }
+        use_default_offset=True,
     )
     wheel_joint_vel = mdp.JointVelocityActionCfg(
         asset_name="robot",
@@ -123,6 +102,7 @@ class ActionsCfg:
             "RAR_FOOT_JOINT",
         ],
         scale=1.0,
+        preserve_order=True,
         use_default_offset=True,
         clip={
             "FBL_FOOT_JOINT": (-160.0, 160.0),
@@ -340,7 +320,7 @@ class ObservationsCfg:
             history_length=OBS_HISTORY_LEN,
         )
 
-        # Priviledged info.
+        # Exteroceptive info.
         base_height_scan = ObsTerm(
             func=mdp.height_scan,
             params={
@@ -368,30 +348,47 @@ class ObservationsCfg:
             },
             history_length=4,
         )
-        fl_foot_forces = ObsTerm(
-            # Front left foot normal and tangential contact forces.
-            func=customObservations.contact_forces,
-            params={"sensor_cfg": SceneEntityCfg("fl_foot_contacts")},
+        feet_forces = ObsTerm(
+            # Feet binary contact states.
+            func=customObservations.normal_forces,
+            params={
+                "sensor_cfg": SceneEntityCfg(
+                    "contact_forces",
+                    body_names=[
+                        "FBL_FOOT_LINK",
+                        "FAR_FOOT_LINK",
+                        "RBL_FOOT_LINK",
+                        "RAR_FOOT_LINK",
+                    ],
+                    preserve_order=True,
+                )
+            },
             history_length=4,
         )
-        fr_foot_forces = ObsTerm(
-            # Front right foot normal and tangential contact forces.
-            func=customObservations.contact_forces,
-            params={"sensor_cfg": SceneEntityCfg("fr_foot_contacts")},
-            history_length=4,
-        )
-        rl_foot_forces = ObsTerm(
-            # Rear left foot normal and tangential contact forces.
-            func=customObservations.contact_forces,
-            params={"sensor_cfg": SceneEntityCfg("rl_foot_contacts")},
-            history_length=4,
-        )
-        rr_foot_forces = ObsTerm(
-            # Rear right foot normal and tangential contact forces.
-            func=customObservations.contact_forces,
-            params={"sensor_cfg": SceneEntityCfg("rr_foot_contacts")},
-            history_length=4,
-        )
+        # fl_foot_forces = ObsTerm(
+        #     # Front left foot normal and tangential contact forces.
+        #     func=customObservations.normal_forces,
+        #     params={"sensor_cfg": SceneEntityCfg("fl_foot_contacts")},
+        #     history_length=4,
+        # )
+        # fr_foot_forces = ObsTerm(
+        #     # Front right foot normal and tangential contact forces.
+        #     func=customObservations.normal_forces,
+        #     params={"sensor_cfg": SceneEntityCfg("fr_foot_contacts")},
+        #     history_length=4,
+        # )
+        # rl_foot_forces = ObsTerm(
+        #     # Rear left foot normal and tangential contact forces.
+        #     func=customObservations.normal_forces,
+        #     params={"sensor_cfg": SceneEntityCfg("rl_foot_contacts")},
+        #     history_length=4,
+        # )
+        # rr_foot_forces = ObsTerm(
+        #     # Rear right foot normal and tangential contact forces.
+        #     func=customObservations.normal_forces,
+        #     params={"sensor_cfg": SceneEntityCfg("rr_foot_contacts")},
+        #     history_length=4,
+        # )
         fl_foot_normals = ObsTerm(
             # Terrain normals around front left foot.
             func=customObservations.terrain_normals,
@@ -418,17 +415,17 @@ class ObservationsCfg:
         )
         
         # Dynamics randomization observation terms.
-        contact_friction = ObsTerm(
-            func=customObservations.contact_friction,
-            params={
-                "link_names": [
-                    "FBL_FOOT_LINK",
-                    "FAR_FOOT_LINK",
-                    "RBL_FOOT_LINK",
-                    "RAR_FOOT_LINK",
-                ]
-            },
-        )
+        # contact_friction = ObsTerm(
+        #     func=customObservations.contact_friction,
+        #     params={
+        #         "link_names": [
+        #             "FBL_FOOT_LINK",
+        #             "FAR_FOOT_LINK",
+        #             "RBL_FOOT_LINK",
+        #             "RAR_FOOT_LINK",
+        #         ]
+        #     },
+        # )
         
         def __post_init__(self):
             # No noise for priviledged information.
@@ -549,31 +546,35 @@ class RewardsCfg:
     track_ang_vel_z_exp = RewTerm(
         func=mdp.track_ang_vel_z_exp, weight=0.5, params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
+    stay_alive = RewTerm(mdp.is_alive, weight=1e-1)
     
     # -- penalties
     lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
-    ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
-    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1.0e-2)
-    dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-1.0e-5)
-    feet_air_time = RewTerm(
-        # Note here that feet air time is penalized instead of rewarded, as we are training a wheeled robot. The idea is to get it to keep its wheels on the ground. 
-        func=customRewards.feet_air_time,
-        weight=-1e-1,
-        params={
-            "sensor_cfg": SceneEntityCfg(
-                "contact_forces",
-                body_names=[
-                    "FBL_FOOT_LINK",
-                    "FAR_FOOT_LINK",
-                    "RBL_FOOT_LINK",
-                    "RAR_FOOT_LINK",
-                ],
-                preserve_order=True,
-            ),
-            "command_name": "base_velocity",
-            "threshold": 0.5,
-        },
-    )
+    ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.4)
+    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-2)
+    dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-1e-1)
+    dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
+    stay_flat =RewTerm(func=mdp.flat_orientation_l2, weight=-5e-1)
+    # dof_pos_deviate = RewTerm(func=mdp.joint_deviation_l1, weight=-1e-2)
+    # feet_air_time = RewTerm(
+    #     # Note here that feet air time is penalized instead of rewarded, as we are training a wheeled robot. The idea is to get it to keep its wheels on the ground. 
+    #     func=customRewards.feet_air_time,
+    #     weight=-1e-2,
+    #     params={
+    #         "sensor_cfg": SceneEntityCfg(
+    #             "contact_forces",
+    #             body_names=[
+    #                 "FBL_FOOT_LINK",
+    #                 "FAR_FOOT_LINK",
+    #                 "RBL_FOOT_LINK",
+    #                 "RAR_FOOT_LINK",
+    #             ],
+    #             preserve_order=True,
+    #         ),
+    #         "command_name": "base_velocity",
+    #         "threshold": 0.5,
+    #     },
+    # )
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-1.0,
@@ -599,8 +600,8 @@ class CurriculumCfg:
     terrain_levels = CurrTerm(
         func=customCurriculum.terrain_levels_velocityError,
         params={
-            "error_threshold_up": 2.0,
-            "error_threshold_down": 8.0,
+            "error_threshold_up": 1.0,
+            "error_threshold_down": 4.0,
         }
         )
 
