@@ -5,6 +5,7 @@
 
 # Run the train.py script with arguments
 python scripts/rsl_rl/train.py \
+    --num_envs 2048 \
     --task Wheeldog-Rl-v0 \
     --headless \
     --livestream 1 \
