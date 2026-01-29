@@ -57,44 +57,99 @@ class ActionsCfg:
     # Uses position action for non-wheel joints.
     # Uses velocity action for wheel joints.
     # Leaves on-hardware torque-velocity handling for abstraction. 
-    joint_pos = mdp.JointPositionActionCfg(
+    abdomen_joint_pos = mdp.JointPositionActionCfg(
         asset_name="robot",
         joint_names=[
-            ".*_ABAD_JOINT",
-            ".*_HIP_JOINT",
-            ".*_KNEE_JOINT",
+            "FBL_ABAD_JOINT",
+            "FAR_ABAD_JOINT",
+            "RBL_ABAD_JOINT",
+            "RAR_ABAD_JOINT",
         ],
         scale=1.0,
         preserve_order=True,
         use_default_offset=False,
-        offset={
-            ".*_ABAD_JOINT": 0.0,
-            ".*_HIP_JOINT": 0.5,
-            ".*_KNEE_JOINT": -1.0,
-        },
+        offset=0.0,
         clip={
-            ".*_ABAD_JOINT": (-0.49, 0.49),
-            ".*_HIP_JOINT": (-1.15, 2.97),
-            ".*_KNEE_JOINT": (-2.72, -0.60),
+            "FBL_ABAD_JOINT": (-0.49, 0.49),
+            "FAR_ABAD_JOINT": (-0.49, 0.49),
+            "RBL_ABAD_JOINT": (-0.49, 0.49),
+            "RAR_ABAD_JOINT": (-0.49, 0.49),
+        }
+    )
+    hip_joint_pos = mdp.JointPositionActionCfg(
+        asset_name="robot",
+        joint_names=[
+            "FBL_HIP_JOINT",
+            "FAR_HIP_JOINT",
+            "RBL_HIP_JOINT",
+            "RAR_HIP_JOINT",
+        ],
+        scale=1.0,
+        preserve_order=True,
+        use_default_offset=False,
+        offset=0.5,
+        clip={
+            "FBL_HIP_JOINT": (-1.15, 2.97),
+            "FAR_HIP_JOINT": (-1.15, 2.97),
+            "RBL_HIP_JOINT": (-1.15, 2.97),
+            "RAR_HIP_JOINT": (-1.15, 2.97),
+        }
+    )
+    knee_joint_pos = mdp.JointPositionActionCfg(
+        asset_name="robot",
+        joint_names=[
+            "FBL_KNEE_JOINT",
+            "FAR_KNEE_JOINT",
+            "RBL_KNEE_JOINT",
+            "RAR_KNEE_JOINT",
+        ],
+        scale=1.0,
+        preserve_order=True,
+        use_default_offset=False,
+        offset=-1.0,
+        clip={
+            "FBL_KNEE_JOINT": (-2.72, -0.60),
+            "FAR_KNEE_JOINT": (-2.72, -0.60),
+            "RBL_KNEE_JOINT": (-2.72, -0.60),
+            "RAR_KNEE_JOINT": (-2.72, -0.60),
+        }
+    )
+    wheel_joint_vel = mdp.JointVelocityActionCfg(
+        asset_name="robot",
+        joint_names=[
+            "FBL_FOOT_JOINT",
+            "FAR_FOOT_JOINT",
+            "RBL_FOOT_JOINT",
+            "RAR_FOOT_JOINT",
+        ],
+        scale=1.0,
+        use_default_offset=True,
+        clip={
+            "FBL_FOOT_JOINT": (-160.0, 160.0),
+            "FAR_FOOT_JOINT": (-160.0, 160.0),
+            "RBL_FOOT_JOINT": (-160.0, 160.0),
+            "RAR_FOOT_JOINT": (-160.0, 160.0),
         }
     )
     # joint_pos = mdp.JointPositionToLimitsActionCfg(
     #     asset_name="robot",
     #     joint_names=[
-    #         ".*_ABAD_JOINT",
-    #         ".*_HIP_JOINT",
-    #         ".*_KNEE_JOINT",
+    #         "FBL_ABAD_JOINT",
+    #         "FAR_ABAD_JOINT",
+    #         "RBL_ABAD_JOINT",
+    #         "RAR_ABAD_JOINT",
+    #         "FBL_HIP_JOINT",
+    #         "FAR_HIP_JOINT",
+    #         "RBL_HIP_JOINT",
+    #         "RAR_HIP_JOINT",
+    #         "FBL_KNEE_JOINT",
+    #         "FAR_KNEE_JOINT",
+    #         "RBL_KNEE_JOINT",
+    #         "RAR_KNEE_JOINT",
     #     ],
     #     scale=1.0,
     #     preserve_order=True,
     # )
-    wheel_vel = mdp.JointVelocityActionCfg(
-        asset_name="robot",
-        joint_names=[".*_FOOT_JOINT"],
-        scale=1.0,
-        use_default_offset=True,
-        clip={".*_FOOT_JOINT": (-160.0, 160.0)}
-    )
 
 
 @configclass
@@ -148,14 +203,54 @@ class ObservationsCfg:
             func=mdp.joint_pos_rel, 
             noise=Gnoise(mean=0, std=0.03),
             params={
-                "asset_cfg": SceneEntityCfg("robot", 
-                    joint_names=[".*_ABAD_JOINT", ".*_HIP_JOINT", ".*_KNEE_JOINT"]),
-                },
+                "asset_cfg": SceneEntityCfg(
+                    "robot", 
+                    joint_names=[
+                        "FBL_ABAD_JOINT",
+                        "FAR_ABAD_JOINT",
+                        "RBL_ABAD_JOINT",
+                        "RAR_ABAD_JOINT",
+                        "FBL_HIP_JOINT",
+                        "FAR_HIP_JOINT",
+                        "RBL_HIP_JOINT",
+                        "RAR_HIP_JOINT",
+                        "FBL_KNEE_JOINT",
+                        "FAR_KNEE_JOINT",
+                        "RBL_KNEE_JOINT",
+                        "RAR_KNEE_JOINT",
+                    ],
+                    preserve_order=True,
+                ),
+            },
             history_length=OBS_HISTORY_LEN,
         )
         joint_vel = ObsTerm(
             func=mdp.joint_vel_rel, 
             noise=Gnoise(mean=0, std=0.08),
+            params={
+                "asset_cfg": SceneEntityCfg(
+                    "robot", 
+                    joint_names=[
+                        "FBL_ABAD_JOINT",
+                        "FAR_ABAD_JOINT",
+                        "RBL_ABAD_JOINT",
+                        "RAR_ABAD_JOINT",
+                        "FBL_HIP_JOINT",
+                        "FAR_HIP_JOINT",
+                        "RBL_HIP_JOINT",
+                        "RAR_HIP_JOINT",
+                        "FBL_KNEE_JOINT",
+                        "FAR_KNEE_JOINT",
+                        "RBL_KNEE_JOINT",
+                        "RAR_KNEE_JOINT",
+                        "FBL_FOOT_JOINT",
+                        "FAR_FOOT_JOINT",
+                        "RBL_FOOT_JOINT",
+                        "RAR_FOOT_JOINT",
+                    ],
+                    preserve_order=True,
+                ),
+            },
             history_length=OBS_HISTORY_LEN,
         )
 
@@ -198,16 +293,50 @@ class ObservationsCfg:
                 "asset_cfg": SceneEntityCfg(
                     "robot", 
                     joint_names=[
-                        ".*_ABAD_JOINT", 
-                        ".*_HIP_JOINT", 
-                        ".*_KNEE_JOINT"
-                    ]
+                        "FBL_ABAD_JOINT",
+                        "FAR_ABAD_JOINT",
+                        "RBL_ABAD_JOINT",
+                        "RAR_ABAD_JOINT",
+                        "FBL_HIP_JOINT",
+                        "FAR_HIP_JOINT",
+                        "RBL_HIP_JOINT",
+                        "RAR_HIP_JOINT",
+                        "FBL_KNEE_JOINT",
+                        "FAR_KNEE_JOINT",
+                        "RBL_KNEE_JOINT",
+                        "RAR_KNEE_JOINT",
+                    ],
+                    preserve_order=True,
                 ),
             },
             history_length=OBS_HISTORY_LEN,
         )
         joint_vel = ObsTerm(
             func=mdp.joint_vel_rel,
+            params={
+                "asset_cfg": SceneEntityCfg(
+                    "robot", 
+                    joint_names=[
+                        "FBL_ABAD_JOINT",
+                        "FAR_ABAD_JOINT",
+                        "RBL_ABAD_JOINT",
+                        "RAR_ABAD_JOINT",
+                        "FBL_HIP_JOINT",
+                        "FAR_HIP_JOINT",
+                        "RBL_HIP_JOINT",
+                        "RAR_HIP_JOINT",
+                        "FBL_KNEE_JOINT",
+                        "FAR_KNEE_JOINT",
+                        "RBL_KNEE_JOINT",
+                        "RAR_KNEE_JOINT",
+                        "FBL_FOOT_JOINT",
+                        "FAR_FOOT_JOINT",
+                        "RBL_FOOT_JOINT",
+                        "RAR_FOOT_JOINT",
+                    ],
+                    preserve_order=True,
+                ),
+            },
             history_length=OBS_HISTORY_LEN,
         )
 
@@ -228,7 +357,13 @@ class ObservationsCfg:
                 "threshold": 1,
                 "sensor_cfg": SceneEntityCfg(
                     "contact_forces",
-                    body_names=[".*_FOOT_LINK"],
+                    body_names=[
+                        "FBL_FOOT_LINK",
+                        "FAR_FOOT_LINK",
+                        "RBL_FOOT_LINK",
+                        "RAR_FOOT_LINK",
+                    ],
+                    preserve_order=True,
                 )
             },
             history_length=4,
@@ -239,16 +374,16 @@ class ObservationsCfg:
             params={"sensor_cfg": SceneEntityCfg("fl_foot_contacts")},
             history_length=4,
         )
-        rl_foot_forces = ObsTerm(
-            # Rear left foot normal and tangential contact forces.
-            func=customObservations.contact_forces,
-            params={"sensor_cfg": SceneEntityCfg("rl_foot_contacts")},
-            history_length=4,
-        )
         fr_foot_forces = ObsTerm(
             # Front right foot normal and tangential contact forces.
             func=customObservations.contact_forces,
             params={"sensor_cfg": SceneEntityCfg("fr_foot_contacts")},
+            history_length=4,
+        )
+        rl_foot_forces = ObsTerm(
+            # Rear left foot normal and tangential contact forces.
+            func=customObservations.contact_forces,
+            params={"sensor_cfg": SceneEntityCfg("rl_foot_contacts")},
             history_length=4,
         )
         rr_foot_forces = ObsTerm(
@@ -263,16 +398,16 @@ class ObservationsCfg:
             params={"sensor_cfg": SceneEntityCfg("fl_leg_ray")},
             history_length=2,
         )
-        rl_foot_normals = ObsTerm(
-            # Terrain normals around rear left foot.
-            func=customObservations.terrain_normals,
-            params={"sensor_cfg": SceneEntityCfg("rl_leg_ray")},
-            history_length=2,
-        )
         fr_foot_normals = ObsTerm(
             # Terrain normals around front right foot.
             func=customObservations.terrain_normals,
             params={"sensor_cfg": SceneEntityCfg("fr_leg_ray")},
+            history_length=2,
+        )
+        rl_foot_normals = ObsTerm(
+            # Terrain normals around rear left foot.
+            func=customObservations.terrain_normals,
+            params={"sensor_cfg": SceneEntityCfg("rl_leg_ray")},
             history_length=2,
         )
         rr_foot_normals = ObsTerm(
@@ -282,7 +417,7 @@ class ObservationsCfg:
             history_length=2,
         )
         
-        # Dynamics randomization terms
+        # Dynamics randomization observation terms.
         contact_friction = ObsTerm(
             func=customObservations.contact_friction,
             params={
@@ -423,7 +558,7 @@ class RewardsCfg:
     feet_air_time = RewTerm(
         # Note here that feet air time is penalized instead of rewarded, as we are training a wheeled robot. The idea is to get it to keep its wheels on the ground. 
         func=customRewards.feet_air_time,
-        weight=-0.125,
+        weight=-1e-1,
         params={
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*FOOT_LINK"),
             "command_name": "base_velocity",
@@ -455,8 +590,8 @@ class CurriculumCfg:
     terrain_levels = CurrTerm(
         func=customCurriculum.terrain_levels_velocityError,
         params={
-            "error_threshold_up": 0.5,
-            "error_threshold_down": 2.0,
+            "error_threshold_up": 2.0,
+            "error_threshold_down": 8.0,
         }
         )
 
