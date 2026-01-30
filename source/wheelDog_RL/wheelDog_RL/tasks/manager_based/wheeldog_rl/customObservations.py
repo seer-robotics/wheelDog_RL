@@ -46,7 +46,9 @@ def contact_states(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, threshold
     wheel_forces_b = quat_apply_inverse(base_quat_w, wheel_forces_w)
     
     # Determine contact state and return.
-    return (wheel_forces_b[..., 2] > threshold).float()
+    wheel_forces_b = torch.nan_to_num(wheel_forces_b, nan=0.0, posinf=0.0, neginf=0.0)
+    binary_states = (wheel_forces_b[..., 2] > threshold).float()
+    return binary_states
 
 
 def contact_forces(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
