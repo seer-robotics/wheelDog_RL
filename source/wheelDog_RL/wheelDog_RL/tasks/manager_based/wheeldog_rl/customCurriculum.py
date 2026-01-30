@@ -75,6 +75,7 @@ def terrain_levels_velocityError(
     env: ManagerBasedRLEnv,
     env_ids: Sequence[int],
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    command_name: str = "base_velocity",
     error_threshold_up: float = 0.5,
     error_threshold_down: float = 2.0
 ) -> torch.Tensor:
@@ -107,6 +108,14 @@ def terrain_levels_velocityError(
     non_timeout = (episode_lengths - env.max_episode_length) != 0
     move_up[non_timeout] = False
     move_down[non_timeout] = False
+
+    # Filter to only update terrain levels for moving commands.
+    commands = env.command_manager.get_command(command_name)
+    cmd_subset = commands[env_ids]
+    cmd_norm = torch.norm(cmd_subset[:, :2], dim=1)
+    is_moving_cmd = cmd_norm > 0.1
+    move_up   *= is_moving_cmd
+    move_down *= is_moving_cmd
 
     # Update terrain levels.
     terrain: TerrainImporter = env.scene.terrain
