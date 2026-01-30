@@ -40,8 +40,8 @@ class CommandsCfg:
     base_velocity = mdp.UniformVelocityCommandCfg(
         asset_name="robot",
         resampling_time_range=(6.0, 10.0),
-        rel_standing_envs=0.01,
-        rel_heading_envs=0.99,
+        rel_standing_envs=0.5,
+        rel_heading_envs=0.95,
         heading_command=False,
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
@@ -65,7 +65,7 @@ class ActionsCfg:
             "RBL_ABAD_JOINT",
             "RAR_ABAD_JOINT",
         ],
-        scale=1.0,
+        scale=0.5,
         preserve_order=True,
         use_default_offset=True,
     )
@@ -77,7 +77,7 @@ class ActionsCfg:
             "RBL_HIP_JOINT",
             "RAR_HIP_JOINT",
         ],
-        scale=1.0,
+        scale=0.5,
         preserve_order=True,
         use_default_offset=True,
     )
@@ -89,7 +89,7 @@ class ActionsCfg:
             "RBL_KNEE_JOINT",
             "RAR_KNEE_JOINT",
         ],
-        scale=1.0,
+        scale=0.5,
         preserve_order=True,
         use_default_offset=True,
     )
@@ -101,7 +101,7 @@ class ActionsCfg:
             "RBL_FOOT_JOINT",
             "RAR_FOOT_JOINT",
         ],
-        scale=1.0,
+        scale=0.5,
         preserve_order=True,
         use_default_offset=True,
         clip={
@@ -136,125 +136,123 @@ class ActionsCfg:
 class ObservationsCfg:
     """Observation specifications for the MDP."""
 
-    @configclass
-    class PolicyCfg(ObsGroup):
-        """Observations for policy group."""
-        ##
-        # observation terms (order preserved)
-        # Implement observation history on a per-term basis.
-        ##
+    # @configclass
+    # class PolicyCfg(ObsGroup):
+    #     """Observations for policy group."""
+    #     ##
+    #     # observation terms (order preserved)
+    #     # Implement observation history on a per-term basis.
+    #     ##
 
-        # Base states history
-        base_lin_vel = ObsTerm(
-            func=mdp.base_lin_vel, 
-            noise=Gnoise(mean=0, std=0.20),
-            history_length=BASE_STATES_HISTORY,
-        )
-        base_ang_vel = ObsTerm(
-            func=mdp.base_ang_vel, 
-            noise=Gnoise(mean=0, std=0.08),
-            history_length=BASE_STATES_HISTORY,
-        )
+    #     # Base states history
+    #     base_lin_vel = ObsTerm(
+    #         func=mdp.base_lin_vel, 
+    #         noise=Gnoise(mean=0, std=0.20),
+    #         history_length=BASE_STATES_HISTORY,
+    #     )
+    #     base_ang_vel = ObsTerm(
+    #         func=mdp.base_ang_vel, 
+    #         noise=Gnoise(mean=0, std=0.08),
+    #         history_length=BASE_STATES_HISTORY,
+    #     )
 
-        # IMU sensor history. 
-        imu_ang_vel = ObsTerm(
-            func=mdp.imu_ang_vel,
-            noise=Gnoise(mean=0, std=0.035),
-            params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
-            history_length=BASE_STATES_HISTORY,
-        )
-        imu_projected_gravity = ObsTerm(
-            func=mdp.imu_projected_gravity,
-            noise=Gnoise(mean=0, std=0.06),
-            params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
-            history_length=BASE_STATES_HISTORY,
-        )
+    #     # IMU sensor history. 
+    #     imu_ang_vel = ObsTerm(
+    #         func=mdp.imu_ang_vel,
+    #         noise=Gnoise(mean=0, std=0.035),
+    #         params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
+    #         history_length=BASE_STATES_HISTORY,
+    #     )
+    #     imu_projected_gravity = ObsTerm(
+    #         func=mdp.imu_projected_gravity,
+    #         noise=Gnoise(mean=0, std=0.06),
+    #         params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
+    #         history_length=BASE_STATES_HISTORY,
+    #     )
 
-        # Commands. 
-        commands_history = ObsTerm(
-            func=mdp.generated_commands, 
-            params={"command_name": "base_velocity"},
-        )
+    #     # Commands. 
+    #     commands_history = ObsTerm(
+    #         func=mdp.generated_commands, 
+    #         params={"command_name": "base_velocity"},
+    #     )
 
-        # Joint states history. 
-        # Excludes the wheel positions from the joint positions history. 
-        joint_pos = ObsTerm(
-            func=mdp.joint_pos_rel, 
-            noise=Gnoise(mean=0, std=0.03),
-            params={
-                "asset_cfg": SceneEntityCfg(
-                    "robot", 
-                    joint_names=[
-                        "FBL_ABAD_JOINT",
-                        "FAR_ABAD_JOINT",
-                        "RBL_ABAD_JOINT",
-                        "RAR_ABAD_JOINT",
-                        "FBL_HIP_JOINT",
-                        "FAR_HIP_JOINT",
-                        "RBL_HIP_JOINT",
-                        "RAR_HIP_JOINT",
-                        "FBL_KNEE_JOINT",
-                        "FAR_KNEE_JOINT",
-                        "RBL_KNEE_JOINT",
-                        "RAR_KNEE_JOINT",
-                    ],
-                    preserve_order=True,
-                ),
-            },
-            history_length=JOINT_STATES_HISTORY,
-        )
-        joint_vel = ObsTerm(
-            func=mdp.joint_vel_rel, 
-            noise=Gnoise(mean=0, std=0.08),
-            params={
-                "asset_cfg": SceneEntityCfg(
-                    "robot", 
-                    joint_names=[
-                        "FBL_ABAD_JOINT",
-                        "FAR_ABAD_JOINT",
-                        "RBL_ABAD_JOINT",
-                        "RAR_ABAD_JOINT",
-                        "FBL_HIP_JOINT",
-                        "FAR_HIP_JOINT",
-                        "RBL_HIP_JOINT",
-                        "RAR_HIP_JOINT",
-                        "FBL_KNEE_JOINT",
-                        "FAR_KNEE_JOINT",
-                        "RBL_KNEE_JOINT",
-                        "RAR_KNEE_JOINT",
-                        "FBL_FOOT_JOINT",
-                        "FAR_FOOT_JOINT",
-                        "RBL_FOOT_JOINT",
-                        "RAR_FOOT_JOINT",
-                    ],
-                    preserve_order=True,
-                ),
-            },
-            history_length=JOINT_STATES_HISTORY,
-        )
+    #     # Joint states history. 
+    #     # Excludes the wheel positions from the joint positions history. 
+    #     joint_pos = ObsTerm(
+    #         func=mdp.joint_pos_rel, 
+    #         noise=Gnoise(mean=0, std=0.03),
+    #         params={
+    #             "asset_cfg": SceneEntityCfg(
+    #                 "robot", 
+    #                 joint_names=[
+    #                     "FBL_ABAD_JOINT",
+    #                     "FAR_ABAD_JOINT",
+    #                     "RBL_ABAD_JOINT",
+    #                     "RAR_ABAD_JOINT",
+    #                     "FBL_HIP_JOINT",
+    #                     "FAR_HIP_JOINT",
+    #                     "RBL_HIP_JOINT",
+    #                     "RAR_HIP_JOINT",
+    #                     "FBL_KNEE_JOINT",
+    #                     "FAR_KNEE_JOINT",
+    #                     "RBL_KNEE_JOINT",
+    #                     "RAR_KNEE_JOINT",
+    #                 ],
+    #                 preserve_order=True,
+    #             ),
+    #         },
+    #         history_length=JOINT_STATES_HISTORY,
+    #     )
+    #     joint_vel = ObsTerm(
+    #         func=mdp.joint_vel_rel, 
+    #         noise=Gnoise(mean=0, std=0.08),
+    #         params={
+    #             "asset_cfg": SceneEntityCfg(
+    #                 "robot", 
+    #                 joint_names=[
+    #                     "FBL_ABAD_JOINT",
+    #                     "FAR_ABAD_JOINT",
+    #                     "RBL_ABAD_JOINT",
+    #                     "RAR_ABAD_JOINT",
+    #                     "FBL_HIP_JOINT",
+    #                     "FAR_HIP_JOINT",
+    #                     "RBL_HIP_JOINT",
+    #                     "RAR_HIP_JOINT",
+    #                     "FBL_KNEE_JOINT",
+    #                     "FAR_KNEE_JOINT",
+    #                     "RBL_KNEE_JOINT",
+    #                     "RAR_KNEE_JOINT",
+    #                     "FBL_FOOT_JOINT",
+    #                     "FAR_FOOT_JOINT",
+    #                     "RBL_FOOT_JOINT",
+    #                     "RAR_FOOT_JOINT",
+    #                 ],
+    #                 preserve_order=True,
+    #             ),
+    #         },
+    #         history_length=JOINT_STATES_HISTORY,
+    #     )
 
-        # Action history. 
-        velocity_actions = ObsTerm(
-            func=mdp.last_action,
-            history_length=BASE_STATES_HISTORY,
-        )
+    #     # Action history. 
+    #     velocity_actions = ObsTerm(
+    #         func=mdp.last_action,
+    #         history_length=BASE_STATES_HISTORY,
+    #     )
 
-        def __post_init__(self):
-            self.enable_corruption = True
-            self.concatenate_terms = True
+    #     def __post_init__(self):
+    #         self.enable_corruption = True
+    #         self.concatenate_terms = True
 
     @configclass
     class CriticCfg(ObsGroup):
         """Observations for critic group."""
         # Base states history.
-        base_pos_z = ObsTerm(func=mdp.base_pos_z)
+        # base_pos_z = ObsTerm(func=mdp.base_pos_z)
         base_lin_vel = ObsTerm(
             func=mdp.base_lin_vel,
-            history_length=BASE_STATES_HISTORY,
         )
         base_ang_vel = ObsTerm(
             func=mdp.base_ang_vel,
-            history_length=BASE_STATES_HISTORY,
         )
         projected_gravity = ObsTerm(func=mdp.projected_gravity)
 
@@ -288,7 +286,6 @@ class ObservationsCfg:
                     preserve_order=True,
                 ),
             },
-            history_length=JOINT_STATES_HISTORY,
         )
         joint_vel = ObsTerm(
             func=mdp.joint_vel_rel,
@@ -316,7 +313,11 @@ class ObservationsCfg:
                     preserve_order=True,
                 ),
             },
-            history_length=JOINT_STATES_HISTORY,
+        )
+
+        # Action history. 
+        velocity_actions = ObsTerm(
+            func=mdp.last_action,
         )
 
         # Exteroceptive info.
@@ -327,26 +328,25 @@ class ObservationsCfg:
                 "offset": 0.5,
             },
             clip=(-1.5, 1.5),
-            history_length=BASE_STATES_HISTORY
         )
-        # feet_contacts = ObsTerm(
-        #     # Feet binary contact states.
-        #     func=customObservations.contact_states,
-        #     params={
-        #         "threshold": 1,
-        #         "sensor_cfg": SceneEntityCfg(
-        #             "contact_forces",
-        #             body_names=[
-        #                 "FBL_FOOT_LINK",
-        #                 "FAR_FOOT_LINK",
-        #                 "RBL_FOOT_LINK",
-        #                 "RAR_FOOT_LINK",
-        #             ],
-        #             preserve_order=True,
-        #         )
-        #     },
-        #     history_length=BASE_STATES_HISTORY,
-        # )
+        feet_contacts = ObsTerm(
+            # Feet binary contact states.
+            func=customObservations.contact_states,
+            params={
+                "threshold": 1,
+                "sensor_cfg": SceneEntityCfg(
+                    "contact_forces",
+                    body_names=[
+                        "FBL_FOOT_LINK",
+                        "FAR_FOOT_LINK",
+                        "RBL_FOOT_LINK",
+                        "RAR_FOOT_LINK",
+                    ],
+                    preserve_order=True,
+                )
+            },
+            history_length=BASE_STATES_HISTORY,
+        )
         # feet_forces = ObsTerm(
         #     # Feet binary contact states.
         #     func=customObservations.normal_forces,
@@ -432,7 +432,7 @@ class ObservationsCfg:
             self.concatenate_terms = True
 
     # observation groups
-    policy: PolicyCfg = PolicyCfg()
+    # policy: PolicyCfg = PolicyCfg()
     critic: CriticCfg = CriticCfg()
 
 
@@ -450,9 +450,9 @@ class EventCfg:
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
             "make_consistent": True,
-            "static_friction_range": (0.7, 1.3),
-            "dynamic_friction_range": (1.0, 1.0),
-            "restitution_range": (0.0, 0.1),
+            "static_friction_range": (1.0, 1.0),
+            "dynamic_friction_range": (0.8, 0.8),
+            "restitution_range": (0.0, 0.0),
             "num_buckets": CPU_POOL_BUCKET_SIZE,
         },
     )
@@ -468,37 +468,46 @@ class EventCfg:
         },
     )
 
-    add_link_mass = EventTerm(
-        func=mdp.randomize_rigid_body_mass,
+    randomize_base_com = EventTerm(
+        func=mdp.randomize_rigid_body_com,
         mode="startup",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", body_names=["F.*", "R.*"]),
-            "mass_distribution_params": (-0.1, 0.1),
-            "recompute_inertia": True,
-            "operation": "add",
-        },
-    )
-
-    add_joint_friction = EventTerm(
-        func=mdp.randomize_joint_parameters,
-        mode="startup",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
-            "operation": "add",
-            "friction_distribution_params": (-0.2, 0.2),
-        },
-    )
-
-    # Reset events
-    base_external_force_torque = EventTerm(
-        func=mdp.apply_external_force_torque,
-        mode="reset",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names="BASE_LINK"),
-            "force_range": (-2.0, 2.0),
-            "torque_range": (-1.0, 1.0),
+            "com_range": {"x": (-0.05, 0.05), "y": (-0.05, 0.05), "z": (-0.01, 0.01)},
         },
     )
+
+    # add_link_mass = EventTerm(
+    #     func=mdp.randomize_rigid_body_mass,
+    #     mode="startup",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", body_names=["F.*", "R.*"]),
+    #         "mass_distribution_params": (-0.1, 0.1),
+    #         "recompute_inertia": True,
+    #         "operation": "add",
+    #     },
+    # )
+
+    # add_joint_friction = EventTerm(
+    #     func=mdp.randomize_joint_parameters,
+    #     mode="startup",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
+    #         "operation": "add",
+    #         "friction_distribution_params": (-0.2, 0.2),
+    #     },
+    # )
+
+    # Reset events
+    # base_external_force_torque = EventTerm(
+    #     func=mdp.apply_external_force_torque,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", body_names="BASE_LINK"),
+    #         "force_range": (-2.0, 2.0),
+    #         "torque_range": (-1.0, 1.0),
+    #     },
+    # )
 
     reset_base = EventTerm(
         func=mdp.reset_root_state_uniform,
@@ -506,12 +515,12 @@ class EventCfg:
         params={
             "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "yaw": (-3.14, 3.14)},
             "velocity_range": {
-                "x": (-0.5, 0.5),
-                "y": (-0.5, 0.5),
-                "z": (-0.5, 0.5),
-                "roll": (-0.5, 0.5),
-                "pitch": (-0.5, 0.5),
-                "yaw": (-0.5, 0.5),
+                "x": (-0.1, 0.1),
+                "y": (-0.1, 0.1),
+                "z": (-0.1, 0.1),
+                "roll": (-0.1, 0.1),
+                "pitch": (-0.1, 0.1),
+                "yaw": (-0.1, 0.1),
             },
         },
     )
@@ -520,18 +529,18 @@ class EventCfg:
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
-            "position_range": (-0.25, 0.25),
+            "position_range": (-0.20, 0.20),
             "velocity_range": (0.0, 0.0),
         },
     )
 
     # Interval events
-    push_robot = EventTerm(
-        func=mdp.push_by_setting_velocity,
-        mode="interval",
-        interval_range_s=(10.0, 15.0),
-        params={"velocity_range": {"x": (-0.4, 0.4), "y": (-0.4, 0.4)}},
-    )
+    # push_robot = EventTerm(
+    #     func=mdp.push_by_setting_velocity,
+    #     mode="interval",
+    #     interval_range_s=(10.0, 15.0),
+    #     params={"velocity_range": {"x": (-0.4, 0.4), "y": (-0.4, 0.4)}},
+    # )
 
 
 @configclass
@@ -557,55 +566,72 @@ class RewardsCfg:
     action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-2)
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-1e-1)
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
-    dof_pos_deviate = RewTerm(
-        func=mdp.joint_deviation_l1,
-        weight=-1.0,
-        params={
-            "asset_cfg": SceneEntityCfg(
-                "robot", 
-                joint_names=[
-                    "FBL_ABAD_JOINT",
-                    "FAR_ABAD_JOINT",
-                    "RBL_ABAD_JOINT",
-                    "RAR_ABAD_JOINT",
-                    "FBL_HIP_JOINT",
-                    "FAR_HIP_JOINT",
-                    "RBL_HIP_JOINT",
-                    "RAR_HIP_JOINT",
-                    "FBL_KNEE_JOINT",
-                    "FAR_KNEE_JOINT",
-                    "RBL_KNEE_JOINT",
-                    "RAR_KNEE_JOINT",
-                ],
-                preserve_order=True,
-            ),
-        }
-    )
-    stay_flat =RewTerm(func=mdp.flat_orientation_l2, weight=-1.0)
-    undesired_contacts = RewTerm(
-        func=mdp.undesired_contacts,
-        weight=-2.0,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_HIP_LINK"]), "threshold": 1.0},
-    )
-    # feet_air_time = RewTerm(
-    #     # Note here that feet air time is penalized instead of rewarded, as we are training a wheeled robot. The idea is to get it to keep its wheels on the ground. 
-    #     func=customRewards.feet_air_time,
-    #     weight=-1e-2,
+    # dof_pos_deviate = RewTerm(
+    #     func=mdp.joint_deviation_l1,
+    #     weight=-1.0,
     #     params={
-    #         "sensor_cfg": SceneEntityCfg(
-    #             "contact_forces",
-    #             body_names=[
-    #                 "FBL_FOOT_LINK",
-    #                 "FAR_FOOT_LINK",
-    #                 "RBL_FOOT_LINK",
-    #                 "RAR_FOOT_LINK",
+    #         "asset_cfg": SceneEntityCfg(
+    #             "robot", 
+    #             joint_names=[
+    #                 "FBL_ABAD_JOINT",
+    #                 "FAR_ABAD_JOINT",
+    #                 "RBL_ABAD_JOINT",
+    #                 "RAR_ABAD_JOINT",
+    #                 "FBL_HIP_JOINT",
+    #                 "FAR_HIP_JOINT",
+    #                 "RBL_HIP_JOINT",
+    #                 "RAR_HIP_JOINT",
+    #                 "FBL_KNEE_JOINT",
+    #                 "FAR_KNEE_JOINT",
+    #                 "RBL_KNEE_JOINT",
+    #                 "RAR_KNEE_JOINT",
     #             ],
     #             preserve_order=True,
     #         ),
-    #         "command_name": "base_velocity",
-    #         "threshold": 0.5,
-    #     },
+    #     }
     # )
+    stay_flat =RewTerm(func=mdp.flat_orientation_l2, weight=-1.0)
+    undesired_contacts = RewTerm(
+        func=mdp.undesired_contacts,
+        weight=-1.0,
+        params={
+            "sensor_cfg": SceneEntityCfg(
+                "contact_forces", body_names=[
+                    ".*_HIP_LINK",
+                    ".*_KNEE_LINK",
+                ]
+            ),
+            "threshold": 1.0
+        },
+    )
+    feet_air_time = RewTerm(
+        # Note here that feet air time is penalized instead of rewarded, as we are training a wheeled robot. The idea is to get it to keep its wheels on the ground. 
+        func=customRewards.feet_air_time,
+        weight=-1e-2,
+        params={
+            "sensor_cfg": SceneEntityCfg(
+                "contact_forces",
+                body_names=[
+                    "FBL_FOOT_LINK",
+                    "FAR_FOOT_LINK",
+                    "RBL_FOOT_LINK",
+                    "RAR_FOOT_LINK",
+                ],
+                preserve_order=True,
+            ),
+            "command_name": "base_velocity",
+            "threshold": 0.2,
+        },
+    )
+    base_height = RewTerm(
+        func=mdp.base_height_l2,
+        weight=-1.0,
+        params={
+            "target_height": 0.35,
+            "asset_cfg": SceneEntityCfg("robot"),
+            "sensor_cfg": SceneEntityCfg("height_scanner"),
+        }
+    )
 
 
 @configclass

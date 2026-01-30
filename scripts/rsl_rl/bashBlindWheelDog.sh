@@ -4,15 +4,15 @@
 # chmod a+x scripts/rsl_rl/bashBlindWheelDog.sh
 
 # Run the train.py script with arguments
+python scripts/rsl_rl/train.py \
+    --num_envs 4096 \
+    --task Wheeldog-Rl-v0 \
+    --headless \
+    --livestream 2 \
+    --enable_cameras
+
 # python scripts/rsl_rl/train.py \
 #     --num_envs 4096 \
 #     --task Wheeldog-Rl-v0 \
 #     --headless \
-#     --livestream 2 \
-#     --enable_cameras
-
-python scripts/rsl_rl/train.py \
-    --num_envs 2048 \
-    --task Wheeldog-Rl-v0 \
-    --headless \
-    --livestream 0
+#     --livestream 0
