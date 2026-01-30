@@ -34,17 +34,13 @@ XG_WHEEL_SU_CFG = ArticulationCfg(
     ),
     # Safety factor for joint limits
     soft_joint_pos_limit_factor=0.95,  
-    # All joints use Implicit Actuator model definition. 
-    # Thus, actuator behavior is handled by the simulation engine. 
-    # Performs continuous-time ideal PD integration. 
-    # We use this given that we trust the OEM supplied joint control API. 
     actuators={
         "legs": DCMotorCfg(
             joint_names_expr=[".*_ABAD_JOINT", ".*_HIP_JOINT", ".*_KNEE_JOINT"],
             effort_limit=33.5,
             saturation_effort=33.5,
-            velocity_limit=21.0,
-            stiffness=25.0,
+            velocity_limit=28.0,
+            stiffness=30.0,
             damping=0.5,
             friction=0.0,
         ),
@@ -52,7 +48,7 @@ XG_WHEEL_SU_CFG = ArticulationCfg(
             joint_names_expr=[".*_FOOT_JOINT"],
             effort_limit=33.5,
             saturation_effort=33.5,
-            velocity_limit=21.0,
+            velocity_limit=160.0,
             stiffness=0.0,
             damping=50.0,
             friction=0.0,
