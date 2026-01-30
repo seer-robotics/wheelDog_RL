@@ -23,7 +23,7 @@ XG_WHEEL_SU_CFG = ArticulationCfg(
     ),
     # Initial States on entity spawn. 
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 1.0),  # Initial position (e.g., above ground)
+        pos=(0.0, 0.0, 0.5),
         joint_pos={
             ".*_ABAD_JOINT": 0.00,
             ".*_HIP_JOINT": 0.65,
@@ -53,8 +53,8 @@ XG_WHEEL_SU_CFG = ArticulationCfg(
             effort_limit=33.5,
             saturation_effort=33.5,
             velocity_limit=21.0,
-            stiffness=50.0,
-            damping=1e1,
+            stiffness=0.0,
+            damping=50.0,
             friction=0.0,
         ),
     },

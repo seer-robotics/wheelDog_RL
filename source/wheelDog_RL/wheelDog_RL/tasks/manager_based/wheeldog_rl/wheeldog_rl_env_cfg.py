@@ -329,24 +329,24 @@ class ObservationsCfg:
             clip=(-1.5, 1.5),
             history_length=BASE_STATES_HISTORY
         )
-        feet_contacts = ObsTerm(
-            # Feet binary contact states.
-            func=customObservations.contact_states,
-            params={
-                "threshold": 1,
-                "sensor_cfg": SceneEntityCfg(
-                    "contact_forces",
-                    body_names=[
-                        "FBL_FOOT_LINK",
-                        "FAR_FOOT_LINK",
-                        "RBL_FOOT_LINK",
-                        "RAR_FOOT_LINK",
-                    ],
-                    preserve_order=True,
-                )
-            },
-            history_length=BASE_STATES_HISTORY,
-        )
+        # feet_contacts = ObsTerm(
+        #     # Feet binary contact states.
+        #     func=customObservations.contact_states,
+        #     params={
+        #         "threshold": 1,
+        #         "sensor_cfg": SceneEntityCfg(
+        #             "contact_forces",
+        #             body_names=[
+        #                 "FBL_FOOT_LINK",
+        #                 "FAR_FOOT_LINK",
+        #                 "RBL_FOOT_LINK",
+        #                 "RAR_FOOT_LINK",
+        #             ],
+        #             preserve_order=True,
+        #         )
+        #     },
+        #     history_length=BASE_STATES_HISTORY,
+        # )
         # feet_forces = ObsTerm(
         #     # Feet binary contact states.
         #     func=customObservations.normal_forces,
@@ -584,7 +584,7 @@ class RewardsCfg:
     stay_flat =RewTerm(func=mdp.flat_orientation_l2, weight=-1.0)
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
-        weight=-1.0,
+        weight=-2.0,
         params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_HIP_LINK"]), "threshold": 1.0},
     )
     # feet_air_time = RewTerm(

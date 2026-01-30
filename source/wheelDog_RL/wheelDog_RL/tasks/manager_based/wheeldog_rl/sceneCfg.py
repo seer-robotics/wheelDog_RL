@@ -16,8 +16,6 @@ if TYPE_CHECKING:
 # Import terrain generator configurations. 
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.terrainCfg import allTerrain_config
 
-# Import settings file. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import OBS_HISTORY_LEN
 
 @configclass
 class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
