@@ -65,7 +65,7 @@ class ActionsCfg:
             "RBL_ABAD_JOINT",
             "RAR_ABAD_JOINT",
         ],
-        scale=0.5,
+        scale=0.25,
         preserve_order=True,
         use_default_offset=True,
     )
@@ -77,7 +77,7 @@ class ActionsCfg:
             "RBL_HIP_JOINT",
             "RAR_HIP_JOINT",
         ],
-        scale=0.5,
+        scale=0.25,
         preserve_order=True,
         use_default_offset=True,
     )
@@ -89,7 +89,7 @@ class ActionsCfg:
             "RBL_KNEE_JOINT",
             "RAR_KNEE_JOINT",
         ],
-        scale=0.5,
+        scale=0.25,
         preserve_order=True,
         use_default_offset=True,
     )
@@ -101,7 +101,7 @@ class ActionsCfg:
             "RBL_FOOT_JOINT",
             "RAR_FOOT_JOINT",
         ],
-        scale=0.5,
+        scale=5.0,
         preserve_order=True,
         use_default_offset=True,
         clip={
@@ -262,6 +262,11 @@ class ObservationsCfg:
             params={"command_name": "base_velocity"},
         )
 
+        # Action history. 
+        velocity_actions = ObsTerm(
+            func=mdp.last_action,
+        )
+
         # Joint states history. 
         # Excludes the wheel positions from the joint positions history. 
         joint_pos = ObsTerm(
@@ -313,11 +318,6 @@ class ObservationsCfg:
                     preserve_order=True,
                 ),
             },
-        )
-
-        # Action history. 
-        velocity_actions = ObsTerm(
-            func=mdp.last_action,
         )
 
         # Exteroceptive info.
@@ -529,7 +529,7 @@ class EventCfg:
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
-            "position_range": (-0.20, 0.20),
+            "position_range": (0.0, 0.0),
             "velocity_range": (0.0, 0.0),
         },
     )
@@ -559,6 +559,25 @@ class RewardsCfg:
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
     stay_alive = RewTerm(mdp.is_alive, weight=1.0)
+    # feet_ground_time = RewTerm(
+    #     # Reward keeping the feet on the ground.
+    #     func=customRewards.feet_ground_time,
+    #     weight=1e-2,
+    #     params={
+    #         "sensor_cfg": SceneEntityCfg(
+    #             "contact_forces",
+    #             body_names=[
+    #                 "FBL_FOOT_LINK",
+    #                 "FAR_FOOT_LINK",
+    #                 "RBL_FOOT_LINK",
+    #                 "RAR_FOOT_LINK",
+    #             ],
+    #             preserve_order=True,
+    #         ),
+    #         "command_name": "base_velocity",
+    #         "threshold": 0.2,
+    #     },
+    # )
     
     # -- penalties
     lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
@@ -566,30 +585,30 @@ class RewardsCfg:
     action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-2)
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-1e-1)
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
-    # dof_pos_deviate = RewTerm(
-    #     func=mdp.joint_deviation_l1,
-    #     weight=-1.0,
-    #     params={
-    #         "asset_cfg": SceneEntityCfg(
-    #             "robot", 
-    #             joint_names=[
-    #                 "FBL_ABAD_JOINT",
-    #                 "FAR_ABAD_JOINT",
-    #                 "RBL_ABAD_JOINT",
-    #                 "RAR_ABAD_JOINT",
-    #                 "FBL_HIP_JOINT",
-    #                 "FAR_HIP_JOINT",
-    #                 "RBL_HIP_JOINT",
-    #                 "RAR_HIP_JOINT",
-    #                 "FBL_KNEE_JOINT",
-    #                 "FAR_KNEE_JOINT",
-    #                 "RBL_KNEE_JOINT",
-    #                 "RAR_KNEE_JOINT",
-    #             ],
-    #             preserve_order=True,
-    #         ),
-    #     }
-    # )
+    dof_pos_deviate = RewTerm(
+        func=mdp.joint_deviation_l1,
+        weight=-0.5,
+        params={
+            "asset_cfg": SceneEntityCfg(
+                "robot", 
+                joint_names=[
+                    "FBL_ABAD_JOINT",
+                    "FAR_ABAD_JOINT",
+                    "RBL_ABAD_JOINT",
+                    "RAR_ABAD_JOINT",
+                    "FBL_HIP_JOINT",
+                    "FAR_HIP_JOINT",
+                    "RBL_HIP_JOINT",
+                    "RAR_HIP_JOINT",
+                    "FBL_KNEE_JOINT",
+                    "FAR_KNEE_JOINT",
+                    "RBL_KNEE_JOINT",
+                    "RAR_KNEE_JOINT",
+                ],
+                preserve_order=True,
+            ),
+        }
+    )
     stay_flat =RewTerm(func=mdp.flat_orientation_l2, weight=-1.0)
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
@@ -602,25 +621,6 @@ class RewardsCfg:
                 ]
             ),
             "threshold": 1.0
-        },
-    )
-    feet_air_time = RewTerm(
-        # Note here that feet air time is penalized instead of rewarded, as we are training a wheeled robot. The idea is to get it to keep its wheels on the ground. 
-        func=customRewards.feet_air_time,
-        weight=-1e-2,
-        params={
-            "sensor_cfg": SceneEntityCfg(
-                "contact_forces",
-                body_names=[
-                    "FBL_FOOT_LINK",
-                    "FAR_FOOT_LINK",
-                    "RBL_FOOT_LINK",
-                    "RAR_FOOT_LINK",
-                ],
-                preserve_order=True,
-            ),
-            "command_name": "base_velocity",
-            "threshold": 0.2,
         },
     )
     base_height = RewTerm(

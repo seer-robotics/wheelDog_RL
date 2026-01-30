@@ -56,7 +56,7 @@ def feet_ground_time(
     command = env.command_manager.get_command(command_name)[:, :2]
     command_norm = torch.norm(command, dim=1)
     # Zero command threshold — tune as needed (m/s)
-    moving = command_norm > 0.1     
+    moving = command_norm > 0.1
     reward = reward * moving.float()
 
     return reward
