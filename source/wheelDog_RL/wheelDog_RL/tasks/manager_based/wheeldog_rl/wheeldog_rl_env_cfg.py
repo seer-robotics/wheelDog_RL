@@ -40,8 +40,8 @@ class CommandsCfg:
     base_velocity = mdp.UniformVelocityCommandCfg(
         asset_name="robot",
         resampling_time_range=(6.0, 10.0),
-        rel_standing_envs=0.5,
-        rel_heading_envs=0.95,
+        rel_standing_envs=0.01,
+        rel_heading_envs=0.99,
         heading_command=False,
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
@@ -462,9 +462,9 @@ class EventCfg:
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names="BASE_LINK"),
-            "mass_distribution_params": (-1.0, 2.5),
+            "mass_distribution_params": (0.8, 1.3),
             "recompute_inertia": True,
-            "operation": "add",
+            "operation": "scale",
         },
     )
 
@@ -473,7 +473,7 @@ class EventCfg:
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names="BASE_LINK"),
-            "com_range": {"x": (-0.05, 0.05), "y": (-0.05, 0.05), "z": (-0.01, 0.01)},
+            "com_range": {"x": (-0.02, 0.02), "y": (-0.02, 0.02), "z": (-0.01, 0.01)},
         },
     )
 
