@@ -28,26 +28,18 @@ def contact_states(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, threshold
     """
     # Enable type-hinting.
     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
-    robot: Articulation = env.scene["robot"]
-
-    # Normal forces in the world frame.
+    
+    # Net forces in world frame: shape (num_envs, num_bodies_with_sensor, 3)
     net_forces_w = contact_sensor.data.net_forces_w
     
-    # Isolate data from specified bodies.
+    # Select only the wheel bodies.
     wheel_ids = sensor_cfg.body_ids
     wheel_forces_w = net_forces_w[:, wheel_ids]
-    
-    # Acquire robot base frame quarternions and match shape with forces tensor.
-    base_quat_w = robot.data.root_link_quat_w
-    base_quat_w = base_quat_w.unsqueeze(dim=1)
-    base_quat_w = base_quat_w.repeat(1, (wheel_forces_w.shape[1] // base_quat_w.shape[1]), 1)
-
-    # Transform forces to robot base frame.
-    wheel_forces_b = quat_apply_inverse(base_quat_w, wheel_forces_w)
+    wheel_normal_forces_z = wheel_forces_w[..., 2]
     
     # Determine contact state and return.
-    wheel_forces_b = torch.nan_to_num(wheel_forces_b, nan=0.0, posinf=0.0, neginf=0.0)
-    binary_states = (wheel_forces_b[..., 2] > threshold).float()
+    wheel_normal_forces_z = torch.nan_to_num(wheel_normal_forces_z, nan=0.0, posinf=0.0, neginf=0.0)
+    binary_states = (wheel_normal_forces_z > threshold).float()
     return binary_states
 
 
