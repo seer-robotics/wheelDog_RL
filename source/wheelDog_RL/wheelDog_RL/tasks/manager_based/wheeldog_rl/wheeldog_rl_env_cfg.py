@@ -24,7 +24,7 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl import customCurriculum
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import customRewards
 
 # Import settings. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import OBS_HISTORY_LEN, CPU_POOL_BUCKET_SIZE
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import JOINT_STATES_HISTORY, BASE_STATES_HISTORY, CPU_POOL_BUCKET_SIZE
 
 
 ##
@@ -148,12 +148,12 @@ class ObservationsCfg:
         base_lin_vel = ObsTerm(
             func=mdp.base_lin_vel, 
             noise=Gnoise(mean=0, std=0.20),
-            history_length=4,
+            history_length=BASE_STATES_HISTORY,
         )
         base_ang_vel = ObsTerm(
             func=mdp.base_ang_vel, 
             noise=Gnoise(mean=0, std=0.08),
-            history_length=4,
+            history_length=BASE_STATES_HISTORY,
         )
 
         # IMU sensor history. 
@@ -161,20 +161,19 @@ class ObservationsCfg:
             func=mdp.imu_ang_vel,
             noise=Gnoise(mean=0, std=0.035),
             params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
-            history_length=4,
+            history_length=BASE_STATES_HISTORY,
         )
         imu_projected_gravity = ObsTerm(
             func=mdp.imu_projected_gravity,
             noise=Gnoise(mean=0, std=0.06),
             params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
-            history_length=4,
+            history_length=BASE_STATES_HISTORY,
         )
 
         # Commands. 
-        velocity_commands = ObsTerm(
+        commands_history = ObsTerm(
             func=mdp.generated_commands, 
             params={"command_name": "base_velocity"},
-            history_length=2,
         )
 
         # Joint states history. 
@@ -202,7 +201,7 @@ class ObservationsCfg:
                     preserve_order=True,
                 ),
             },
-            history_length=OBS_HISTORY_LEN,
+            history_length=JOINT_STATES_HISTORY,
         )
         joint_vel = ObsTerm(
             func=mdp.joint_vel_rel, 
@@ -231,13 +230,13 @@ class ObservationsCfg:
                     preserve_order=True,
                 ),
             },
-            history_length=OBS_HISTORY_LEN,
+            history_length=JOINT_STATES_HISTORY,
         )
 
         # Action history. 
         velocity_actions = ObsTerm(
             func=mdp.last_action,
-            history_length=4,
+            history_length=BASE_STATES_HISTORY,
         )
 
         def __post_init__(self):
@@ -251,16 +250,16 @@ class ObservationsCfg:
         base_pos_z = ObsTerm(func=mdp.base_pos_z)
         base_lin_vel = ObsTerm(
             func=mdp.base_lin_vel,
-            history_length=4,
+            history_length=BASE_STATES_HISTORY,
         )
         base_ang_vel = ObsTerm(
             func=mdp.base_ang_vel,
-            history_length=4,
+            history_length=BASE_STATES_HISTORY,
         )
         projected_gravity = ObsTerm(func=mdp.projected_gravity)
 
         # Commands.
-        velocity_commands = ObsTerm(
+        commands_history = ObsTerm(
             func=mdp.generated_commands, 
             params={"command_name": "base_velocity"},
         )
@@ -289,7 +288,7 @@ class ObservationsCfg:
                     preserve_order=True,
                 ),
             },
-            history_length=OBS_HISTORY_LEN,
+            history_length=JOINT_STATES_HISTORY,
         )
         joint_vel = ObsTerm(
             func=mdp.joint_vel_rel,
@@ -317,7 +316,7 @@ class ObservationsCfg:
                     preserve_order=True,
                 ),
             },
-            history_length=OBS_HISTORY_LEN,
+            history_length=JOINT_STATES_HISTORY,
         )
 
         # Exteroceptive info.
@@ -328,7 +327,7 @@ class ObservationsCfg:
                 "offset": 0.5,
             },
             clip=(-1.5, 1.5),
-            history_length=2,
+            history_length=BASE_STATES_HISTORY
         )
         feet_contacts = ObsTerm(
             # Feet binary contact states.
@@ -346,73 +345,73 @@ class ObservationsCfg:
                     preserve_order=True,
                 )
             },
-            history_length=4,
+            history_length=BASE_STATES_HISTORY,
         )
-        feet_forces = ObsTerm(
-            # Feet binary contact states.
-            func=customObservations.normal_forces,
-            params={
-                "sensor_cfg": SceneEntityCfg(
-                    "contact_forces",
-                    body_names=[
-                        "FBL_FOOT_LINK",
-                        "FAR_FOOT_LINK",
-                        "RBL_FOOT_LINK",
-                        "RAR_FOOT_LINK",
-                    ],
-                    preserve_order=True,
-                )
-            },
-            history_length=4,
-        )
+        # feet_forces = ObsTerm(
+        #     # Feet binary contact states.
+        #     func=customObservations.normal_forces,
+        #     params={
+        #         "sensor_cfg": SceneEntityCfg(
+        #             "contact_forces",
+        #             body_names=[
+        #                 "FBL_FOOT_LINK",
+        #                 "FAR_FOOT_LINK",
+        #                 "RBL_FOOT_LINK",
+        #                 "RAR_FOOT_LINK",
+        #             ],
+        #             preserve_order=True,
+        #         )
+        #     },
+        #     history_length=BASE_STATES_HISTORY,
+        # )
         # fl_foot_forces = ObsTerm(
         #     # Front left foot normal and tangential contact forces.
         #     func=customObservations.normal_forces,
         #     params={"sensor_cfg": SceneEntityCfg("fl_foot_contacts")},
-        #     history_length=4,
+        #     history_length=BASE_STATES_HISTORY,
         # )
         # fr_foot_forces = ObsTerm(
         #     # Front right foot normal and tangential contact forces.
         #     func=customObservations.normal_forces,
         #     params={"sensor_cfg": SceneEntityCfg("fr_foot_contacts")},
-        #     history_length=4,
+        #     history_length=BASE_STATES_HISTORY,
         # )
         # rl_foot_forces = ObsTerm(
         #     # Rear left foot normal and tangential contact forces.
         #     func=customObservations.normal_forces,
         #     params={"sensor_cfg": SceneEntityCfg("rl_foot_contacts")},
-        #     history_length=4,
+        #     history_length=BASE_STATES_HISTORY,
         # )
         # rr_foot_forces = ObsTerm(
         #     # Rear right foot normal and tangential contact forces.
         #     func=customObservations.normal_forces,
         #     params={"sensor_cfg": SceneEntityCfg("rr_foot_contacts")},
-        #     history_length=4,
+        #     history_length=BASE_STATES_HISTORY,
         # )
-        fl_foot_normals = ObsTerm(
-            # Terrain normals around front left foot.
-            func=customObservations.terrain_normals,
-            params={"sensor_cfg": SceneEntityCfg("fl_leg_ray")},
-            history_length=2,
-        )
-        fr_foot_normals = ObsTerm(
-            # Terrain normals around front right foot.
-            func=customObservations.terrain_normals,
-            params={"sensor_cfg": SceneEntityCfg("fr_leg_ray")},
-            history_length=2,
-        )
-        rl_foot_normals = ObsTerm(
-            # Terrain normals around rear left foot.
-            func=customObservations.terrain_normals,
-            params={"sensor_cfg": SceneEntityCfg("rl_leg_ray")},
-            history_length=2,
-        )
-        rr_foot_normals = ObsTerm(
-            # Terrain normals around rear right foot.
-            func=customObservations.terrain_normals,
-            params={"sensor_cfg": SceneEntityCfg("rr_leg_ray")},
-            history_length=2,
-        )
+        # fl_foot_normals = ObsTerm(
+        #     # Terrain normals around front left foot.
+        #     func=customObservations.terrain_normals,
+        #     params={"sensor_cfg": SceneEntityCfg("fl_leg_ray")},
+        #     history_length=BASE_STATES_HISTORY
+        # )
+        # fr_foot_normals = ObsTerm(
+        #     # Terrain normals around front right foot.
+        #     func=customObservations.terrain_normals,
+        #     params={"sensor_cfg": SceneEntityCfg("fr_leg_ray")},
+        #     history_length=BASE_STATES_HISTORY
+        # )
+        # rl_foot_normals = ObsTerm(
+        #     # Terrain normals around rear left foot.
+        #     func=customObservations.terrain_normals,
+        #     params={"sensor_cfg": SceneEntityCfg("rl_leg_ray")},
+        #     history_length=BASE_STATES_HISTORY
+        # )
+        # rr_foot_normals = ObsTerm(
+        #     # Terrain normals around rear right foot.
+        #     func=customObservations.terrain_normals,
+        #     params={"sensor_cfg": SceneEntityCfg("rr_leg_ray")},
+        #     history_length=BASE_STATES_HISTORY
+        # )
         
         # Dynamics randomization observation terms.
         # contact_friction = ObsTerm(
@@ -541,12 +540,16 @@ class RewardsCfg:
 
     # -- rewards
     track_lin_vel_xy_exp = RewTerm(
-        func=mdp.track_lin_vel_xy_exp, weight=1.0, params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
+        func=mdp.track_lin_vel_xy_exp,
+        weight=1.0,
+        params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
     track_ang_vel_z_exp = RewTerm(
-        func=mdp.track_ang_vel_z_exp, weight=0.5, params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
+        func=mdp.track_ang_vel_z_exp,
+        weight=0.5,
+        params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
-    stay_alive = RewTerm(mdp.is_alive, weight=1e-1)
+    stay_alive = RewTerm(mdp.is_alive, weight=1.0)
     
     # -- penalties
     lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
@@ -554,8 +557,36 @@ class RewardsCfg:
     action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-2)
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-1e-1)
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
-    stay_flat =RewTerm(func=mdp.flat_orientation_l2, weight=-5e-1)
-    # dof_pos_deviate = RewTerm(func=mdp.joint_deviation_l1, weight=-1e-2)
+    dof_pos_deviate = RewTerm(
+        func=mdp.joint_deviation_l1,
+        weight=-1.0,
+        params={
+            "asset_cfg": SceneEntityCfg(
+                "robot", 
+                joint_names=[
+                    "FBL_ABAD_JOINT",
+                    "FAR_ABAD_JOINT",
+                    "RBL_ABAD_JOINT",
+                    "RAR_ABAD_JOINT",
+                    "FBL_HIP_JOINT",
+                    "FAR_HIP_JOINT",
+                    "RBL_HIP_JOINT",
+                    "RAR_HIP_JOINT",
+                    "FBL_KNEE_JOINT",
+                    "FAR_KNEE_JOINT",
+                    "RBL_KNEE_JOINT",
+                    "RAR_KNEE_JOINT",
+                ],
+                preserve_order=True,
+            ),
+        }
+    )
+    stay_flat =RewTerm(func=mdp.flat_orientation_l2, weight=-1.0)
+    undesired_contacts = RewTerm(
+        func=mdp.undesired_contacts,
+        weight=-1.0,
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_HIP_LINK"]), "threshold": 1.0},
+    )
     # feet_air_time = RewTerm(
     #     # Note here that feet air time is penalized instead of rewarded, as we are training a wheeled robot. The idea is to get it to keep its wheels on the ground. 
     #     func=customRewards.feet_air_time,
@@ -575,11 +606,6 @@ class RewardsCfg:
     #         "threshold": 0.5,
     #     },
     # )
-    undesired_contacts = RewTerm(
-        func=mdp.undesired_contacts,
-        weight=-1.0,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_HIP_LINK"]), "threshold": 1.0},
-    )
 
 
 @configclass
@@ -634,7 +660,7 @@ class BlindLocomotionCfg(ManagerBasedRLEnvCfg):
         # Note that control period is sim.dt*decimation
         self.sim.dt = 0.005
         self.decimation = 4
-        self.episode_length_s = 24.0
+        self.episode_length_s = 15.0
         self.sim.render_interval = self.decimation
         self.sim.physics_material = self.scene.terrain.physics_material
         self.sim.physx.gpu_max_rigid_patch_count = 10 * 2**15
