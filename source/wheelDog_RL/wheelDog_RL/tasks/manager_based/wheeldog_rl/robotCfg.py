@@ -25,11 +25,11 @@ class WheelDog_BlindLocomotionEnvPlayCfg(BlindLocomotionCfg):
         # Assign robot asset. 
         self.scene.robot = XG_WHEEL_SU_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
-        self.scene.num_envs = 50
+        self.scene.num_envs = 32
         self.scene.env_spacing = 4
 
         # Spawn the robot randomly in the grid.
-        self.scene.terrain.max_init_terrain_level = None
+        self.scene.terrain.max_init_terrain_level = 1
 
         # Reduce the number of terrains to save memory.
         if self.scene.terrain.terrain_generator is not None:
