@@ -12,6 +12,12 @@ allTerrain_config = TerrainGeneratorCfg(
     slope_threshold=0.75,
     use_cache=False,
     sub_terrains={
+        "hf_pyramid_slope": terrain_gen.HfPyramidSlopedTerrainCfg(
+            proportion=0.1, slope_range=(0.0, 0.25), platform_width=2.0, border_width=0.25
+        ),
+        "hf_pyramid_slope_inv": terrain_gen.HfInvertedPyramidSlopedTerrainCfg(
+            proportion=0.1, slope_range=(0.0, 0.25), platform_width=2.0, border_width=0.25
+        ),
         "pyramid_stairs_25cm": terrain_gen.MeshPyramidStairsTerrainCfg(
             proportion=0.1,
             step_height_range=(0.0, 0.20),
@@ -49,12 +55,6 @@ allTerrain_config = TerrainGeneratorCfg(
         ),
         "random_rough": terrain_gen.HfRandomUniformTerrainCfg(
             proportion=0.2, noise_range=(0.0, 0.06), noise_step=0.01, border_width=0.25
-        ),
-        "hf_pyramid_slope": terrain_gen.HfPyramidSlopedTerrainCfg(
-            proportion=0.1, slope_range=(0.0, 0.25), platform_width=2.0, border_width=0.25
-        ),
-        "hf_pyramid_slope_inv": terrain_gen.HfInvertedPyramidSlopedTerrainCfg(
-            proportion=0.1, slope_range=(0.0, 0.25), platform_width=2.0, border_width=0.25
         ),
     },
 )
