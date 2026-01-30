@@ -1,6 +1,6 @@
 import isaaclab.sim as sim_utils
 from isaaclab.assets.articulation import ArticulationCfg
-from isaaclab.actuators import DCMotorCfg
+from isaaclab.actuators import DCMotorCfg, ImplicitActuatorCfg
 
 XG_WHEEL_SU_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
@@ -23,11 +23,11 @@ XG_WHEEL_SU_CFG = ArticulationCfg(
     ),
     # Initial States on entity spawn. 
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 0.4),
+        pos=(0.0, 0.0, 0.6),
         joint_pos={
             ".*_ABAD_JOINT": 0.00,
-            ".*_HIP_JOINT": 0.65,
-            ".*_KNEE_JOINT": -1.25,
+            ".*_HIP_JOINT": 0.8,
+            ".*_KNEE_JOINT": -1.5,
             ".*_FOOT_JOINT": 0.00,
         },  # Default joint positions
         joint_vel={".*": 0.0},
@@ -44,15 +44,12 @@ XG_WHEEL_SU_CFG = ArticulationCfg(
             damping=0.5,
             friction=0.0,
         ),
-        "wheels": DCMotorCfg(
+        "wheels": ImplicitActuatorCfg(
             joint_names_expr=[".*_FOOT_JOINT"],
-            effort_limit=33.5,
-            saturation_effort=33.5,
-            velocity_limit=160.0,
+            effort_limit=80.0,
+            velocity_limit=60.0,
             stiffness=0.0,
-            damping=50.0,
-            friction=2.0,
-            armature=0.05,
-        ),
+            damping=1.5,
+        )
     },
 )
