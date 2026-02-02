@@ -8,6 +8,9 @@ from isaaclab.envs.common import VecEnvStepReturn
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.customCurriculum import VelocityErrorRecorder
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import watchDogs
 
+# Import settings.
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import ANGULAR_ERROR_SCALE
+
 
 class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
     def __init__(self, cfg, **kwargs):
@@ -15,7 +18,7 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
         # Initialize per-environment cumulative error tensor (shape: num_envs)
         # self._cumulative_vel_error = torch.zeros(self.num_envs, device=self.device)
         self.velocity_error_recorder = VelocityErrorRecorder(
-            config={"angular_scale": 1.0},
+            config={"angular_scale": ANGULAR_ERROR_SCALE},
             env=self
         )
         print("[INFO]: Added velocity_error_recorder manager.")

@@ -34,6 +34,9 @@ allTerrain_config = TerrainGeneratorCfg(
             border_width=1.0,
             holes=False,
         ),
+        # "flat_ground": terrain_gen.MeshPlaneTerrainCfg(
+        #     proportion=0.2,
+        # ),
         "pyramid_stairs_30cm": terrain_gen.MeshPyramidStairsTerrainCfg(
             proportion=0.1,
             step_height_range=(0.0, 0.20),
