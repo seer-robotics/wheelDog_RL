@@ -2,7 +2,6 @@
 import math
 
 # Isaac Lab imports
-from isaaclab.envs import mdp
 from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab.managers import CurriculumTermCfg as CurrTerm
 from isaaclab.managers import EventTermCfg as EventTerm
@@ -15,11 +14,14 @@ from isaaclab.utils.noise import AdditiveGaussianNoiseCfg as Gnoise
 # Import scene definition. 
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.sceneCfg import wheelDog_RL_sceneCfg
 
+# Local mdp module inherited from Isaac.
+from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
+
 # Import custom modules. 
-from mdp.actionSpaceCfg import ActionsCfg
-from mdp.commandSpaceCfg import CommandsCfg
-from mdp.observationSpaceCfg import ObservationsCfg
-from mdp.rewardCfg import RewardsCfg
+from .mdp import ActionsCfg
+from .mdp import CommandsCfg
+from .mdp import ObservationsCfg
+from .mdp import RewardsCfg
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import customCurriculum
 
 # Import settings. 

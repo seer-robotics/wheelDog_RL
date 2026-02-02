@@ -1,6 +1,6 @@
 # Isaac Lab imports
 from isaaclab.utils import configclass
-from isaaclab.envs import mdp
+from isaaclab.envs import mdp as isaac_mdp
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
@@ -25,25 +25,25 @@ class ObservationsCfg:
 
     #     # Base states history
     #     base_lin_vel = ObsTerm(
-    #         func=mdp.base_lin_vel, 
+    #         func=isaac_mdp.base_lin_vel, 
     #         noise=Gnoise(mean=0, std=0.20),
     #         history_length=BASE_STATES_HISTORY,
     #     )
     #     base_ang_vel = ObsTerm(
-    #         func=mdp.base_ang_vel, 
+    #         func=isaac_mdp.base_ang_vel, 
     #         noise=Gnoise(mean=0, std=0.08),
     #         history_length=BASE_STATES_HISTORY,
     #     )
 
     #     # IMU sensor history. 
     #     imu_ang_vel = ObsTerm(
-    #         func=mdp.imu_ang_vel,
+    #         func=isaac_mdp.imu_ang_vel,
     #         noise=Gnoise(mean=0, std=0.035),
     #         params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
     #         history_length=BASE_STATES_HISTORY,
     #     )
     #     imu_projected_gravity = ObsTerm(
-    #         func=mdp.imu_projected_gravity,
+    #         func=isaac_mdp.imu_projected_gravity,
     #         noise=Gnoise(mean=0, std=0.06),
     #         params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
     #         history_length=BASE_STATES_HISTORY,
@@ -51,14 +51,14 @@ class ObservationsCfg:
 
     #     # Commands. 
     #     commands_history = ObsTerm(
-    #         func=mdp.generated_commands, 
+    #         func=isaac_mdp.generated_commands, 
     #         params={"command_name": "base_velocity"},
     #     )
 
     #     # Joint states history. 
     #     # Excludes the wheel positions from the joint positions history. 
     #     joint_pos = ObsTerm(
-    #         func=mdp.joint_pos_rel, 
+    #         func=isaac_mdp.joint_pos_rel, 
     #         noise=Gnoise(mean=0, std=0.03),
     #         params={
     #             "asset_cfg": SceneEntityCfg(
@@ -83,7 +83,7 @@ class ObservationsCfg:
     #         history_length=JOINT_STATES_HISTORY,
     #     )
     #     joint_vel = ObsTerm(
-    #         func=mdp.joint_vel_rel, 
+    #         func=isaac_mdp.joint_vel_rel, 
     #         noise=Gnoise(mean=0, std=0.08),
     #         params={
     #             "asset_cfg": SceneEntityCfg(
@@ -114,7 +114,7 @@ class ObservationsCfg:
 
     #     # Action history. 
     #     velocity_actions = ObsTerm(
-    #         func=mdp.last_action,
+    #         func=isaac_mdp.last_action,
     #         history_length=BASE_STATES_HISTORY,
     #     )
 
@@ -126,30 +126,30 @@ class ObservationsCfg:
     class CriticCfg(ObsGroup):
         """Observations for critic group."""
         # Base states history.
-        # base_pos_z = ObsTerm(func=mdp.base_pos_z)
+        # base_pos_z = ObsTerm(func=isaac_mdp.base_pos_z)
         base_lin_vel = ObsTerm(
-            func=mdp.base_lin_vel,
+            func=isaac_mdp.base_lin_vel,
         )
         base_ang_vel = ObsTerm(
-            func=mdp.base_ang_vel,
+            func=isaac_mdp.base_ang_vel,
         )
-        projected_gravity = ObsTerm(func=mdp.projected_gravity)
+        projected_gravity = ObsTerm(func=isaac_mdp.projected_gravity)
 
         # Commands.
         commands_history = ObsTerm(
-            func=mdp.generated_commands, 
+            func=isaac_mdp.generated_commands, 
             params={"command_name": "base_velocity"},
         )
 
         # Action history. 
         velocity_actions = ObsTerm(
-            func=mdp.last_action,
+            func=isaac_mdp.last_action,
         )
 
         # Joint states history. 
         # Excludes the wheel positions from the joint positions history. 
         joint_pos = ObsTerm(
-            func=mdp.joint_pos_rel,
+            func=isaac_mdp.joint_pos_rel,
             params={
                 "asset_cfg": SceneEntityCfg(
                     "robot", 
@@ -172,7 +172,7 @@ class ObservationsCfg:
             },
         )
         joint_vel = ObsTerm(
-            func=mdp.joint_vel_rel,
+            func=isaac_mdp.joint_vel_rel,
             params={
                 "asset_cfg": SceneEntityCfg(
                     "robot", 
@@ -201,7 +201,7 @@ class ObservationsCfg:
 
         # Exteroceptive info.
         base_height_scan = ObsTerm(
-            func=mdp.height_scan,
+            func=isaac_mdp.height_scan,
             params={
                 "sensor_cfg": SceneEntityCfg("height_scanner"),
                 "offset": 0.5,

@@ -29,7 +29,7 @@ class WheelDog_BlindLocomotionEnvPlayCfg(BlindLocomotionCfg):
         self.scene.env_spacing = 4
 
         # Spawn the robot randomly in the grid.
-        self.scene.terrain.max_init_terrain_level = 1
+        self.scene.terrain.max_init_terrain_level = 8
 
         # Reduce the number of terrains to save memory.
         if self.scene.terrain.terrain_generator is not None:

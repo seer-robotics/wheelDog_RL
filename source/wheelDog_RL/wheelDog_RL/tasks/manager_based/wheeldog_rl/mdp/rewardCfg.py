@@ -3,7 +3,7 @@ import math
 
 # Isaac Lab imports
 from isaaclab.utils import configclass
-from isaaclab.envs import mdp
+from isaaclab.envs import mdp as isaac_mdp
 from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 
@@ -13,16 +13,16 @@ class RewardsCfg:
 
     # -- rewards
     track_lin_vel_xy_exp = RewTerm(
-        func=mdp.track_lin_vel_xy_exp,
+        func=isaac_mdp.track_lin_vel_xy_exp,
         weight=1.0,
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
     track_ang_vel_z_exp = RewTerm(
-        func=mdp.track_ang_vel_z_exp,
+        func=isaac_mdp.track_ang_vel_z_exp,
         weight=0.5,
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
-    stay_alive = RewTerm(mdp.is_alive, weight=1.0)
+    stay_alive = RewTerm(isaac_mdp.is_alive, weight=1.0)
     # feet_ground_time = RewTerm(
     #     # Reward keeping the feet on the ground.
     #     func=customRewards.feet_ground_time,
@@ -44,13 +44,13 @@ class RewardsCfg:
     # )
     
     # -- penalties
-    lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
-    ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.4)
-    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-2)
-    dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-1e-1)
-    dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
+    lin_vel_z_l2 = RewTerm(func=isaac_mdp.lin_vel_z_l2, weight=-2.0)
+    ang_vel_xy_l2 = RewTerm(func=isaac_mdp.ang_vel_xy_l2, weight=-0.4)
+    action_rate_l2 = RewTerm(func=isaac_mdp.action_rate_l2, weight=-1e-2)
+    dof_pos_limits = RewTerm(func=isaac_mdp.joint_pos_limits, weight=-1e-1)
+    dof_acc_l2 = RewTerm(func=isaac_mdp.joint_acc_l2, weight=-2.5e-07)
     dof_pos_deviate = RewTerm(
-        func=mdp.joint_deviation_l1,
+        func=isaac_mdp.joint_deviation_l1,
         weight=-0.5,
         params={
             "asset_cfg": SceneEntityCfg(
@@ -73,9 +73,9 @@ class RewardsCfg:
             ),
         }
     )
-    stay_flat =RewTerm(func=mdp.flat_orientation_l2, weight=-1.0)
+    stay_flat =RewTerm(func=isaac_mdp.flat_orientation_l2, weight=-1.0)
     undesired_contacts = RewTerm(
-        func=mdp.undesired_contacts,
+        func=isaac_mdp.undesired_contacts,
         weight=-1.0,
         params={
             "sensor_cfg": SceneEntityCfg(
@@ -88,7 +88,7 @@ class RewardsCfg:
         },
     )
     base_height = RewTerm(
-        func=mdp.base_height_l2,
+        func=isaac_mdp.base_height_l2,
         weight=-1.0,
         params={
             "target_height": 0.35,
