@@ -1,12 +1,11 @@
 # Isaac Lab imports
 from isaaclab.utils import configclass
-from isaaclab.envs import mdp as isaac_mdp
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
 
-# Import custom modules. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl import customObservations
+# Local mdp module inherited from Isaac.
+from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
 # Import settings. 
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import BASE_STATES_HISTORY
@@ -128,28 +127,28 @@ class ObservationsCfg:
         # Base states history.
         # base_pos_z = ObsTerm(func=isaac_mdp.base_pos_z)
         base_lin_vel = ObsTerm(
-            func=isaac_mdp.base_lin_vel,
+            func=mdp.base_lin_vel,
         )
         base_ang_vel = ObsTerm(
-            func=isaac_mdp.base_ang_vel,
+            func=mdp.base_ang_vel,
         )
-        projected_gravity = ObsTerm(func=isaac_mdp.projected_gravity)
+        projected_gravity = ObsTerm(func=mdp.projected_gravity)
 
         # Commands.
         commands_history = ObsTerm(
-            func=isaac_mdp.generated_commands, 
+            func=mdp.generated_commands, 
             params={"command_name": "base_velocity"},
         )
 
         # Action history. 
         velocity_actions = ObsTerm(
-            func=isaac_mdp.last_action,
+            func=mdp.last_action,
         )
 
         # Joint states history. 
         # Excludes the wheel positions from the joint positions history. 
         joint_pos = ObsTerm(
-            func=isaac_mdp.joint_pos_rel,
+            func=mdp.joint_pos_rel,
             params={
                 "asset_cfg": SceneEntityCfg(
                     "robot", 
@@ -172,7 +171,7 @@ class ObservationsCfg:
             },
         )
         joint_vel = ObsTerm(
-            func=isaac_mdp.joint_vel_rel,
+            func=mdp.joint_vel_rel,
             params={
                 "asset_cfg": SceneEntityCfg(
                     "robot", 
@@ -201,7 +200,7 @@ class ObservationsCfg:
 
         # Exteroceptive info.
         base_height_scan = ObsTerm(
-            func=isaac_mdp.height_scan,
+            func=mdp.height_scan,
             params={
                 "sensor_cfg": SceneEntityCfg("height_scanner"),
                 "offset": 0.5,
@@ -210,7 +209,7 @@ class ObservationsCfg:
         )
         feet_contacts = ObsTerm(
             # Feet binary contact states.
-            func=customObservations.contact_states,
+            func=mdp.contact_states,
             params={
                 "threshold": 1,
                 "sensor_cfg": SceneEntityCfg(
