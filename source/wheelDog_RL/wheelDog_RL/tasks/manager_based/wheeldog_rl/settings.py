@@ -1,6 +1,6 @@
 # Observation space settings. 
-JOINT_STATES_HISTORY = 5
-BASE_STATES_HISTORY  = 3
+STATE_HISTORY = 15
+SHORT_HISTORY  = 3
 
 # Event RNG settings.
 CPU_POOL_BUCKET_SIZE = 256
