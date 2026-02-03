@@ -9,7 +9,7 @@ from __future__ import annotations
 import torch
 from typing import TYPE_CHECKING
 
-from isaaclab.utils.math import quat_apply_inverse
+from isaaclab.utils.math import quat_apply_inverse, normalize
 
 from isaaclab.assets import Articulation
 
@@ -61,8 +61,7 @@ def contact_forces(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.
         dim=1)
     
     # Acquire robot base frame quarternions. 
-    base_quat_w = robot.data.root_link_quat_w
-    base_quat_w = base_quat_w
+    base_quat_w = normalize(robot.data.root_link_quat_w.clone())
 
     # Transform forces to robot base frame and return.
     wheel_forces_b = quat_apply_inverse(base_quat_w, wheel_forces_w)
@@ -88,7 +87,7 @@ def terrain_normals(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch
     normals_w = torch.nn.functional.normalize(normals_w, dim=1)
 
     # Acquire robot base frame quarternions. 
-    base_quat_w = robot.data.root_link_quat_w
+    base_quat_w = normalize(robot.data.root_link_quat_w.clone())
 
     # Transform normals to robot base frame.
     normals_b = quat_apply_inverse(base_quat_w, normals_w)
@@ -162,10 +161,11 @@ def normal_forces(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.T
     wheel_forces_w = net_forces_w[:, wheel_ids]
     
     # Acquire robot base frame quarternions. 
-    base_quat_w = robot.data.root_link_quat_w
+    base_quat_w = normalize(robot.data.root_link_quat_w.clone())
     base_quat_w = base_quat_w.unsqueeze(dim=1)
     base_quat_w = base_quat_w.repeat(1, (wheel_forces_w.shape[1] // base_quat_w.shape[1]), 1)
 
     # Transform forces to robot base frame and return.
     wheel_forces_b = quat_apply_inverse(base_quat_w, wheel_forces_w)
+    wheel_forces_b = torch.nan_to_num(wheel_forces_b, nan=0.0, posinf=0.0, neginf=0.0)
     return wheel_forces_b
