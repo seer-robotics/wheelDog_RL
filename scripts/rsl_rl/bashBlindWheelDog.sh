@@ -12,7 +12,7 @@
     # --enable_cameras
 
 HYDRA_FULL_ERROR=1 python scripts/rsl_rl/train.py \
-    --num_envs 4096 \
+    --num_envs 3072 \
     --task Wheeldog-Rl-v0 \
     --headless \
     --livestream 0
