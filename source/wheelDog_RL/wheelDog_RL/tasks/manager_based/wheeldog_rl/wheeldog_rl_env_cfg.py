@@ -15,11 +15,11 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl.sceneCfg import wheelDog_RL_sce
 # Local mdp module inherited from Isaac.
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
-# Import MDP configurations from the local mdp module. 
-from mdp import ActionsCfg
-from mdp import CommandsCfg
-from mdp import ObservationsCfg
-from mdp import RewardsCfg
+# Import custom modules.
+from .commandSpaceCfg import CommandsCfg
+from .actionSpaceCfg import ActionsCfg
+from .observationSpaceCfg import ObservationsCfg
+from .rewardCfg import RewardsCfg
 
 # Import settings. 
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import CPU_POOL_BUCKET_SIZE, CURRICULUM_ERROR_THRESHOLD_UP, CURRICULUM_ERROR_THRESHOLD_DOWN
