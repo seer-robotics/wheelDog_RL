@@ -15,112 +15,113 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import STATE_HISTORY, 
 class ObservationsCfg:
     """Observation specifications for the MDP."""
 
-    # @configclass
-    # class PolicyCfg(ObsGroup):
-    #     """Observations for policy group."""
-    #     ##
-    #     # observation terms (order preserved)
-    #     # Implement observation history on a per-term basis.
-    #     ##
+    @configclass
+    class PolicyCfg(ObsGroup):
+        """Observations for policy group."""
+        ##
+        # observation terms (order preserved)
+        # Implement observation history on a per-term basis.
+        ##
 
-    #     # Base states history
-    #     base_lin_vel = ObsTerm(
-    #         func=isaac_mdp.base_lin_vel, 
-    #         noise=Gnoise(mean=0, std=0.20),
-    #         history_length=BASE_STATES_HISTORY,
-    #     )
-    #     base_ang_vel = ObsTerm(
-    #         func=isaac_mdp.base_ang_vel, 
-    #         noise=Gnoise(mean=0, std=0.08),
-    #         history_length=BASE_STATES_HISTORY,
-    #     )
+        # Base states history
+        base_lin_vel = ObsTerm(
+            func=mdp.base_lin_vel, 
+            noise=Gnoise(mean=0, std=0.20),
+            history_length=STATE_HISTORY,
+        )
+        base_ang_vel = ObsTerm(
+            func=mdp.base_ang_vel, 
+            noise=Gnoise(mean=0, std=0.08),
+            history_length=STATE_HISTORY,
+        )
 
-    #     # IMU sensor history. 
-    #     imu_ang_vel = ObsTerm(
-    #         func=isaac_mdp.imu_ang_vel,
-    #         noise=Gnoise(mean=0, std=0.035),
-    #         params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
-    #         history_length=BASE_STATES_HISTORY,
-    #     )
-    #     imu_projected_gravity = ObsTerm(
-    #         func=isaac_mdp.imu_projected_gravity,
-    #         noise=Gnoise(mean=0, std=0.06),
-    #         params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
-    #         history_length=BASE_STATES_HISTORY,
-    #     )
+        # IMU sensor history. 
+        imu_ang_vel = ObsTerm(
+            func=mdp.imu_ang_vel,
+            noise=Gnoise(mean=0, std=0.035),
+            params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
+            history_length=STATE_HISTORY,
+        )
+        imu_projected_gravity = ObsTerm(
+            func=mdp.imu_projected_gravity,
+            noise=Gnoise(mean=0, std=0.06),
+            params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
+            history_length=STATE_HISTORY,
+        )
 
-    #     # Commands. 
-    #     commands_history = ObsTerm(
-    #         func=isaac_mdp.generated_commands, 
-    #         params={"command_name": "base_velocity"},
-    #     )
+        # Commands. 
+        commands_history = ObsTerm(
+            func=mdp.generated_commands, 
+            params={"command_name": "base_velocity"},
+            history_length=SHORT_HISTORY,
+        )
 
-    #     # Joint states history. 
-    #     # Excludes the wheel positions from the joint positions history. 
-    #     joint_pos = ObsTerm(
-    #         func=isaac_mdp.joint_pos_rel, 
-    #         noise=Gnoise(mean=0, std=0.03),
-    #         params={
-    #             "asset_cfg": SceneEntityCfg(
-    #                 "robot", 
-    #                 joint_names=[
-    #                     "FBL_ABAD_JOINT",
-    #                     "FAR_ABAD_JOINT",
-    #                     "RBL_ABAD_JOINT",
-    #                     "RAR_ABAD_JOINT",
-    #                     "FBL_HIP_JOINT",
-    #                     "FAR_HIP_JOINT",
-    #                     "RBL_HIP_JOINT",
-    #                     "RAR_HIP_JOINT",
-    #                     "FBL_KNEE_JOINT",
-    #                     "FAR_KNEE_JOINT",
-    #                     "RBL_KNEE_JOINT",
-    #                     "RAR_KNEE_JOINT",
-    #                 ],
-    #                 preserve_order=True,
-    #             ),
-    #         },
-    #         history_length=JOINT_STATES_HISTORY,
-    #     )
-    #     joint_vel = ObsTerm(
-    #         func=isaac_mdp.joint_vel_rel, 
-    #         noise=Gnoise(mean=0, std=0.08),
-    #         params={
-    #             "asset_cfg": SceneEntityCfg(
-    #                 "robot", 
-    #                 joint_names=[
-    #                     "FBL_ABAD_JOINT",
-    #                     "FAR_ABAD_JOINT",
-    #                     "RBL_ABAD_JOINT",
-    #                     "RAR_ABAD_JOINT",
-    #                     "FBL_HIP_JOINT",
-    #                     "FAR_HIP_JOINT",
-    #                     "RBL_HIP_JOINT",
-    #                     "RAR_HIP_JOINT",
-    #                     "FBL_KNEE_JOINT",
-    #                     "FAR_KNEE_JOINT",
-    #                     "RBL_KNEE_JOINT",
-    #                     "RAR_KNEE_JOINT",
-    #                     "FBL_FOOT_JOINT",
-    #                     "FAR_FOOT_JOINT",
-    #                     "RBL_FOOT_JOINT",
-    #                     "RAR_FOOT_JOINT",
-    #                 ],
-    #                 preserve_order=True,
-    #             ),
-    #         },
-    #         history_length=JOINT_STATES_HISTORY,
-    #     )
+        # Joint states history. 
+        # Excludes the wheel positions from the joint positions history. 
+        joint_pos = ObsTerm(
+            func=mdp.joint_pos_rel, 
+            noise=Gnoise(mean=0, std=0.03),
+            params={
+                "asset_cfg": SceneEntityCfg(
+                    "robot", 
+                    joint_names=[
+                        "FBL_ABAD_JOINT",
+                        "FAR_ABAD_JOINT",
+                        "RBL_ABAD_JOINT",
+                        "RAR_ABAD_JOINT",
+                        "FBL_HIP_JOINT",
+                        "FAR_HIP_JOINT",
+                        "RBL_HIP_JOINT",
+                        "RAR_HIP_JOINT",
+                        "FBL_KNEE_JOINT",
+                        "FAR_KNEE_JOINT",
+                        "RBL_KNEE_JOINT",
+                        "RAR_KNEE_JOINT",
+                    ],
+                    preserve_order=True,
+                ),
+            },
+            history_length=STATE_HISTORY,
+        )
+        joint_vel = ObsTerm(
+            func=mdp.joint_vel_rel, 
+            noise=Gnoise(mean=0, std=0.08),
+            params={
+                "asset_cfg": SceneEntityCfg(
+                    "robot", 
+                    joint_names=[
+                        "FBL_ABAD_JOINT",
+                        "FAR_ABAD_JOINT",
+                        "RBL_ABAD_JOINT",
+                        "RAR_ABAD_JOINT",
+                        "FBL_HIP_JOINT",
+                        "FAR_HIP_JOINT",
+                        "RBL_HIP_JOINT",
+                        "RAR_HIP_JOINT",
+                        "FBL_KNEE_JOINT",
+                        "FAR_KNEE_JOINT",
+                        "RBL_KNEE_JOINT",
+                        "RAR_KNEE_JOINT",
+                        "FBL_FOOT_JOINT",
+                        "FAR_FOOT_JOINT",
+                        "RBL_FOOT_JOINT",
+                        "RAR_FOOT_JOINT",
+                    ],
+                    preserve_order=True,
+                ),
+            },
+            history_length=STATE_HISTORY,
+        )
 
-    #     # Action history. 
-    #     velocity_actions = ObsTerm(
-    #         func=isaac_mdp.last_action,
-    #         history_length=BASE_STATES_HISTORY,
-    #     )
+        # Action history. 
+        velocity_actions = ObsTerm(
+            func=mdp.last_action,
+            history_length=STATE_HISTORY,
+        )
 
-    #     def __post_init__(self):
-    #         self.enable_corruption = True
-    #         self.concatenate_terms = True
+        def __post_init__(self):
+            self.enable_corruption = True
+            self.concatenate_terms = True
 
     @configclass
     class CriticCfg(ObsGroup):
@@ -201,14 +202,6 @@ class ObservationsCfg:
         )
 
         # Exteroceptive info.
-        base_height_scan = ObsTerm(
-            func=mdp.height_scan,
-            params={
-                "sensor_cfg": SceneEntityCfg("height_scanner"),
-                "offset": 0.5,
-            },
-            clip=(-1.5, 1.5),
-        )
         feet_contacts = ObsTerm(
             # Feet binary contact states.
             func=mdp.contact_states,
@@ -288,6 +281,50 @@ class ObservationsCfg:
             func=mdp.terrain_normals,
             params={"sensor_cfg": SceneEntityCfg("rr_leg_ray")},
         )
+        fl_foot_scan = ObsTerm(
+            # Height scan around front left foot.
+            func=mdp.height_scan,
+            params={
+                "sensor_cfg": SceneEntityCfg("fl_leg_ray"),
+                "offset": 0.1,
+            },
+            clip=(-1.5, 1.5),
+        )
+        fr_foot_scan = ObsTerm(
+            # Height scan around front right foot.
+            func=mdp.height_scan,
+            params={
+                "sensor_cfg": SceneEntityCfg("fr_leg_ray"),
+                "offset": 0.1,
+            },
+            clip=(-1.5, 1.5),
+        )
+        rl_foot_scan = ObsTerm(
+            # Height scan around rear left foot.
+            func=mdp.height_scan,
+            params={
+                "sensor_cfg": SceneEntityCfg("rl_leg_ray"),
+                "offset": 0.1,
+            },
+            clip=(-1.5, 1.5),
+        )
+        rr_foot_scan = ObsTerm(
+            # Height scan around rear right foot.
+            func=mdp.height_scan,
+            params={
+                "sensor_cfg": SceneEntityCfg("rr_leg_ray"),
+                "offset": 0.1,
+            },
+            clip=(-1.5, 1.5),
+        )
+        # base_height_scan = ObsTerm(
+        #     func=mdp.height_scan,
+        #     params={
+        #         "sensor_cfg": SceneEntityCfg("height_scanner"),
+        #         "offset": 0.5,
+        #     },
+        #     clip=(-1.5, 1.5),
+        # )
         
         # Dynamics randomization observation terms.
         # contact_friction = ObsTerm(
@@ -308,5 +345,5 @@ class ObservationsCfg:
             self.concatenate_terms = True
 
     # observation groups
-    # policy: PolicyCfg = PolicyCfg()
+    policy: PolicyCfg = PolicyCfg()
     critic: CriticCfg = CriticCfg()

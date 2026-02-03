@@ -23,8 +23,8 @@ class PPORunnerCfg(RslRlOnPolicyRunnerCfg):
         activation="elu",
     )
     obs_groups = {
-        "policy": ["critic"],
-        "critic": ["critic"],
+        "policy": ["policy"],
+        "critic": ["policy", "critic"],
     }
     algorithm = RslRlPpoAlgorithmCfg(
         value_loss_coef=1.0,
