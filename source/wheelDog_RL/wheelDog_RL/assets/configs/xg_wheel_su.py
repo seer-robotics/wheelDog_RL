@@ -46,8 +46,8 @@ XG_WHEEL_SU_CFG = ArticulationCfg(
         ),
         "wheels": ImplicitActuatorCfg(
             joint_names_expr=[".*_FOOT_JOINT"],
-            effort_limit=80.0,
-            velocity_limit=60.0,
+            effort_limit_sim=80.0,
+            velocity_limit_sim=60.0,
             stiffness=0.0,
             damping=1.5,
         )
