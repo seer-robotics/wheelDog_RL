@@ -76,6 +76,7 @@ def terrain_normals(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch
 
     # Ray-cast hit points in the world frame.
     leg_scans_w = leg_rays.data.ray_hits_w
+    leg_scans_w = torch.nan_to_num(leg_scans_w, nan=0.0, posinf=1.5, neginf=-1.5)
 
     # Compute world frame normal vector of point cloud surface.
     B = leg_scans_w.shape[1]
@@ -167,5 +168,5 @@ def normal_forces(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.T
 
     # Transform forces to robot base frame and return.
     wheel_forces_b = quat_apply_inverse(base_quat_w, wheel_forces_w)
-    wheel_forces_b = torch.nan_to_num(wheel_forces_b, nan=0.0, posinf=0.0, neginf=0.0)
+    wheel_forces_b = torch.nan_to_num(wheel_forces_b, nan=0.0, posinf=100.0, neginf=-100.0)
     return wheel_forces_b

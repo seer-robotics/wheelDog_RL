@@ -173,46 +173,6 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
     #     max_contact_data_count_per_prim=16,
     #     debug_vis=False,
     # )
-    # fl_leg_ray = RayCasterCfg(
-    #     # Front left foot terrain scanner.
-    #     prim_path="{ENV_REGEX_NS}/Robot/FBL_FOOT_LINK",
-    #     offset=RayCasterCfg.OffsetCfg(pos=(0.0, 4.8e-2, 0.0)),
-    #     ray_alignment="yaw",
-    #     pattern_cfg=patterns.GridPatternCfg(
-    #         resolution=8.0e-2, size=[16.0e-2, 16.0e-2]),
-    #     debug_vis=False,
-    #     mesh_prim_paths=["/World/ground"],
-    # )
-    # rl_leg_ray = RayCasterCfg(
-    #     # Rear left foot terrain scanner.
-    #     prim_path="{ENV_REGEX_NS}/Robot/RBL_FOOT_LINK",
-    #     offset=RayCasterCfg.OffsetCfg(pos=(0.0, 4.8e-2, 0.0)),
-    #     ray_alignment="yaw",
-    #     pattern_cfg=patterns.GridPatternCfg(
-    #         resolution=8.0e-2, size=[16.0e-2, 16.0e-2]),
-    #     debug_vis=False,
-    #     mesh_prim_paths=["/World/ground"],
-    # )
-    # fr_leg_ray = RayCasterCfg(
-    #     # Front right foot terrain scanner.
-    #     prim_path="{ENV_REGEX_NS}/Robot/FAR_FOOT_LINK",
-    #     offset=RayCasterCfg.OffsetCfg(pos=(0.0, -4.8e-2, 0.0)),
-    #     ray_alignment="yaw",
-    #     pattern_cfg=patterns.GridPatternCfg(
-    #         resolution=8.0e-2, size=[16.0e-2, 16.0e-2]),
-    #     debug_vis=False,
-    #     mesh_prim_paths=["/World/ground"],
-    # )
-    # rr_leg_ray = RayCasterCfg(
-    #     # Rear right foot terrain scanner.
-    #     prim_path="{ENV_REGEX_NS}/Robot/RAR_FOOT_LINK",
-    #     offset=RayCasterCfg.OffsetCfg(pos=(0.0, -4.8e-2, 0.0)),
-    #     ray_alignment="yaw",
-    #     pattern_cfg=patterns.GridPatternCfg(
-    #         resolution=8.0e-2, size=[16.0e-2, 16.0e-2]),
-    #     debug_vis=False,
-    #     mesh_prim_paths=["/World/ground"],
-    # )
     fl_leg_ray = RayCasterCfg(
         # Front left foot terrain scanner.
         prim_path="{ENV_REGEX_NS}/Robot/FBL_FOOT_LINK",
