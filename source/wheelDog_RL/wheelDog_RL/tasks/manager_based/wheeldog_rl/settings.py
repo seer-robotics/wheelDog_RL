@@ -1,5 +1,11 @@
-# Parameters and settings. 
+# Observation space settings. 
 JOINT_STATES_HISTORY = 5
 BASE_STATES_HISTORY  = 3
-ANGULAR_ERROR_SCALE = 1.0
+
+# Event RNG settings.
 CPU_POOL_BUCKET_SIZE = 256
+
+# Curriculum settings.
+ANGULAR_ERROR_SCALE = 1.0
+CURRICULUM_ERROR_THRESHOLD_UP = 0.25
+CURRICULUM_ERROR_THRESHOLD_DOWN = 1.0

@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from isaaclab.envs.common import VecEnvStepReturn
 
 # Import custom manager.
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.customCurriculum import VelocityErrorRecorder
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.mdp import VelocityErrorRecorder
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import watchDogs
 
 # Import settings.

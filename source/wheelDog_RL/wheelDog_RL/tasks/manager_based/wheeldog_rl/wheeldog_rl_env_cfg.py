@@ -8,7 +8,6 @@ from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.utils import configclass
-from isaaclab.utils.noise import AdditiveGaussianNoiseCfg as Gnoise
 
 # Import scene definition. 
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.sceneCfg import wheelDog_RL_sceneCfg
@@ -16,15 +15,14 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl.sceneCfg import wheelDog_RL_sce
 # Local mdp module inherited from Isaac.
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
-# Import custom modules. 
-from .mdp import ActionsCfg
-from .mdp import CommandsCfg
-from .mdp import ObservationsCfg
-from .mdp import RewardsCfg
-from wheelDog_RL.tasks.manager_based.wheeldog_rl import customCurriculum
+# Import MDP configurations from the local mdp module. 
+from mdp import ActionsCfg
+from mdp import CommandsCfg
+from mdp import ObservationsCfg
+from mdp import RewardsCfg
 
 # Import settings. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import CPU_POOL_BUCKET_SIZE
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import CPU_POOL_BUCKET_SIZE, CURRICULUM_ERROR_THRESHOLD_UP, CURRICULUM_ERROR_THRESHOLD_DOWN
 
 
 ##
@@ -155,10 +153,10 @@ class CurriculumCfg:
     """Curriculum terms for the MDP."""
 
     terrain_levels = CurrTerm(
-        func=customCurriculum.terrain_levels_velocityError,
+        func=mdp.terrain_levels_velocityError,
         params={
-            "error_threshold_up": 0.4,
-            "error_threshold_down": 1.6,
+            "error_threshold_up": CURRICULUM_ERROR_THRESHOLD_UP,
+            "error_threshold_down": CURRICULUM_ERROR_THRESHOLD_DOWN,
         }
         )
 

@@ -3,6 +3,7 @@ from isaaclab.utils import configclass
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
+from isaaclab.utils.noise import AdditiveGaussianNoiseCfg as Gnoise
 
 # Local mdp module inherited from Isaac.
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp

@@ -15,3 +15,4 @@ from .observationSpaceCfg import ObservationsCfg
 from .rewardCfg import RewardsCfg
 from .rewards import *
 from .observations import *
+from .curriculums import *
