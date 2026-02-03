@@ -327,17 +327,17 @@ class ObservationsCfg:
         # )
         
         # Dynamics randomization observation terms.
-        # contact_friction = ObsTerm(
-        #     func=customObservations.contact_friction,
-        #     params={
-        #         "link_names": [
-        #             "FBL_FOOT_LINK",
-        #             "FAR_FOOT_LINK",
-        #             "RBL_FOOT_LINK",
-        #             "RAR_FOOT_LINK",
-        #         ]
-        #     },
-        # )
+        contact_friction = ObsTerm(
+            func=mdp.contact_friction,
+            params={
+                "link_names": [
+                    "FBL_FOOT_LINK",
+                    "FAR_FOOT_LINK",
+                    "RBL_FOOT_LINK",
+                    "RAR_FOOT_LINK",
+                ]
+            },
+        )
         
         def __post_init__(self):
             # No noise for priviledged information.
