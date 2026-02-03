@@ -9,10 +9,6 @@ from isaaclab.envs.mdp import *  # noqa: F401, F403
 
 
 # Custom definitions.
-from .actionSpaceCfg import ActionsCfg
-from .commandSpaceCfg import CommandsCfg
-from .observationSpaceCfg import ObservationsCfg
-from .rewardCfg import RewardsCfg
 from .rewards import *
 from .observations import *
 from .curriculums import *

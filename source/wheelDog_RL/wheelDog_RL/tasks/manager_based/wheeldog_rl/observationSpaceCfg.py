@@ -9,7 +9,7 @@ from isaaclab.utils.noise import AdditiveGaussianNoiseCfg as Gnoise
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
 # Import settings. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import BASE_STATES_HISTORY
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import STATE_HISTORY, SHORT_HISTORY
 
 @configclass
 class ObservationsCfg:
@@ -126,7 +126,6 @@ class ObservationsCfg:
     class CriticCfg(ObsGroup):
         """Observations for critic group."""
         # Base states history.
-        # base_pos_z = ObsTerm(func=isaac_mdp.base_pos_z)
         base_lin_vel = ObsTerm(
             func=mdp.base_lin_vel,
         )
@@ -170,6 +169,7 @@ class ObservationsCfg:
                     preserve_order=True,
                 ),
             },
+            history_length=SHORT_HISTORY,
         )
         joint_vel = ObsTerm(
             func=mdp.joint_vel_rel,
@@ -197,6 +197,7 @@ class ObservationsCfg:
                     preserve_order=True,
                 ),
             },
+            history_length=SHORT_HISTORY,
         )
 
         # Exteroceptive info.
@@ -224,25 +225,25 @@ class ObservationsCfg:
                     preserve_order=True,
                 )
             },
-            history_length=BASE_STATES_HISTORY,
+            history_length=SHORT_HISTORY,
         )
-        # feet_forces = ObsTerm(
-        #     # Feet binary contact states.
-        #     func=customObservations.normal_forces,
-        #     params={
-        #         "sensor_cfg": SceneEntityCfg(
-        #             "contact_forces",
-        #             body_names=[
-        #                 "FBL_FOOT_LINK",
-        #                 "FAR_FOOT_LINK",
-        #                 "RBL_FOOT_LINK",
-        #                 "RAR_FOOT_LINK",
-        #             ],
-        #             preserve_order=True,
-        #         )
-        #     },
-        #     history_length=BASE_STATES_HISTORY,
-        # )
+        feet_forces = ObsTerm(
+            # Feet normal contact states.
+            func=mdp.normal_forces,
+            params={
+                "sensor_cfg": SceneEntityCfg(
+                    "contact_forces",
+                    body_names=[
+                        "FBL_FOOT_LINK",
+                        "FAR_FOOT_LINK",
+                        "RBL_FOOT_LINK",
+                        "RAR_FOOT_LINK",
+                    ],
+                    preserve_order=True,
+                )
+            },
+            history_length=SHORT_HISTORY,
+        )
         # fl_foot_forces = ObsTerm(
         #     # Front left foot normal and tangential contact forces.
         #     func=customObservations.normal_forces,
@@ -267,30 +268,26 @@ class ObservationsCfg:
         #     params={"sensor_cfg": SceneEntityCfg("rr_foot_contacts")},
         #     history_length=BASE_STATES_HISTORY,
         # )
-        # fl_foot_normals = ObsTerm(
-        #     # Terrain normals around front left foot.
-        #     func=customObservations.terrain_normals,
-        #     params={"sensor_cfg": SceneEntityCfg("fl_leg_ray")},
-        #     history_length=BASE_STATES_HISTORY
-        # )
-        # fr_foot_normals = ObsTerm(
-        #     # Terrain normals around front right foot.
-        #     func=customObservations.terrain_normals,
-        #     params={"sensor_cfg": SceneEntityCfg("fr_leg_ray")},
-        #     history_length=BASE_STATES_HISTORY
-        # )
-        # rl_foot_normals = ObsTerm(
-        #     # Terrain normals around rear left foot.
-        #     func=customObservations.terrain_normals,
-        #     params={"sensor_cfg": SceneEntityCfg("rl_leg_ray")},
-        #     history_length=BASE_STATES_HISTORY
-        # )
-        # rr_foot_normals = ObsTerm(
-        #     # Terrain normals around rear right foot.
-        #     func=customObservations.terrain_normals,
-        #     params={"sensor_cfg": SceneEntityCfg("rr_leg_ray")},
-        #     history_length=BASE_STATES_HISTORY
-        # )
+        fl_foot_normals = ObsTerm(
+            # Terrain normals around front left foot.
+            func=mdp.terrain_normals,
+            params={"sensor_cfg": SceneEntityCfg("fl_leg_ray")},
+        )
+        fr_foot_normals = ObsTerm(
+            # Terrain normals around front right foot.
+            func=mdp.terrain_normals,
+            params={"sensor_cfg": SceneEntityCfg("fr_leg_ray")},
+        )
+        rl_foot_normals = ObsTerm(
+            # Terrain normals around rear left foot.
+            func=mdp.terrain_normals,
+            params={"sensor_cfg": SceneEntityCfg("rl_leg_ray")},
+        )
+        rr_foot_normals = ObsTerm(
+            # Terrain normals around rear right foot.
+            func=mdp.terrain_normals,
+            params={"sensor_cfg": SceneEntityCfg("rr_leg_ray")},
+        )
         
         # Dynamics randomization observation terms.
         # contact_friction = ObsTerm(
