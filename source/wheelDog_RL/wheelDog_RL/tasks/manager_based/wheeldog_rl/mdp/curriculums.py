@@ -133,7 +133,8 @@ def action_scale_terrainLevels(
     env: ManagerBasedRLEnv,
     env_ids: Sequence[int],
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-    action_levels: int = 8
+    action_levels: int = 8,
+    max_scale: float = 2.0,
 ) -> torch.Tensor:
     """Curriculum based on the rounded mean terrain levels of all envs.
 
@@ -151,6 +152,8 @@ def action_scale_terrainLevels(
 
     stage = ((torch.floor(mean_levels)) * action_levels) // 20
     stage = torch.clamp(stage, min=0, max = action_levels-1)
+
+    factor = 1.0 + (max_scale - 1.0) * (stage/(action_levels-1))
 
     # print(f"stage: {stage}")
     # print(f"action_manager._terms.items(): {action_manager._terms.items()}")
@@ -170,11 +173,11 @@ def action_scale_terrainLevels(
     for term_name, action_term in action_manager._terms.items():
         base_scale = action_term.cfg.scale
 
-        current_scale = base_scale + base_scale * stage
+        current_scale = base_scale + base_scale * factor
         # print(f"action_term._scale: {action_term._scale}")
         action_term._scale = current_scale
 
         # print(f"current_scale: {current_scale}")
 
     # Placeholder return value.
-    return current_scale
+    return stage

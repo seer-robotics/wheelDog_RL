@@ -22,7 +22,12 @@ from .observationSpaceCfg import ObservationsCfg
 from .rewardCfg import RewardsCfg
 
 # Import settings. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import CPU_POOL_BUCKET_SIZE, CURRICULUM_ERROR_THRESHOLD_UP, CURRICULUM_ERROR_THRESHOLD_DOWN, ACTION_CURR_LEVELS
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import \
+    CPU_POOL_BUCKET_SIZE, \
+    CURRICULUM_ERROR_THRESHOLD_UP, \
+    CURRICULUM_ERROR_THRESHOLD_DOWN, \
+    ACTION_CURRICULUM_LEVELS, \
+    ACTION_CURRICULUM_MAX_SCALE
 
 
 ##
@@ -162,7 +167,10 @@ class CurriculumCfg:
     
     action_levels = CurrTerm(
         func=mdp.action_scale_terrainLevels,
-        params={"action_levels": ACTION_CURR_LEVELS},
+        params={
+            "action_levels": ACTION_CURRICULUM_LEVELS,
+            "max_scale": ACTION_CURRICULUM_MAX_SCALE,
+        },
     )
 
 
