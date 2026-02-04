@@ -65,14 +65,14 @@ class VelocityErrorRecorder():
         return self._episode_cum_error[env_ids].clone()
 
 
-# Velocity error based curriculum function. 
+# Velocity error based terrain curriculum function. 
 def terrain_levels_velocityError(
     env: ManagerBasedRLEnv,
     env_ids: Sequence[int],
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     command_name: str = "base_velocity",
-    error_threshold_up: float = 0.5,
-    error_threshold_down: float = 2.0
+    error_threshold_up: float = 0.4,
+    error_threshold_down: float = 1.6
 ) -> torch.Tensor:
     """Curriculum based on the integrated velocity error the robot walked when commanded to move at a desired velocity.
 
@@ -126,3 +126,55 @@ def terrain_levels_velocityError(
 
     # Return the mean terrain level.
     return torch.mean(terrain.terrain_levels.float())
+
+
+# Terrain levels based action scale curriculum.
+def action_scale_terrainLevels(
+    env: ManagerBasedRLEnv,
+    env_ids: Sequence[int],
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    action_levels: int = 8
+) -> torch.Tensor:
+    """Curriculum based on the rounded mean terrain levels of all envs.
+
+    This term is used to increase the action scale of the robots as the mean terrain levels progress to higher difficulties.
+
+    .. note::
+        It is only possible to use this term when there is a terrain levels curriculum in place.
+
+    Returns:
+        
+    """
+    terrain: TerrainImporter = env.scene.terrain
+    mean_levels = torch.mean(terrain.terrain_levels.float())
+    action_manager = env.action_manager
+
+    stage = ((torch.floor(mean_levels)) * action_levels) // 20
+    stage = torch.clamp(stage, min=0, max = action_levels-1)
+
+    # print(f"stage: {stage}")
+    # print(f"action_manager._terms.items(): {action_manager._terms.items()}")
+
+    # import torch
+
+    # action_levels = 8
+
+    # # mean_levels = torch.arange(0, 20.5, 0.5)
+    # mean_levels = torch.mean(torch.Tensor([10, 11]))
+
+    # stage = ((torch.floor(mean_levels)) * action_levels) // 20
+    # stage = torch.clamp(stage, min=0, max = action_levels-1)
+
+    # print(f"stages: \n{stage}")
+
+    for term_name, action_term in action_manager._terms.items():
+        base_scale = action_term.cfg.scale
+
+        current_scale = base_scale + base_scale * stage
+        # print(f"action_term._scale: {action_term._scale}")
+        action_term._scale = current_scale
+
+        # print(f"current_scale: {current_scale}")
+
+    # Placeholder return value.
+    return current_scale

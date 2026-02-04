@@ -23,7 +23,7 @@ class ObservationsCfg:
         # Implement observation history on a per-term basis.
         ##
 
-        # Base states history
+        # Base states.
         base_lin_vel = ObsTerm(
             func=mdp.base_lin_vel, 
             noise=Gnoise(mean=0, std=0.20),
@@ -35,7 +35,7 @@ class ObservationsCfg:
             history_length=STATE_HISTORY,
         )
 
-        # IMU sensor history. 
+        # IMU sensor. 
         imu_ang_vel = ObsTerm(
             func=mdp.imu_ang_vel,
             noise=Gnoise(mean=0, std=0.035),
@@ -54,6 +54,12 @@ class ObservationsCfg:
             func=mdp.generated_commands, 
             params={"command_name": "base_velocity"},
             history_length=SHORT_HISTORY,
+        )
+
+        # Actions. 
+        joint_actions = ObsTerm(
+            func=mdp.last_action,
+            history_length=STATE_HISTORY,
         )
 
         # Joint states history. 
@@ -113,12 +119,6 @@ class ObservationsCfg:
             history_length=STATE_HISTORY,
         )
 
-        # Action history. 
-        velocity_actions = ObsTerm(
-            func=mdp.last_action,
-            history_length=STATE_HISTORY,
-        )
-
         def __post_init__(self):
             self.enable_corruption = True
             self.concatenate_terms = True
@@ -126,7 +126,7 @@ class ObservationsCfg:
     @configclass
     class CriticCfg(ObsGroup):
         """Observations for critic group."""
-        # Base states history.
+        # Base states.
         base_lin_vel = ObsTerm(
             func=mdp.base_lin_vel,
         )
@@ -141,8 +141,8 @@ class ObservationsCfg:
             params={"command_name": "base_velocity"},
         )
 
-        # Action history. 
-        velocity_actions = ObsTerm(
+        # Action. 
+        joint_actions = ObsTerm(
             func=mdp.last_action,
         )
 
@@ -201,7 +201,7 @@ class ObservationsCfg:
             history_length=SHORT_HISTORY,
         )
 
-        # Exteroceptive info.
+        # Contact terms.
         feet_contacts = ObsTerm(
             # Feet binary contact states.
             func=mdp.contact_states,
@@ -261,6 +261,8 @@ class ObservationsCfg:
         #     params={"sensor_cfg": SceneEntityCfg("rr_foot_contacts")},
         #     history_length=BASE_STATES_HISTORY,
         # )
+
+        # Height scan terms.
         fl_foot_normals = ObsTerm(
             # Terrain normals around front left foot.
             func=mdp.terrain_normals,

@@ -22,7 +22,7 @@ from .observationSpaceCfg import ObservationsCfg
 from .rewardCfg import RewardsCfg
 
 # Import settings. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import CPU_POOL_BUCKET_SIZE, CURRICULUM_ERROR_THRESHOLD_UP, CURRICULUM_ERROR_THRESHOLD_DOWN
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import CPU_POOL_BUCKET_SIZE, CURRICULUM_ERROR_THRESHOLD_UP, CURRICULUM_ERROR_THRESHOLD_DOWN, ACTION_CURR_LEVELS
 
 
 ##
@@ -159,6 +159,11 @@ class CurriculumCfg:
             "error_threshold_down": CURRICULUM_ERROR_THRESHOLD_DOWN,
         }
         )
+    
+    action_levels = CurrTerm(
+        func=mdp.action_scale_terrainLevels,
+        params={"action_levels": ACTION_CURR_LEVELS},
+    )
 
 
 ##
@@ -172,9 +177,9 @@ class BlindLocomotionCfg(ManagerBasedRLEnvCfg):
     # Scene settings
     scene: wheelDog_RL_sceneCfg = wheelDog_RL_sceneCfg(num_envs=4096, env_spacing=8)
     # State settings
-    observations: ObservationsCfg = ObservationsCfg()
-    actions: ActionsCfg = ActionsCfg()
     commands: CommandsCfg = CommandsCfg()
+    actions: ActionsCfg = ActionsCfg()
+    observations: ObservationsCfg = ObservationsCfg()
     # MDP settings
     rewards: RewardsCfg = RewardsCfg()
     terminations: TerminationsCfg = TerminationsCfg()

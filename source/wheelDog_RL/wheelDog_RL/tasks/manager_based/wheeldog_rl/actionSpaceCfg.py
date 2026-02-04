@@ -48,24 +48,6 @@ class ActionsCfg:
         preserve_order=True,
         use_default_offset=True,
     )
-    wheel_joint_vel = isaac_mdp.JointVelocityActionCfg(
-        asset_name="robot",
-        joint_names=[
-            "FBL_FOOT_JOINT",
-            "FAR_FOOT_JOINT",
-            "RBL_FOOT_JOINT",
-            "RAR_FOOT_JOINT",
-        ],
-        scale=5.0,
-        preserve_order=True,
-        use_default_offset=True,
-        clip={
-            "FBL_FOOT_JOINT": (-160.0, 160.0),
-            "FAR_FOOT_JOINT": (-160.0, 160.0),
-            "RBL_FOOT_JOINT": (-160.0, 160.0),
-            "RAR_FOOT_JOINT": (-160.0, 160.0),
-        },
-    )
     # joint_pos = isaac_mdp.JointPositionToLimitsActionCfg(
     #     asset_name="robot",
     #     joint_names=[
@@ -85,3 +67,21 @@ class ActionsCfg:
     #     scale=1.0,
     #     preserve_order=True,
     # )
+    wheel_joint_vel = isaac_mdp.JointVelocityActionCfg(
+        asset_name="robot",
+        joint_names=[
+            "FBL_FOOT_JOINT",
+            "FAR_FOOT_JOINT",
+            "RBL_FOOT_JOINT",
+            "RAR_FOOT_JOINT",
+        ],
+        scale=5.0,
+        preserve_order=True,
+        use_default_offset=True,
+        clip={
+            "FBL_FOOT_JOINT": (-160.0, 160.0),
+            "FAR_FOOT_JOINT": (-160.0, 160.0),
+            "RBL_FOOT_JOINT": (-160.0, 160.0),
+            "RAR_FOOT_JOINT": (-160.0, 160.0),
+        },
+    )
