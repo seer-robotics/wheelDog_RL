@@ -21,6 +21,7 @@ class WheelDog_BlindLocomotionEnvCfg(BlindLocomotionCfg):
         self.scene.fr_leg_ray.update_period = self.sim.dt
         self.scene.rl_leg_ray.update_period = self.sim.dt
         self.scene.rr_leg_ray.update_period = self.sim.dt
+        # self.scene.height_scanner.update_period = self.sim.dt
         self.scene.contact_forces.update_period = self.sim.dt
 
 

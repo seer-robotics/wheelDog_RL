@@ -21,14 +21,14 @@ class RewardsCfg:
     )
     track_ang_vel_z_exp = RewTerm(
         func=mdp.track_ang_vel_z_exp,
-        weight=0.5,
+        weight=0.6,
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
     stay_alive = RewTerm(mdp.is_alive, weight=1.0)
     feet_ground_time = RewTerm(
         # Reward keeping the feet on the ground.
         func=mdp.feet_ground_time,
-        weight=1e-2,
+        weight=5e-2,
         params={
             "sensor_cfg": SceneEntityCfg(
                 "contact_forces",
@@ -41,7 +41,7 @@ class RewardsCfg:
                 preserve_order=True,
             ),
             "command_name": "base_velocity",
-            "threshold": 0.2,
+            "threshold": 0.04,
         },
     )
     
@@ -53,7 +53,7 @@ class RewardsCfg:
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
     dof_pos_deviate = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.5,
+        weight=-0.2,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", 
