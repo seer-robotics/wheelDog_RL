@@ -89,12 +89,12 @@ class RewardsCfg:
             "threshold": 1.0
         },
     )
-    base_height = RewTerm(
-        func=mdp.base_height_l2,
-        weight=-1.0,
-        params={
-            "target_height": 0.35,
-            "asset_cfg": SceneEntityCfg("robot"),
-            "sensor_cfg": SceneEntityCfg("height_scanner"),
-        }
-    )
+    # base_height = RewTerm(
+    #     func=mdp.base_height_l2,
+    #     weight=-1.0,
+    #     params={
+    #         "target_height": 0.35,
+    #         "asset_cfg": SceneEntityCfg("robot"),
+    #         "sensor_cfg": SceneEntityCfg("height_scanner"),
+    #     }
+    # )

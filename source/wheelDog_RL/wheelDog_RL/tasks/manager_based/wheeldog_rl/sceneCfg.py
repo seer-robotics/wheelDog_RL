@@ -113,14 +113,14 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
     )
 
     # Sensors.
-    height_scanner = RayCasterCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/BASE_LINK",
-        offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 20.0)),
-        ray_alignment="yaw",
-        pattern_cfg=patterns.GridPatternCfg(resolution=0.1, size=[2.4, 1.6]),
-        debug_vis=False,
-        mesh_prim_paths=["/World/ground"],
-    )
+    # height_scanner = RayCasterCfg(
+    #     prim_path="{ENV_REGEX_NS}/Robot/BASE_LINK",
+    #     offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 20.0)),
+    #     ray_alignment="yaw",
+    #     pattern_cfg=patterns.GridPatternCfg(resolution=0.1, size=[2.4, 1.6]),
+    #     debug_vis=False,
+    #     mesh_prim_paths=["/World/ground"],
+    # )
     base_IMU = ImuCfg(
         prim_path="{ENV_REGEX_NS}/Robot/BASE_LINK",
         gravity_bias=(0.00, 0.00, 9.81), # Remember to account for gravity bias
@@ -179,7 +179,7 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, 4.8e-2, 0.0)),
         ray_alignment="yaw",
         pattern_cfg=PointCirclePatternCfg(
-            radius=8.0e-2, num_circle_points=12,
+            radius=8.0e-2, num_circle_points=8,
         ),
         mesh_prim_paths=["/World/ground"],
     )
@@ -189,7 +189,7 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, 4.8e-2, 0.0)),
         ray_alignment="yaw",
         pattern_cfg=PointCirclePatternCfg(
-            radius=8.0e-2, num_circle_points=12,
+            radius=8.0e-2, num_circle_points=8,
         ),
         mesh_prim_paths=["/World/ground"],
     )
@@ -199,7 +199,7 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, -4.8e-2, 0.0)),
         ray_alignment="yaw",
         pattern_cfg=PointCirclePatternCfg(
-            radius=8.0e-2, num_circle_points=12,
+            radius=8.0e-2, num_circle_points=8,
         ),
         mesh_prim_paths=["/World/ground"],
     )
@@ -209,7 +209,7 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, -4.8e-2, 0.0)),
         ray_alignment="yaw",
         pattern_cfg=PointCirclePatternCfg(
-            radius=8.0e-2, num_circle_points=12,
+            radius=8.0e-2, num_circle_points=8,
         ),
         debug_vis=False,
         mesh_prim_paths=["/World/ground"],

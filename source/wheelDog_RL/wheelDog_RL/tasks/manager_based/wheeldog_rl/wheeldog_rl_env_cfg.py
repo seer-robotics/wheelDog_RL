@@ -196,10 +196,10 @@ class BlindLocomotionCfg(ManagerBasedRLEnvCfg):
 
         # Update sensor update periods
         # Tick priviledged sensors based on the smallest update period (physics update period)
-        if self.scene.height_scanner is not None:
-            self.scene.height_scanner.update_period = self.sim.dt
-        if self.scene.contact_forces is not None:
-            self.scene.contact_forces.update_period = self.sim.dt
+        # if self.scene.height_scanner is not None:
+        #     self.scene.height_scanner.update_period = self.sim.dt
+        # if self.scene.contact_forces is not None:
+        #     self.scene.contact_forces.update_period = self.sim.dt
 
         # Check terrain generator existence and enable terrain curriculum
         if getattr(self.curriculum, "terrain_levels", None) is not None:

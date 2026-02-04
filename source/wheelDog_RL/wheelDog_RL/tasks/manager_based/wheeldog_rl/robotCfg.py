@@ -16,14 +16,19 @@ class WheelDog_BlindLocomotionEnvCfg(BlindLocomotionCfg):
         # Assign robot asset. 
         self.scene.robot = XG_WHEEL_SU_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
+        # Tick priviledged sensors based on the smallest update period (physics update period).
+        self.scene.fl_leg_ray.update_period = self.sim.dt
+        self.scene.fr_leg_ray.update_period = self.sim.dt
+        self.scene.rl_leg_ray.update_period = self.sim.dt
+        self.scene.rr_leg_ray.update_period = self.sim.dt
+        self.scene.contact_forces.update_period = self.sim.dt
+
 
 @configclass
-class WheelDog_BlindLocomotionEnvPlayCfg(BlindLocomotionCfg):
+class WheelDog_BlindLocomotionEnvPlayCfg(WheelDog_BlindLocomotionEnvCfg):
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
-        # Assign robot asset. 
-        self.scene.robot = XG_WHEEL_SU_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
         self.scene.num_envs = 32
         self.scene.env_spacing = 4
