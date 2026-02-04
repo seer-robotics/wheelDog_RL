@@ -18,6 +18,7 @@ class ActionsCfg:
             "RAR_ABAD_JOINT",
         ],
         scale=0.25,
+        clip=(-0.49, 0.49),
         preserve_order=True,
         use_default_offset=True,
     )
@@ -30,6 +31,7 @@ class ActionsCfg:
             "RAR_HIP_JOINT",
         ],
         scale=0.25,
+        clip=(-1.15, 2.97),
         preserve_order=True,
         use_default_offset=True,
     )
@@ -42,6 +44,7 @@ class ActionsCfg:
             "RAR_KNEE_JOINT",
         ],
         scale=0.25,
+        clip=(-2.72, -0.60),
         preserve_order=True,
         use_default_offset=True,
     )
@@ -61,7 +64,7 @@ class ActionsCfg:
             "FAR_FOOT_JOINT": (-160.0, 160.0),
             "RBL_FOOT_JOINT": (-160.0, 160.0),
             "RAR_FOOT_JOINT": (-160.0, 160.0),
-        }
+        },
     )
     # joint_pos = isaac_mdp.JointPositionToLimitsActionCfg(
     #     asset_name="robot",
