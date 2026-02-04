@@ -18,7 +18,7 @@ class ActionsCfg:
             "RAR_ABAD_JOINT",
         ],
         scale=0.25,
-        clip=(-0.49, 0.49),
+        clip={".*": (-0.49, 0.49)},
         preserve_order=True,
         use_default_offset=True,
     )
@@ -31,7 +31,7 @@ class ActionsCfg:
             "RAR_HIP_JOINT",
         ],
         scale=0.25,
-        clip=(-1.15, 2.97),
+        clip={".*": (-1.15, 2.97)},
         preserve_order=True,
         use_default_offset=True,
     )
@@ -44,7 +44,7 @@ class ActionsCfg:
             "RAR_KNEE_JOINT",
         ],
         scale=0.25,
-        clip=(-2.72, -0.60),
+        clip={".*": (-2.72, -0.60)},
         preserve_order=True,
         use_default_offset=True,
     )
