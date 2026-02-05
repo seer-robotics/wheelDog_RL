@@ -1,5 +1,6 @@
 # Library imports.
 import torch
+import copy
 from isaaclab.envs import ManagerBasedRLEnv
 from collections.abc import Sequence
 from isaaclab.envs.common import VecEnvStepReturn
@@ -15,6 +16,9 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import ANGULAR_ERROR_S
 class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
     def __init__(self, cfg, **kwargs):
         super().__init__(cfg, **kwargs)
+        # Keep a copy of the env startup MDP configurations.
+        self.env_cfg_at_startup = copy.deepcopy(self.cfg)
+
         # Initialize per-environment cumulative error tensor (shape: num_envs)
         # self._cumulative_vel_error = torch.zeros(self.num_envs, device=self.device)
         self.velocity_error_recorder = VelocityErrorRecorder(

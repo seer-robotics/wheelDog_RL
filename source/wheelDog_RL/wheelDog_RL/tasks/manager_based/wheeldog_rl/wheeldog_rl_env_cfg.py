@@ -26,8 +26,8 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import \
     CPU_POOL_BUCKET_SIZE, \
     CURRICULUM_ERROR_THRESHOLD_UP, \
     CURRICULUM_ERROR_THRESHOLD_DOWN, \
-    ACTION_CURRICULUM_LEVELS, \
-    ACTION_CURRICULUM_MAX_SCALE
+    JOINT_DEVIATE_SCALE_LEVELS, \
+    JOINT_DEVIATE_MIN_FACTOR
 
 
 ##
@@ -164,14 +164,14 @@ class CurriculumCfg:
             "error_threshold_down": CURRICULUM_ERROR_THRESHOLD_DOWN,
         }
         )
-    
-    # action_levels = CurrTerm(
-    #     func=mdp.action_scale_terrainLevels,
-    #     params={
-    #         "action_levels": ACTION_CURRICULUM_LEVELS,
-    #         "max_scale": ACTION_CURRICULUM_MAX_SCALE,
-    #     },
-    # )
+    joint_deviate_penalty_weight_levels = CurrTerm(
+        func=mdp.joint_deviation_penalty_levels,
+        params={
+            "target_term_name": "dof_pos_deviate",
+            "scale_levels": JOINT_DEVIATE_SCALE_LEVELS,
+            "min_factor": JOINT_DEVIATE_MIN_FACTOR,
+        },
+    )
 
 
 ##

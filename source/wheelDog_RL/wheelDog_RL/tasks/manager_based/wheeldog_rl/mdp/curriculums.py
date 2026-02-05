@@ -17,14 +17,14 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
 
 if TYPE_CHECKING:
-    from isaaclab.envs import ManagerBasedRLEnv
     from isaaclab.assets import Articulation
     from isaaclab.terrains import TerrainImporter
+    from wheelDog_RL.tasks.manager_based.wheeldog_rl.envEntry import WheelDog_BlindLocomotionEnv
 
 
 # Manager class that records cumulative velocity error.
 class VelocityErrorRecorder():
-    def __init__(self, config: dict, env: ManagerBasedRLEnv):
+    def __init__(self, config: dict, env: WheelDog_BlindLocomotionEnv):
         self._env = env
         self._num_envs = env.num_envs
         self.device = env.device
@@ -95,7 +95,7 @@ class VelocityErrorRecorder():
 
 # Velocity error based terrain curriculum function. 
 def terrain_levels_velocityError(
-    env: ManagerBasedRLEnv,
+    env: WheelDog_BlindLocomotionEnv,
     env_ids: Sequence[int],
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     command_name: str = "base_velocity",
@@ -111,8 +111,8 @@ def terrain_levels_velocityError(
         It is only possible to use this term with the terrain type ``generator``. For further information
         on different terrain types, check the :class:`isaaclab.terrains.TerrainImporter` class.
 
-    Returns:
-        The mean terrain level for the given environment ids.
+    :return: The current mean terrain levels.
+    :rtype: Tensor
     """
     # Access the velocity error recorder manager and acquire the data from specified envs.
     error_recorder: VelocityErrorRecorder = env.velocity_error_recorder
@@ -156,82 +156,103 @@ def terrain_levels_velocityError(
     return torch.mean(terrain.terrain_levels.float())
 
 
-# Terrain levels based action scale curriculum.
-def action_scale_terrainLevels(
-    env: ManagerBasedRLEnv,
-    env_ids: Sequence[int],
-    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-    action_levels: int = 8,
-    max_scale: float = 2.0,
-) -> torch.Tensor:
-    """Curriculum based on the rounded mean terrain levels of all envs.
-
-    This term is used to increase the action scale of the robots as the mean terrain levels progress to higher difficulties.
-
-    .. note::
-        It is only possible to use this term when there is a terrain levels curriculum in place.
-
-    Returns:
-        
-    """
-    terrain: TerrainImporter = env.scene.terrain
-    mean_levels = torch.mean(terrain.terrain_levels.float())
-    action_manager = env.action_manager
-
-    stage = ((torch.floor(mean_levels)) * action_levels) // 20
-    stage = torch.clamp(stage, min=0, max = action_levels-1)
-
-    factor = 1.0 + (max_scale - 1.0) * (stage/(action_levels-1))
-
-    # print(f"stage: {stage}")
-    # print(f"action_manager._terms.items(): {action_manager._terms.items()}")
-
-    # import torch
-
-    # action_levels = 8
-
-    # # mean_levels = torch.arange(0, 20.5, 0.5)
-    # mean_levels = torch.mean(torch.Tensor([10, 11]))
-
-    # stage = ((torch.floor(mean_levels)) * action_levels) // 20
-    # stage = torch.clamp(stage, min=0, max = action_levels-1)
-
-    # print(f"stages: \n{stage}")
-
-    for term_name, action_term in action_manager._terms.items():
-        base_scale = action_term.cfg.scale
-
-        current_scale = base_scale + base_scale * factor
-        # print(f"action_term._scale: {action_term._scale}")
-        action_term._scale = current_scale
-
-        # print(f"current_scale: {current_scale}")
-
-    # Placeholder return value.
-    return stage
-
-
-# Alive based joint position deviation curriculum.
+# Terrain levels based joint position deviation penalty curriculum.
 def joint_deviation_penalty_levels(
-    env: ManagerBasedRLEnv,
+    env: WheelDog_BlindLocomotionEnv,
     env_ids: Sequence[int],
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-    action_levels: int = 8,
-    max_scale: float = 2.0,
+    target_term_name: str = "dof_pos_deviate",
+    scale_levels: int = 8,
+    min_factor: float = 0.5,
 ) -> torch.Tensor:
     """
     Curriculum function that scales down joint deviation penalty as robot learns to stay alive.
     
-    :param env: Description
-    :type env: ManagerBasedRLEnv
-    :param env_ids: Description
-    :type env_ids: Sequence[int]
-    :param asset_cfg: Description
-    :type asset_cfg: SceneEntityCfg
-    :param action_levels: Description
-    :type action_levels: int
-    :param max_scale: Description
-    :type max_scale: float
-    :return: Description
+    :param target_term_name: Name for the penalty term whose weight will be modified.
+    :type target_term_name: str
+    :param scale_levels: Number of stages of the scaling.
+    :type scale_levels: int
+    :param min_factor: Minimum factor that the original weight will be multiplied by.
+    :type min_factor: float
+    :return: The weight of the penalty of joint deviations from default position (defined in ArticulationCfg).
     :rtype: Tensor
     """
+    terrain: TerrainImporter = env.scene.terrain
+    mean_levels = torch.mean(terrain.terrain_levels.float())
+    original_term_cfg = getattr(env.env_cfg_at_startup.rewards, target_term_name)
+    original_weight = original_term_cfg.weight
+
+    stage = ((torch.floor(mean_levels)) * scale_levels) // 20
+    stage = torch.clamp(stage, min=0, max = scale_levels-1)
+
+    factor = 1.0 + (min_factor - 1.0) * (stage/(scale_levels-1))
+
+    current_weight: torch.Tensor = original_weight * factor
+
+    # Modify the penalty term's weight.
+    term_cfg_new = env.reward_manager.get_term_cfg(term_name=target_term_name)
+    term_cfg_new.weight = current_weight.item()
+    env.reward_manager.set_term_cfg(term_name=target_term_name, cfg=term_cfg_new)
+
+    
+    # print(f"[INFO] current_weight: {current_weight}")
+    # print(f"[INFO] term_cfg_new.weight: {term_cfg_new.weight}")
+
+    # Return the current weight for logging.
+    return current_weight
+
+
+# # Terrain levels based action scale curriculum.
+# def action_scale_terrainLevels(
+#     env: ManagerBasedRLEnv,
+#     env_ids: Sequence[int],
+#     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+#     action_levels: int = 8,
+#     max_scale: float = 2.0,
+# ) -> torch.Tensor:
+#     """Curriculum based on the rounded mean terrain levels of all envs.
+
+#     This term is used to increase the action scale of the robots as the mean terrain levels progress to higher difficulties.
+
+#     .. note::
+#         It is only possible to use this term when there is a terrain levels curriculum in place.
+
+#     :return: 
+#     :rtype: Tensor
+        
+#     """
+#     terrain: TerrainImporter = env.scene.terrain
+#     mean_levels = torch.mean(terrain.terrain_levels.float())
+#     action_manager = env.action_manager
+
+#     stage = ((torch.floor(mean_levels)) * action_levels) // 20
+#     stage = torch.clamp(stage, min=0, max = action_levels-1)
+
+#     factor = 1.0 + (max_scale - 1.0) * (stage/(action_levels-1))
+
+#     # print(f"stage: {stage}")
+#     # print(f"action_manager._terms.items(): {action_manager._terms.items()}")
+
+#     # import torch
+
+#     # action_levels = 8
+
+#     # # mean_levels = torch.arange(0, 20.5, 0.5)
+#     # mean_levels = torch.mean(torch.Tensor([10, 11]))
+
+#     # stage = ((torch.floor(mean_levels)) * action_levels) // 20
+#     # stage = torch.clamp(stage, min=0, max = action_levels-1)
+
+#     # print(f"stages: \n{stage}")
+
+#     for term_name, action_term in action_manager._terms.items():
+#         base_scale = action_term.cfg.scale
+
+#         current_scale = base_scale + base_scale * factor
+#         # print(f"action_term._scale: {action_term._scale}")
+#         action_term._scale = current_scale
+
+#         # print(f"current_scale: {current_scale}")
+
+#     # Placeholder return value.
+#     return stage
