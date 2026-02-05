@@ -9,7 +9,7 @@ from isaaclab.utils.noise import AdditiveGaussianNoiseCfg as Gnoise
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
 # Import settings. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import STATE_HISTORY, SHORT_HISTORY, HEIGHT_SCAN_OFFSET
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import STATE_HISTORY, SHORT_HISTORY, BASE_HEIGHT_THRESHOLD
 
 @configclass
 class ObservationsCfg:
@@ -323,7 +323,7 @@ class ObservationsCfg:
             func=mdp.height_scan,
             params={
                 "sensor_cfg": SceneEntityCfg("height_scanner"),
-                "offset": HEIGHT_SCAN_OFFSET,
+                "offset": BASE_HEIGHT_THRESHOLD,
             },
             clip=(-1.5, 1.5),
         )

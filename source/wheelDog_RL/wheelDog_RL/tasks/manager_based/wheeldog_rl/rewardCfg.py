@@ -10,7 +10,7 @@ from isaaclab.managers import SceneEntityCfg
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
 # Import settings.
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import HEIGHT_SCAN_OFFSET
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import BASE_HEIGHT_THRESHOLD
 
 @configclass
 class RewardsCfg:
@@ -19,19 +19,19 @@ class RewardsCfg:
     # -- rewards
     track_lin_vel_xy_exp = RewTerm(
         func=mdp.track_lin_vel_xy_exp,
-        weight=1.0,
+        weight=2.0,
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
     track_ang_vel_z_exp = RewTerm(
         func=mdp.track_ang_vel_z_exp,
-        weight=0.6,
+        weight=1.2,
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
     stay_alive = RewTerm(mdp.is_alive, weight=1.0)
     feet_ground_time = RewTerm(
         # Reward keeping the feet on the ground.
         func=mdp.feet_ground_time,
-        weight=0.4,
+        weight=0.5,
         params={
             "sensor_cfg": SceneEntityCfg(
                 "contact_forces",
@@ -96,7 +96,7 @@ class RewardsCfg:
         func=mdp.base_height_threshold_l2,
         weight=-1.0,
         params={
-            "height_threshold": HEIGHT_SCAN_OFFSET,
+            "height_threshold": BASE_HEIGHT_THRESHOLD,
             "asset_cfg": SceneEntityCfg("robot"),
             "sensor_cfg": SceneEntityCfg("height_scanner"),
         }
