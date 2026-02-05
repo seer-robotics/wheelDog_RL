@@ -27,9 +27,8 @@ class ActionsCfg:
             "RAR_ABAD_JOINT",
         ],
         scale=JOINT_ACTION_SCALE,
-        clip={".*": (-0.49, 0.49)},
         preserve_order=True,
-        use_default_offset=False,
+        use_default_offset=True,
     )
     hip_joint_pos = mdp.JointPositionActionCfg(
         asset_name="robot",
@@ -40,9 +39,8 @@ class ActionsCfg:
             "RAR_HIP_JOINT",
         ],
         scale=JOINT_ACTION_SCALE,
-        clip={".*": (-1.15, 2.97)},
         preserve_order=True,
-        use_default_offset=False,
+        use_default_offset=True,
     )
     knee_joint_pos = mdp.JointPositionActionCfg(
         asset_name="robot",
@@ -53,9 +51,8 @@ class ActionsCfg:
             "RAR_KNEE_JOINT",
         ],
         scale=JOINT_ACTION_SCALE,
-        clip={".*": (-2.72, -0.60)},
         preserve_order=True,
-        use_default_offset=False,
+        use_default_offset=True,
     )
     wheel_joint_vel = mdp.JointVelocityActionCfg(
         asset_name="robot",
