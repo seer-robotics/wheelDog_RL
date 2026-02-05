@@ -1,6 +1,8 @@
 # Isaac Lab imports
-from isaaclab.envs import mdp as isaac_mdp
 from isaaclab.utils import configclass
+
+# Local mdp module inherited from Isaac.
+from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
 @configclass
 class ActionsCfg:
@@ -9,7 +11,7 @@ class ActionsCfg:
     # Uses position action for non-wheel joints.
     # Uses velocity action for wheel joints.
     # Leaves on-hardware torque-velocity handling for abstraction. 
-    abdomen_joint_pos = isaac_mdp.JointPositionActionCfg(
+    abdomen_joint_pos = mdp.JointPositionActionCfg(
         asset_name="robot",
         joint_names=[
             "FBL_ABAD_JOINT",
@@ -22,7 +24,7 @@ class ActionsCfg:
         preserve_order=True,
         use_default_offset=True,
     )
-    hip_joint_pos = isaac_mdp.JointPositionActionCfg(
+    hip_joint_pos = mdp.JointPositionActionCfg(
         asset_name="robot",
         joint_names=[
             "FBL_HIP_JOINT",
@@ -35,7 +37,7 @@ class ActionsCfg:
         preserve_order=True,
         use_default_offset=True,
     )
-    knee_joint_pos = isaac_mdp.JointPositionActionCfg(
+    knee_joint_pos = mdp.JointPositionActionCfg(
         asset_name="robot",
         joint_names=[
             "FBL_KNEE_JOINT",
@@ -48,7 +50,7 @@ class ActionsCfg:
         preserve_order=True,
         use_default_offset=True,
     )
-    # joint_pos = isaac_mdp.JointPositionToLimitsActionCfg(
+    # joint_pos = mdp.JointPositionToLimitsActionCfg(
     #     asset_name="robot",
     #     joint_names=[
     #         "FBL_ABAD_JOINT",
@@ -67,7 +69,7 @@ class ActionsCfg:
     #     scale=1.0,
     #     preserve_order=True,
     # )
-    wheel_joint_vel = isaac_mdp.JointVelocityActionCfg(
+    wheel_joint_vel = mdp.JointVelocityActionCfg(
         asset_name="robot",
         joint_names=[
             "FBL_FOOT_JOINT",

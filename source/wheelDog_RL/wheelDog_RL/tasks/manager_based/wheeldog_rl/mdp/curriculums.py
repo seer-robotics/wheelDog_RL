@@ -12,6 +12,10 @@ from typing import TYPE_CHECKING
 
 from isaaclab.managers import SceneEntityCfg
 
+# Local mdp module inherited from Isaac.
+from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
+
+
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
     from isaaclab.assets import Articulation
