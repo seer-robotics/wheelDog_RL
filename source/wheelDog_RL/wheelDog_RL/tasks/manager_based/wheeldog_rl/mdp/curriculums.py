@@ -32,13 +32,15 @@ class VelocityErrorRecorder():
         # Angular velocity error scaling factor.
         self.angular_scale: dict[str, float] = config.get("angular_scale", 1.0)
 
-        # Initialize cumulative error buffer. 
+        # Initialize cumulative buffers. 
         self._episode_cum_error = torch.zeros(self._num_envs, device=self.device)
+        self._episode_cum_command = torch.zeros(self._num_envs, device=self.device)
 
     def reset(self, env_ids: Sequence[int]):
-        # Clear buffer on env reset.
+        # Clear buffers on env reset.
         # print(f"[INFO]: Recorder manager resetting cumulative error: {self._episode_cum_error}")
         self._episode_cum_error[env_ids] = 0.0
+        self._episode_cum_command[env_ids] = 0.0
 
     def post_physics_step(self):
         # Record cumulative error after physics update.
@@ -56,13 +58,35 @@ class VelocityErrorRecorder():
         ang_error = torch.abs(cmd_vel[:, 2] - actual_ang_vel)
         inst_error = lin_error + ang_error * self.angular_scale
 
-        # Accumulate (integrate over time)
+        # Integrate error.
         self._episode_cum_error += inst_error * self.step_dt
 
+        # Integrate command.
+        self._episode_cum_command += \
+            torch.norm(cmd_vel[:, :2], dim=1) * self.step_dt + \
+            torch.abs(cmd_vel[:, 2]) * self.angular_scale * self.step_dt
+
     def get_episode_cum_error(self, env_ids: Sequence[int] = None) -> torch.Tensor:
+        """
+        Acquire the per-episode error from command value integrated over time.
+        
+        :return: Time-integrated error from command of all the environments.
+        :rtype: Tensor
+        """
         if env_ids is None:
             return self._episode_cum_error.clone()
         return self._episode_cum_error[env_ids].clone()
+    
+    def get_episode_cum_command(self, env_ids: Sequence[int] = None) -> torch.Tensor:
+        """
+        Acquire the per-episode command value integrated over time.
+        
+        :return: Time-integrated command values of all the environments.
+        :rtype: Tensor
+        """
+        if env_ids is None:
+            return self._episode_cum_command.clone()
+        return self._episode_cum_command[env_ids].clone()
 
 
 # Velocity error based terrain curriculum function. 
@@ -89,9 +113,11 @@ def terrain_levels_velocityError(
     # Access the velocity error recorder manager and acquire the data from specified envs.
     error_recorder: VelocityErrorRecorder = env.velocity_error_recorder
     cum_errors = error_recorder.get_episode_cum_error(env_ids)
+    cum_command = error_recorder.get_episode_cum_command(env_ids)
 
     # Normalize error by maximum episode duration.
-    norm_errors = cum_errors / env.max_episode_length_s
+    # Also prevent divide by zero for standing still environments (they won't be considered in the final output anyway).
+    norm_errors = cum_errors / torch.where(cum_command.abs() < 1e-6, 1e-2, cum_command)
 
     # Difficulty updates based on episode duration normalized error.
     move_up = norm_errors < error_threshold_up
@@ -105,10 +131,8 @@ def terrain_levels_velocityError(
     move_down[non_timeout] = False
 
     # Filter to only update terrain levels for moving commands.
-    commands = env.command_manager.get_command(command_name)
-    cmd_subset = commands[env_ids]
-    cmd_norm = torch.norm(cmd_subset[:, :2], dim=1)
-    is_moving_cmd = cmd_norm > 0.1
+    # Essentially envs where cum_command is greater than a threshold.
+    is_moving_cmd = cum_command > 1e-1
     move_up   *= is_moving_cmd
     move_down *= is_moving_cmd
 
