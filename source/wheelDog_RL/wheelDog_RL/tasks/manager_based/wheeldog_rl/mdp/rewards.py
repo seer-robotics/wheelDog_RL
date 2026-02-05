@@ -82,9 +82,10 @@ def base_height_threshold(
         adjusted_threshold_height = height_threshold
 
     # Compute penalty.
-    retval = torch.relu(
-        adjusted_threshold_height - asset.data.root_pos_w[:, 2]
-    )
+    retval = torch.nan_to_num(
+        adjusted_threshold_height - asset.data.root_pos_w[:, 2],
+        nan=0.0, posinf=10.0, neginf=-10.0)
+    retval = torch.relu(retval)
     return retval
 
 
