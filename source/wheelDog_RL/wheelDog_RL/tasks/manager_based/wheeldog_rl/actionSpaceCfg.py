@@ -11,7 +11,7 @@ class ActionsCfg:
     # Uses position action for non-wheel joints.
     # Uses velocity action for wheel joints.
     # Leaves on-hardware torque-velocity handling for abstraction. 
-    abdomen_joint_pos = mdp.JointPositionActionCfg(
+    abdomen_joint_pos = mdp.RelativeJointPositionActionCfg(
         asset_name="robot",
         joint_names=[
             "FBL_ABAD_JOINT",
@@ -24,7 +24,7 @@ class ActionsCfg:
         preserve_order=True,
         use_default_offset=True,
     )
-    hip_joint_pos = mdp.JointPositionActionCfg(
+    hip_joint_pos = mdp.RelativeJointPositionActionCfg(
         asset_name="robot",
         joint_names=[
             "FBL_HIP_JOINT",
@@ -37,7 +37,7 @@ class ActionsCfg:
         preserve_order=True,
         use_default_offset=True,
     )
-    knee_joint_pos = mdp.JointPositionActionCfg(
+    knee_joint_pos = mdp.RelativeJointPositionActionCfg(
         asset_name="robot",
         joint_names=[
             "FBL_KNEE_JOINT",

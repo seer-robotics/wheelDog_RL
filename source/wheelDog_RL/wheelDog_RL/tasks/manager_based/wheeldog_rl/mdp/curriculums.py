@@ -209,3 +209,29 @@ def action_scale_terrainLevels(
 
     # Placeholder return value.
     return stage
+
+
+# Alive based joint position deviation curriculum.
+def joint_deviation_penalty_levels(
+    env: ManagerBasedRLEnv,
+    env_ids: Sequence[int],
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    action_levels: int = 8,
+    max_scale: float = 2.0,
+) -> torch.Tensor:
+    """
+    Curriculum function that scales down joint deviation penalty as robot learns to stay alive.
+    
+    :param env: Description
+    :type env: ManagerBasedRLEnv
+    :param env_ids: Description
+    :type env_ids: Sequence[int]
+    :param asset_cfg: Description
+    :type asset_cfg: SceneEntityCfg
+    :param action_levels: Description
+    :type action_levels: int
+    :param max_scale: Description
+    :type max_scale: float
+    :return: Description
+    :rtype: Tensor
+    """

@@ -165,13 +165,13 @@ class CurriculumCfg:
         }
         )
     
-    action_levels = CurrTerm(
-        func=mdp.action_scale_terrainLevels,
-        params={
-            "action_levels": ACTION_CURRICULUM_LEVELS,
-            "max_scale": ACTION_CURRICULUM_MAX_SCALE,
-        },
-    )
+    # action_levels = CurrTerm(
+    #     func=mdp.action_scale_terrainLevels,
+    #     params={
+    #         "action_levels": ACTION_CURRICULUM_LEVELS,
+    #         "max_scale": ACTION_CURRICULUM_MAX_SCALE,
+    #     },
+    # )
 
 
 ##
