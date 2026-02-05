@@ -164,14 +164,14 @@ class CurriculumCfg:
             "error_threshold_down": CURRICULUM_ERROR_THRESHOLD_DOWN,
         }
         )
-    joint_deviate_penalty_weight_levels = CurrTerm(
-        func=mdp.joint_deviation_penalty_levels,
-        params={
-            "target_term_name": "dof_pos_deviate",
-            "scale_levels": JOINT_DEVIATE_SCALE_LEVELS,
-            "min_factor": JOINT_DEVIATE_MIN_FACTOR,
-        },
-    )
+    # joint_deviate_penalty_weight_levels = CurrTerm(
+    #     func=mdp.joint_deviation_penalty_levels,
+    #     params={
+    #         "target_term_name": "dof_pos_deviate",
+    #         "scale_levels": JOINT_DEVIATE_SCALE_LEVELS,
+    #         "min_factor": JOINT_DEVIATE_MIN_FACTOR,
+    #     },
+    # )
 
 
 ##

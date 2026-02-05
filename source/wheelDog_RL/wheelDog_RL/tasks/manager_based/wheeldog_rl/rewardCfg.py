@@ -19,41 +19,41 @@ class RewardsCfg:
     # -- rewards
     track_lin_vel_xy_exp = RewTerm(
         func=mdp.track_lin_vel_xy_exp,
-        weight=2.0,
+        weight=1.0,
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
     track_ang_vel_z_exp = RewTerm(
         func=mdp.track_ang_vel_z_exp,
-        weight=1.2,
+        weight=0.8,
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
     stay_alive = RewTerm(mdp.is_alive, weight=1.0)
-    feet_ground_time = RewTerm(
-        # Reward keeping the feet on the ground.
-        func=mdp.feet_ground_time,
-        weight=0.5,
-        params={
-            "sensor_cfg": SceneEntityCfg(
-                "contact_forces",
-                body_names=[
-                    "FBL_FOOT_LINK",
-                    "FAR_FOOT_LINK",
-                    "RBL_FOOT_LINK",
-                    "RAR_FOOT_LINK",
-                ],
-                preserve_order=True,
-            ),
-            "command_name": "base_velocity",
-            "threshold": 0.04,
-        },
-    )
+    # feet_ground_time = RewTerm(
+    #     # Reward keeping the feet on the ground.
+    #     func=mdp.feet_ground_time,
+    #     weight=1.0,
+    #     params={
+    #         "sensor_cfg": SceneEntityCfg(
+    #             "contact_forces",
+    #             body_names=[
+    #                 "FBL_FOOT_LINK",
+    #                 "FAR_FOOT_LINK",
+    #                 "RBL_FOOT_LINK",
+    #                 "RAR_FOOT_LINK",
+    #             ],
+    #             preserve_order=True,
+    #         ),
+    #         "command_name": "base_velocity",
+    #         "threshold": 0.04,
+    #     },
+    # )
     
     # -- penalties
     lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
     ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.4)
-    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-2)
-    dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-1e-1)
-    dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
+    dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5e-1)
+    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-1)
+    dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-3.0e-07)
     dof_pos_deviate = RewTerm(
         func=mdp.joint_deviation_l1,
         weight=-0.3,
@@ -93,8 +93,8 @@ class RewardsCfg:
         },
     )
     base_height_threshold = RewTerm(
-        func=mdp.base_height_threshold_l2,
-        weight=-1.0,
+        func=mdp.base_height_threshold,
+        weight=-2.0,
         params={
             "height_threshold": BASE_HEIGHT_THRESHOLD,
             "asset_cfg": SceneEntityCfg("robot"),

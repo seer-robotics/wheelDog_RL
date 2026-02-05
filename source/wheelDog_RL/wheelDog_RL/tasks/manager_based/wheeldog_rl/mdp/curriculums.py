@@ -69,6 +69,9 @@ class VelocityErrorRecorder():
         self._episode_cum_command += \
             torch.norm(cmd_vel[:, :2], dim=1) * self.step_dt + \
             torch.abs(cmd_vel[:, 2]) * self.angular_scale * self.step_dt
+        
+        # print(f"[INFO]: self._episode_cum_error: \n{self._episode_cum_error}")
+        # print(f"[INFO]: self._episode_cum_command: \n{self._episode_cum_command}")
 
     def get_episode_cum_error(self, env_ids: Sequence[int] = None) -> torch.Tensor:
         """
@@ -149,7 +152,8 @@ def terrain_levels_velocityError(
     #     print(f"[INFO]: Env IDs: \n{env_ids}")
     #     print(f"[INFO]: Move up: \n{norm_errors}")
     #     print(f"[INFO]: Move down: \n{norm_errors}")
-    # print(f"[INFO]: Normalized errors: \n{norm_errors}")
+    # print(f"[INFO]: norm_errors: \n{norm_errors}")
+    # print(f"[INFO]: cum_command: \n{cum_command}")
     # print(f"[INFO]: Current mean terrain levels: \n{terrain.terrain_levels.float()}")
 
     # Return the mean terrain level.
