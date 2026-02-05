@@ -56,13 +56,13 @@ def feet_ground_time(
     return reward
 
 
-def base_height_threshold_l2(
+def base_height_threshold(
     env: ManagerBasedRLEnv,
     height_threshold: float,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     sensor_cfg: SceneEntityCfg | None = None,
 ) -> torch.Tensor:
-    """Penalize asset height beneath threshold using L2 squared kernel.
+    """Penalize asset height beneath threshold.
 
     Note:
         For flat terrain, target height is in the world frame. For rough terrain,
@@ -72,16 +72,19 @@ def base_height_threshold_l2(
     # asset: RigidObject = env.scene[asset_cfg.name]
 
     # Rectify threshold with sensor data.
+    asset: RigidObject = env.scene[asset_cfg.name]
     if sensor_cfg is not None:
         sensor: RayCaster = env.scene[sensor_cfg.name]
-        # Adjust the target height using the sensor data
-        adjusted_height_threshold = height_threshold + torch.mean(sensor.data.ray_hits_w[..., 2], dim=1)
+        # Adjust the threshold height using the sensor data
+        adjusted_threshold_height = height_threshold + torch.mean(sensor.data.ray_hits_w[..., 2], dim=1)
     else:
-        # Use the provided target height directly for flat terrain
-        adjusted_height_threshold = height_threshold
-    
-    # Compute the L2 squared penalty.
-    retval = torch.relu(height_threshold - adjusted_height_threshold).square()
+        # Use the provided threshold height directly for flat terrain
+        adjusted_threshold_height = height_threshold
+
+    # Compute penalty.
+    retval = torch.relu(
+        adjusted_threshold_height - asset.data.root_pos_w[:, 2]
+    )
     return retval
 
 
