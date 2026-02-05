@@ -4,6 +4,13 @@ from isaaclab.utils import configclass
 # Local mdp module inherited from Isaac.
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
+# Import robot asset configuration. 
+from wheelDog_RL.assets.configs.xg_wheel_su import XG_WHEEL_SU_CFG
+
+# Import settings. 
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import JOINT_ACTION_SCALE, WHEEL_ACTION_SCALE
+
+
 @configclass
 class ActionsCfg:
     """Action specifications for the MDP."""
@@ -19,7 +26,7 @@ class ActionsCfg:
             "RBL_ABAD_JOINT",
             "RAR_ABAD_JOINT",
         ],
-        scale=0.25,
+        scale=JOINT_ACTION_SCALE,
         clip={".*": (-0.49, 0.49)},
         preserve_order=True,
         use_default_offset=True,
@@ -32,7 +39,7 @@ class ActionsCfg:
             "RBL_HIP_JOINT",
             "RAR_HIP_JOINT",
         ],
-        scale=0.25,
+        scale=JOINT_ACTION_SCALE,
         clip={".*": (-1.15, 2.97)},
         preserve_order=True,
         use_default_offset=True,
@@ -45,7 +52,7 @@ class ActionsCfg:
             "RBL_KNEE_JOINT",
             "RAR_KNEE_JOINT",
         ],
-        scale=0.25,
+        scale=JOINT_ACTION_SCALE,
         clip={".*": (-2.72, -0.60)},
         preserve_order=True,
         use_default_offset=True,
@@ -77,7 +84,7 @@ class ActionsCfg:
             "RBL_FOOT_JOINT",
             "RAR_FOOT_JOINT",
         ],
-        scale=5.0,
+        scale=WHEEL_ACTION_SCALE,
         preserve_order=True,
         use_default_offset=True,
         clip={

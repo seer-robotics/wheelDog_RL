@@ -1,3 +1,7 @@
+# Action space settings.
+JOINT_ACTION_SCALE = 0.25
+WHEEL_ACTION_SCALE = 5.0
+
 # Observation space settings. 
 STATE_HISTORY = 15
 SHORT_HISTORY  = 3
