@@ -113,14 +113,14 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
     )
 
     # Sensors.
-    # height_scanner = RayCasterCfg(
-    #     prim_path="{ENV_REGEX_NS}/Robot/BASE_LINK",
-    #     offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 20.0)),
-    #     ray_alignment="yaw",
-    #     pattern_cfg=patterns.GridPatternCfg(resolution=0.1, size=[2.4, 1.6]),
-    #     debug_vis=False,
-    #     mesh_prim_paths=["/World/ground"],
-    # )
+    height_scanner = RayCasterCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/BASE_LINK",
+        offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 20.0)),
+        ray_alignment="yaw",
+        pattern_cfg=patterns.GridPatternCfg(resolution=0.4, size=[1.2, 0.8]),
+        debug_vis=True,
+        mesh_prim_paths=["/World/ground"],
+    )
     base_IMU = ImuCfg(
         prim_path="{ENV_REGEX_NS}/Robot/BASE_LINK",
         gravity_bias=(0.00, 0.00, 9.81), # Remember to account for gravity bias

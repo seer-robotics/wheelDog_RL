@@ -9,6 +9,9 @@ from isaaclab.managers import SceneEntityCfg
 # Local mdp module inherited from Isaac.
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
+# Import settings.
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import HEIGHT_SCAN_OFFSET
+
 @configclass
 class RewardsCfg:
     """Reward terms for the MDP."""
@@ -28,7 +31,7 @@ class RewardsCfg:
     feet_ground_time = RewTerm(
         # Reward keeping the feet on the ground.
         func=mdp.feet_ground_time,
-        weight=5e-2,
+        weight=0.4,
         params={
             "sensor_cfg": SceneEntityCfg(
                 "contact_forces",
@@ -53,7 +56,7 @@ class RewardsCfg:
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
     dof_pos_deviate = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.2,
+        weight=-0.3,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", 
@@ -89,12 +92,12 @@ class RewardsCfg:
             "threshold": 1.0
         },
     )
-    # base_height = RewTerm(
-    #     func=mdp.base_height_l2,
-    #     weight=-1.0,
-    #     params={
-    #         "target_height": 0.35,
-    #         "asset_cfg": SceneEntityCfg("robot"),
-    #         "sensor_cfg": SceneEntityCfg("height_scanner"),
-    #     }
-    # )
+    base_height_threshold = RewTerm(
+        func=mdp.base_height_threshold_l2,
+        weight=-1.0,
+        params={
+            "height_threshold": HEIGHT_SCAN_OFFSET,
+            "asset_cfg": SceneEntityCfg("robot"),
+            "sensor_cfg": SceneEntityCfg("height_scanner"),
+        }
+    )

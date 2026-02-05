@@ -9,7 +9,7 @@ from isaaclab.utils.noise import AdditiveGaussianNoiseCfg as Gnoise
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
 # Import settings. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import STATE_HISTORY, SHORT_HISTORY
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import STATE_HISTORY, SHORT_HISTORY, HEIGHT_SCAN_OFFSET
 
 @configclass
 class ObservationsCfg:
@@ -319,14 +319,14 @@ class ObservationsCfg:
             },
             clip=(-1.5, 1.5),
         )
-        # base_height_scan = ObsTerm(
-        #     func=mdp.height_scan,
-        #     params={
-        #         "sensor_cfg": SceneEntityCfg("height_scanner"),
-        #         "offset": 0.5,
-        #     },
-        #     clip=(-1.5, 1.5),
-        # )
+        base_height_scan = ObsTerm(
+            func=mdp.height_scan,
+            params={
+                "sensor_cfg": SceneEntityCfg("height_scanner"),
+                "offset": HEIGHT_SCAN_OFFSET,
+            },
+            clip=(-1.5, 1.5),
+        )
         
         # Dynamics randomization observation terms.
         contact_friction = ObsTerm(

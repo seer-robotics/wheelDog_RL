@@ -8,9 +8,9 @@ from __future__ import annotations
 import torch
 from typing import TYPE_CHECKING
 
-from isaaclab.assets import Articulation
+from isaaclab.assets import Articulation, RigidObject
 from isaaclab.managers import SceneEntityCfg
-from isaaclab.sensors import ContactSensor
+from isaaclab.sensors import ContactSensor, RayCaster
 from isaaclab.utils.math import wrap_to_pi
 
 if TYPE_CHECKING:
@@ -54,6 +54,35 @@ def feet_ground_time(
     reward = reward * moving.float()
 
     return reward
+
+
+def base_height_threshold_l2(
+    env: ManagerBasedRLEnv,
+    height_threshold: float,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    sensor_cfg: SceneEntityCfg | None = None,
+) -> torch.Tensor:
+    """Penalize asset height beneath threshold using L2 squared kernel.
+
+    Note:
+        For flat terrain, target height is in the world frame. For rough terrain,
+        sensor readings can adjust the target height to account for the terrain.
+    """
+    # Enable type-hints.
+    # asset: RigidObject = env.scene[asset_cfg.name]
+
+    # Rectify threshold with sensor data.
+    if sensor_cfg is not None:
+        sensor: RayCaster = env.scene[sensor_cfg.name]
+        # Adjust the target height using the sensor data
+        adjusted_height_threshold = height_threshold + torch.mean(sensor.data.ray_hits_w[..., 2], dim=1)
+    else:
+        # Use the provided target height directly for flat terrain
+        adjusted_height_threshold = height_threshold
+    
+    # Compute the L2 squared penalty.
+    retval = torch.relu(height_threshold - adjusted_height_threshold).square()
+    return retval
 
 
 def joint_pos_target_l2(env: ManagerBasedRLEnv, target: float, asset_cfg: SceneEntityCfg) -> torch.Tensor:
