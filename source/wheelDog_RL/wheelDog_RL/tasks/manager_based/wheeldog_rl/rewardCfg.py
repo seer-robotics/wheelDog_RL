@@ -52,27 +52,51 @@ class RewardsCfg:
     lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
     ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.4)
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5e-1)
-    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-1)
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-3.0e-07)
-    dof_pos_deviate = RewTerm(
+    # action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-1)
+    action_rate_l2 = RewTerm(
+        func=mdp.actionTerm_rate_l2,
+        weight=-1e-1,
+        params={
+            "term_names": [
+                "abdomen_joint_pos",
+                "hip_joint_pos",
+                "knee_joint_pos",
+                "wheel_joint_vel",
+            ]
+        }
+    )
+    # wheel_action_rate_l2 = RewTerm(
+    #     func=mdp. actionTerm_rate_l2,
+    #     weight=-1e-1,
+    #     params={
+    #         "term_names": [
+    #             "wheel_joint_vel",
+    #         ]
+    #     }
+    # )
+    abd_pos_deviate = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.5,
+        weight=-1.5,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", 
                 joint_names=[
-                    "FBL_ABAD_JOINT",
-                    "FAR_ABAD_JOINT",
-                    "RBL_ABAD_JOINT",
-                    "RAR_ABAD_JOINT",
-                    "FBL_HIP_JOINT",
-                    "FAR_HIP_JOINT",
-                    "RBL_HIP_JOINT",
-                    "RAR_HIP_JOINT",
-                    "FBL_KNEE_JOINT",
-                    "FAR_KNEE_JOINT",
-                    "RBL_KNEE_JOINT",
-                    "RAR_KNEE_JOINT",
+                    ".*_ABAD_JOINT",
+                ],
+                preserve_order=True,
+            ),
+        }
+    )
+    leg_pos_deviate = RewTerm(
+        func=mdp.joint_deviation_l1,
+        weight=-0.25,
+        params={
+            "asset_cfg": SceneEntityCfg(
+                "robot", 
+                joint_names=[
+                    ".*_HIP_JOINT",
+                    ".*_KNEE_JOINT",
                 ],
                 preserve_order=True,
             ),

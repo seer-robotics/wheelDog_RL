@@ -11,10 +11,15 @@ from typing import TYPE_CHECKING
 from isaaclab.assets import Articulation, RigidObject
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.sensors import ContactSensor, RayCaster
-from isaaclab.utils.math import wrap_to_pi
+from isaaclab.utils.math import wrap_to_pi, quat_apply_inverse, normalize
+
+# Import custom modules.
+from .observations import terrain_normals
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
+    from isaaclab.managers import ActionTerm
+    from typing import List
 
 
 def feet_ground_time(
@@ -87,6 +92,67 @@ def base_height_threshold(
         nan=0.0, posinf=10.0, neginf=-10.0)
     retval = torch.relu(retval)
     return retval
+
+
+def actionTerm_rate_l2(
+    env: ManagerBasedRLEnv, 
+    term_names: List[str],
+) -> torch.Tensor:
+    """Penalize the rate of change of specified action terms using L2 squared kernel."""
+    total_penalty = torch.zeros(env.num_envs, device=env.device)
+    
+    offset = 0
+    active_terms_list = env.action_manager.active_terms
+    
+    # Loop through all the terms, update if term is a target.
+    for name in active_terms_list:
+        term = env.action_manager.get_term(name)
+        dim = term.action_dim
+        
+        if name in term_names:
+            current_slice = env.action_manager.action[:, offset : offset + dim]
+            previous_slice = env.action_manager.prev_action[:, offset : offset + dim]
+            term_penalty = torch.sum(torch.square(current_slice - previous_slice), dim=1)
+            total_penalty += term_penalty
+        
+        offset += dim
+    
+    # Safety check for missing terms (helpful during configuration/debugging)
+    missing_terms = [n for n in term_names if n not in active_terms_list]
+    if missing_terms:
+        raise ValueError(
+            f"One or more action terms not found: {missing_terms}. "
+            f"Available terms: {active_terms_list}"
+        )
+    
+    return total_penalty
+
+
+def terrain_normal_deviation_l2(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    sensor_cfg: SceneEntityCfg = SceneEntityCfg("terrain_raycaster"),
+) -> torch.Tensor:
+    """Penalize deviation between base projected gravity and the negative terrain normal.
+    
+    Penalty = ‖ projected_gravity_b - (-terrain_normal) ‖²
+    This encourages the base z-axis to align with the local terrain up direction.
+    """
+    # Get robot & extract current base-frame projected gravity
+    robot: RigidObject = env.scene[asset_cfg.name]
+    g_proj = robot.data.projected_gravity_b     # (num_envs, 3)
+
+    # Get current terrain normal under the robot (your custom function)
+    n_terrain = terrain_normals(env, sensor_cfg)       # expected shape: (num_envs, 3)
+
+    # Ideal gravity direction in base frame = -terrain_normal
+    ideal_g = -n_terrain                               # (num_envs, 3)
+
+    # L2 squared deviation
+    deviation = g_proj - ideal_g
+    penalty = torch.sum(deviation.square(), dim=1)     # (num_envs,)
+
+    return penalty
 
 
 def joint_pos_target_l2(env: ManagerBasedRLEnv, target: float, asset_cfg: SceneEntityCfg) -> torch.Tensor:
