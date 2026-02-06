@@ -52,11 +52,11 @@ class RewardsCfg:
     lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
     ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.4)
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5e-1)
-    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-5e-2)
+    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-1)
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-3.0e-07)
     dof_pos_deviate = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.3,
+        weight=-0.5,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", 
