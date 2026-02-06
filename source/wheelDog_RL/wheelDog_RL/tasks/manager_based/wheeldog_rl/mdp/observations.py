@@ -76,7 +76,7 @@ def terrain_normals(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch
 
     # Ray-cast hit points in the world frame.
     leg_scans_w = leg_rays.data.ray_hits_w
-    leg_scans_w = torch.nan_to_num(leg_scans_w, nan=0.0, posinf=1.5, neginf=-1.5)
+    leg_scans_w = torch.nan_to_num(leg_scans_w, nan=0.0, posinf=100.0, neginf=-100.0)
 
     # Compute world frame normal vector of point cloud surface.
     B = leg_scans_w.shape[1]
