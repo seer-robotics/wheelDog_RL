@@ -71,21 +71,49 @@ def contact_forces(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.
 def terrain_normals(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
     """Extract the body frame terrain normals with the specified ray-caster."""
     # Enable type-hinting.
-    leg_rays: RayCaster = env.scene.sensors[sensor_cfg.name]
+    ray_caster: RayCaster = env.scene.sensors[sensor_cfg.name]
     robot: Articulation = env.scene["robot"]
 
     # Ray-cast hit points in the world frame.
-    leg_scans_w = leg_rays.data.ray_hits_w
-    leg_scans_w = torch.nan_to_num(leg_scans_w, nan=0.0, posinf=100.0, neginf=-100.0)
+    scans_w = ray_caster.data.ray_hits_w
+    scans_w = torch.nan_to_num(scans_w, nan=0.0, posinf=100.0, neginf=-100.0)
 
     # Compute world frame normal vector of point cloud surface.
-    B = leg_scans_w.shape[1]
-    centroids = leg_scans_w.mean(dim=1)
-    centered_points = leg_scans_w - centroids.unsqueeze(1)
+    B = scans_w.shape[1]
+    centroids = scans_w.mean(dim=1)
+    centered_points = scans_w - centroids.unsqueeze(1)
     cov_matrices = (centered_points .transpose(1, 2) @ centered_points) / (B - 1)
     eigenvecs = torch.linalg.eigh(cov_matrices)[1]
     normals_w = eigenvecs[:, :, 0]
-    normals_w = torch.nn.functional.normalize(normals_w, dim=1)
+    normals_w = torch.nn.functional.normalize(normals_w, dim=-1)
+
+    # Account for flat terrain.
+    z_var     = torch.var(scans_w[:, :, 2], dim=1)
+    cos_theta = torch.abs(normals_w[:, 2])
+    VAR_THRESHOLD  = 1e-5       # m² – variance below which we distrust PCA
+    MIN_COS_THRESH = 0.40       # cos(66°) ≈ 0.40 → start blending below ~66°
+    MAX_COS_THRESH = 0.70       # cos(45°) ≈ 0.71 → full confidence above ~45°
+    slope_confidence = torch.clamp(
+        (cos_theta - MIN_COS_THRESH) / (MAX_COS_THRESH - MIN_COS_THRESH),
+        0.0, 1.0
+    )
+    flat_confidence = torch.clamp(
+        z_var / VAR_THRESHOLD,
+        0.0, 1.0
+    )
+    confidence = torch.minimum(slope_confidence, flat_confidence)
+
+    # Blend toward world +z.
+    world_up = torch.tensor([0.0, 0.0, 1.0], device=normals_w.device, dtype=normals_w.dtype)
+    normals_w = confidence.unsqueeze(-1) * normals_w + (1.0 - confidence).unsqueeze(-1) * world_up
+
+    # Re-normalize (necessary after blending).
+    normals_w = torch.nn.functional.normalize(normals_w, dim=-1)
+
+    # Now apply sign correction (only meaningful when confidence is high)
+    flip_mask = (normals_w[:, 2] < 0.0) & (confidence > 0.2)
+    normals_w[flip_mask] = -normals_w[flip_mask]
+    # print(f"normals_w: {normals_w}")
 
     # Acquire robot base frame quarternions. 
     base_quat_w = normalize(robot.data.root_link_quat_w.clone())
