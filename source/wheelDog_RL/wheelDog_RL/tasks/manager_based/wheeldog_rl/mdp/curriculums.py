@@ -186,7 +186,7 @@ def joint_deviation_penalty_levels(
     original_term_cfg = getattr(env.env_cfg_at_startup.rewards, target_term_name)
     original_weight = original_term_cfg.weight
 
-    stage = ((torch.floor(mean_levels)) * scale_levels) // 20
+    stage = ((torch.floor(mean_levels)) * scale_levels) // terrain.max_terrain_level
     stage = torch.clamp(stage, min=0, max = scale_levels-1)
 
     factor = 1.0 + (min_factor - 1.0) * (stage/(scale_levels-1))
@@ -203,6 +203,53 @@ def joint_deviation_penalty_levels(
     # print(f"[INFO] term_cfg_new.weight: {term_cfg_new.weight}")
 
     # Return the current weight for logging.
+    return current_weight
+
+
+# Terrain levels based flat orientation annealing.
+def flat_reward_anneal_terrainLevels(
+    env: WheelDog_BlindLocomotionEnv,
+    env_ids: Sequence[int],
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    target_term_name: str = "stay_flat",
+    scale_levels: int = 2,
+    min_factor: float = 0.5,
+    min_factor_terrainLevel: int = 4
+) -> torch.Tensor:
+    """
+    Anneals flat orientation reward term weight as terrain levels increase.
+    
+    :param target_term_name: Name for the penalty term whose weight will be modified.
+    :type target_term_name: str
+    :param scale_levels: Number of stages of the scaling.
+    :type scale_levels: int
+    :param min_factor: Minimum factor that the original weight will be multiplied by.
+    :type min_factor: float
+    :param min_factor_terrainLevel: Terrain level at which the weight will start to be scaled by the minimum factor.
+    :type min_factor_terrainLevel: int
+    :return: The weight of the flat orientation reward term.
+    :rtype: Tensor
+    """
+    terrain: TerrainImporter = env.scene.terrain
+    mean_levels = torch.mean(terrain.terrain_levels.float())
+    original_term_cfg = getattr(env.env_cfg_at_startup.rewards, target_term_name)
+    original_weight = original_term_cfg.weight
+
+    stage = (torch.clamp(torch.floor(mean_levels), min=0, max=min_factor_terrainLevel) * scale_levels) // min_factor_terrainLevel
+    stage = torch.clamp(stage, min=0, max = scale_levels-1)
+
+    factor = 1.0 + (min_factor - 1.0) * (stage/(scale_levels-1))
+
+    current_weight: torch.Tensor = original_weight * factor
+
+    # Modify the penalty term's weight.
+    term_cfg_new = env.reward_manager.get_term_cfg(term_name=target_term_name)
+    term_cfg_new.weight = current_weight.item()
+    env.reward_manager.set_term_cfg(term_name=target_term_name, cfg=term_cfg_new)
+
+    # print(f"[INFO] current_weight: {current_weight}")
+    # print(f"[INFO] term_cfg_new.weight: {term_cfg_new.weight}")
+
     return current_weight
 
 
