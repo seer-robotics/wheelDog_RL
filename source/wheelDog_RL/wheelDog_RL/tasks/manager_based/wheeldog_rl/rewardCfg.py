@@ -54,27 +54,26 @@ class RewardsCfg:
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5e-1)
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-3.0e-07)
     # action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-1)
-    action_rate_l2 = RewTerm(
+    leg_action_rate_l2 = RewTerm(
         func=mdp.actionTerm_rate_l2,
-        weight=-1e-1,
+        weight=-2e-1,
         params={
             "term_names": [
                 "abdomen_joint_pos",
                 "hip_joint_pos",
                 "knee_joint_pos",
+            ]
+        }
+    )
+    wheel_action_rate_l2 = RewTerm(
+        func=mdp. actionTerm_rate_l2,
+        weight=-5e-2,
+        params={
+            "term_names": [
                 "wheel_joint_vel",
             ]
         }
     )
-    # wheel_action_rate_l2 = RewTerm(
-    #     func=mdp. actionTerm_rate_l2,
-    #     weight=-1e-1,
-    #     params={
-    #         "term_names": [
-    #             "wheel_joint_vel",
-    #         ]
-    #     }
-    # )
     abd_pos_deviate = RewTerm(
         func=mdp.joint_deviation_l1,
         weight=-1.5,
@@ -102,7 +101,7 @@ class RewardsCfg:
             ),
         }
     )
-    stay_flat =RewTerm(func=mdp.flat_orientation_l2, weight=-1.0)
+    stay_flat =RewTerm(func=mdp.terrain_orientation, weight=-1.0)
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-1.0,

@@ -164,15 +164,15 @@ class CurriculumCfg:
             "error_threshold_down": CURRICULUM_ERROR_THRESHOLD_DOWN,
         }
         )
-    stay_flat_penalty_weight_levels = CurrTerm(
-        func=mdp.flat_reward_anneal_terrainLevels,
-        params={
-            "target_term_name": "stay_flat",
-            "scale_levels": 4,
-            "min_factor": 0.1,
-            "min_factor_terrainLevel": 4,
-        },
-    )
+    # stay_flat_penalty_weight_levels = CurrTerm(
+    #     func=mdp.flat_reward_anneal_terrainLevels,
+    #     params={
+    #         "target_term_name": "stay_flat",
+    #         "scale_levels": 4,
+    #         "min_factor": 0.1,
+    #         "min_factor_terrainLevel": 4,
+    #     },
+    # )
     # joint_deviate_penalty_weight_levels = CurrTerm(
     #     func=mdp.joint_deviation_penalty_levels,
     #     params={

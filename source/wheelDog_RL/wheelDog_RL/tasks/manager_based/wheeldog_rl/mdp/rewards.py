@@ -128,30 +128,21 @@ def actionTerm_rate_l2(
     return total_penalty
 
 
-def terrain_normal_deviation_l2(
+def terrain_orientation(
     env: ManagerBasedRLEnv,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-    sensor_cfg: SceneEntityCfg = SceneEntityCfg("terrain_raycaster"),
+    sensor_cfg: SceneEntityCfg = SceneEntityCfg("height_scanner"),
 ) -> torch.Tensor:
     """Penalize deviation between base projected gravity and the negative terrain normal.
-    
-    Penalty = ‖ projected_gravity_b - (-terrain_normal) ‖²
-    This encourages the base z-axis to align with the local terrain up direction.
     """
-    # Get robot & extract current base-frame projected gravity
-    robot: RigidObject = env.scene[asset_cfg.name]
-    g_proj = robot.data.projected_gravity_b     # (num_envs, 3)
+    # Enable type hints.
+    # robot: RigidObject = env.scene[asset_cfg.name]
 
-    # Get current terrain normal under the robot (your custom function)
-    n_terrain = terrain_normals(env, sensor_cfg)       # expected shape: (num_envs, 3)
+    # Get current terrain normal under the robot, in robot base frame.
+    terrain_normal_b = terrain_normals(env, sensor_cfg)
 
-    # Ideal gravity direction in base frame = -terrain_normal
-    ideal_g = -n_terrain                               # (num_envs, 3)
-
-    # L2 squared deviation
-    deviation = g_proj - ideal_g
-    penalty = torch.sum(deviation.square(), dim=1)     # (num_envs,)
-
+    # Penalize using L2 squared kernel.
+    penalty = torch.sum(torch.square(terrain_normal_b[:, :2]), dim=1)
     return penalty
 
 
