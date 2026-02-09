@@ -26,8 +26,12 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import \
     CPU_POOL_BUCKET_SIZE, \
     CURRICULUM_ERROR_THRESHOLD_UP, \
     CURRICULUM_ERROR_THRESHOLD_DOWN, \
-    JOINT_DEVIATE_SCALE_LEVELS, \
-    JOINT_DEVIATE_MIN_FACTOR
+    ABD_POS_DEVIATE_SCALE_LEVELS, \
+    ABD_POS_DEVIATE_MIN_FACTOR, \
+    ABD_POS_DEVIATE_MIN_FACTOR_TERRAIN_LEVEL, \
+    LEG_POS_DEVIATE_SCALE_LEVELS, \
+    LEG_POS_DEVIATE_MIN_FACTOR, \
+    LEG_POS_DEVIATE_MIN_FACTOR_TERRAIN_LEVEL
 
 
 ##
@@ -173,14 +177,24 @@ class CurriculumCfg:
     #         "min_factor_terrainLevel": 4,
     #     },
     # )
-    # joint_deviate_penalty_weight_levels = CurrTerm(
-    #     func=mdp.joint_deviation_penalty_levels,
-    #     params={
-    #         "target_term_name": "dof_pos_deviate",
-    #         "scale_levels": JOINT_DEVIATE_SCALE_LEVELS,
-    #         "min_factor": JOINT_DEVIATE_MIN_FACTOR,
-    #     },
-    # )
+    abd_deviate_penalty_weight_levels = CurrTerm(
+        func=mdp.joint_deviation_penalty_levels,
+        params={
+            "target_term_name": "abd_pos_deviate",
+            "scale_levels": ABD_POS_DEVIATE_SCALE_LEVELS,
+            "min_factor": ABD_POS_DEVIATE_MIN_FACTOR,
+            "min_factor_terrainLevel": ABD_POS_DEVIATE_MIN_FACTOR_TERRAIN_LEVEL,
+        },
+    )
+    leg_deviate_penalty_weight_levels = CurrTerm(
+        func=mdp.joint_deviation_penalty_levels,
+        params={
+            "target_term_name": "leg_pos_deviate",
+            "scale_levels": LEG_POS_DEVIATE_SCALE_LEVELS,
+            "min_factor": LEG_POS_DEVIATE_MIN_FACTOR,
+            "min_factor_terrainLevel": LEG_POS_DEVIATE_MIN_FACTOR_TERRAIN_LEVEL,
+        },
+    )
 
 
 ##

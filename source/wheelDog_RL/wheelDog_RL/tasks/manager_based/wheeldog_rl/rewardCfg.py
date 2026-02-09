@@ -10,7 +10,7 @@ from isaaclab.managers import SceneEntityCfg
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
 # Import settings.
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import BASE_HEIGHT_THRESHOLD
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import BASE_HEIGHT_THRESHOLD, ABD_POS_DEVIATE_INIT_WEIGHT, LEG_POS_DEVIATE_INIT_WEIGHT
 
 @configclass
 class RewardsCfg:
@@ -19,7 +19,7 @@ class RewardsCfg:
     # -- rewards
     track_lin_vel_xy_exp = RewTerm(
         func=mdp.track_lin_vel_xy_exp,
-        weight=1.0,
+        weight=1.2,
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
     track_ang_vel_z_exp = RewTerm(
@@ -56,7 +56,7 @@ class RewardsCfg:
     # action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-1)
     leg_action_rate_l2 = RewTerm(
         func=mdp.actionTerm_rate_l2,
-        weight=-2e-1,
+        weight=-1e-1,
         params={
             "term_names": [
                 "abdomen_joint_pos",
@@ -67,7 +67,7 @@ class RewardsCfg:
     )
     wheel_action_rate_l2 = RewTerm(
         func=mdp. actionTerm_rate_l2,
-        weight=-5e-2,
+        weight=-1e-2,
         params={
             "term_names": [
                 "wheel_joint_vel",
@@ -76,7 +76,7 @@ class RewardsCfg:
     )
     abd_pos_deviate = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-1.5,
+        weight=ABD_POS_DEVIATE_INIT_WEIGHT,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", 
@@ -89,7 +89,7 @@ class RewardsCfg:
     )
     leg_pos_deviate = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.25,
+        weight=LEG_POS_DEVIATE_INIT_WEIGHT,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", 
@@ -101,7 +101,13 @@ class RewardsCfg:
             ),
         }
     )
-    stay_flat =RewTerm(func=mdp.terrain_orientation, weight=-1.0)
+    stay_flat =RewTerm(
+        func=mdp.terrain_orientation,
+        weight=-1.0,
+        params={
+            "sensor_cfg": SceneEntityCfg("height_scanner"),
+        },
+    )
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-1.0,

@@ -164,10 +164,10 @@ def terrain_levels_velocityError(
 def joint_deviation_penalty_levels(
     env: WheelDog_BlindLocomotionEnv,
     env_ids: Sequence[int],
-    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-    target_term_name: str = "dof_pos_deviate",
-    scale_levels: int = 8,
-    min_factor: float = 0.5,
+    target_term_name: str,
+    scale_levels: int,
+    min_factor: float,
+    min_factor_terrainLevel: int,
 ) -> torch.Tensor:
     """
     Curriculum function that scales down joint deviation penalty as robot learns to stay alive.
@@ -186,7 +186,7 @@ def joint_deviation_penalty_levels(
     original_term_cfg = getattr(env.env_cfg_at_startup.rewards, target_term_name)
     original_weight = original_term_cfg.weight
 
-    stage = ((torch.floor(mean_levels)) * scale_levels) // terrain.max_terrain_level
+    stage = (torch.clamp(torch.floor(mean_levels), min=0, max=min_factor_terrainLevel) * scale_levels) // min_factor_terrainLevel
     stage = torch.clamp(stage, min=0, max = scale_levels-1)
 
     factor = 1.0 + (min_factor - 1.0) * (stage/(scale_levels-1))
@@ -197,7 +197,6 @@ def joint_deviation_penalty_levels(
     term_cfg_new = env.reward_manager.get_term_cfg(term_name=target_term_name)
     term_cfg_new.weight = current_weight.item()
     env.reward_manager.set_term_cfg(term_name=target_term_name, cfg=term_cfg_new)
-
     
     # print(f"[INFO] current_weight: {current_weight}")
     # print(f"[INFO] term_cfg_new.weight: {term_cfg_new.weight}")
