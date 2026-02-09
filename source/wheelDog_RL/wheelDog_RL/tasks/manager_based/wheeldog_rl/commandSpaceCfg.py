@@ -18,6 +18,6 @@ class CommandsCfg:
         heading_command=False,
         debug_vis=True,
         ranges=isaac_mdp.UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(-2.0, 2.0), lin_vel_y=(-0.8, 0.8), ang_vel_z=(-2.0, 2.0), heading=(-math.pi, math.pi)
+            lin_vel_x=(-1.2, 1.2), lin_vel_y=(-0.4, 0.4), ang_vel_z=(-1.2, 1.2), heading=(-math.pi, math.pi)
         ),
     )
