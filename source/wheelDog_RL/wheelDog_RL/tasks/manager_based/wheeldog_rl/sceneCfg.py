@@ -117,13 +117,13 @@ class wheelDog_RL_sceneCfg(InteractiveSceneCfg):
         prim_path="{ENV_REGEX_NS}/Robot/BASE_LINK",
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 20.0)),
         ray_alignment="yaw",
-        pattern_cfg=patterns.GridPatternCfg(resolution=0.4, size=[1.2, 0.8]),
+        pattern_cfg=patterns.GridPatternCfg(resolution=0.2, size=[1.2, 0.8]),
         debug_vis=False,
         mesh_prim_paths=["/World/ground"],
     )
     base_IMU = ImuCfg(
         prim_path="{ENV_REGEX_NS}/Robot/BASE_LINK",
-        gravity_bias=(0.00, 0.00, 9.81), # Remember to account for gravity bias
+        gravity_bias=(0.00, 0.00, 9.81),
         update_period=0.02,
         history_length=0,
         offset=ImuCfg.OffsetCfg(pos=(0.10, 0.00, 0.05)),

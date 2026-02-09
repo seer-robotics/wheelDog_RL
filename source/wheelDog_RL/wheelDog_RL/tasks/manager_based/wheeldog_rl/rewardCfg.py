@@ -53,47 +53,35 @@ class RewardsCfg:
     ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.4)
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5e-1)
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-3.0e-07)
-    # action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-1)
-    leg_action_rate_l2 = RewTerm(
-        func=mdp.actionTerm_rate_l2,
-        weight=-1e-1,
-        params={
-            "term_names": [
-                "abdomen_joint_pos",
-                "hip_joint_pos",
-                "knee_joint_pos",
-            ]
-        }
-    )
-    wheel_action_rate_l2 = RewTerm(
-        func=mdp. actionTerm_rate_l2,
-        weight=-1e-2,
-        params={
-            "term_names": [
-                "wheel_joint_vel",
-            ]
-        }
-    )
-    abd_pos_deviate = RewTerm(
+    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-1)
+    # leg_action_rate_l2 = RewTerm(
+    #     func=mdp.actionTerm_rate_l2,
+    #     weight=-0.4,
+    #     params={
+    #         "term_names": [
+    #             "abdomen_joint_pos",
+    #             "hip_joint_pos",
+    #             "knee_joint_pos",
+    #         ]
+    #     }
+    # )
+    # wheel_action_rate_l2 = RewTerm(
+    #     func=mdp. actionTerm_rate_l2,
+    #     weight=-0.2,
+    #     params={
+    #         "term_names": [
+    #             "wheel_joint_vel",
+    #         ]
+    #     }
+    # )
+    dof_pos_deviate = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=ABD_POS_DEVIATE_INIT_WEIGHT,
+        weight=-0.3,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", 
                 joint_names=[
                     ".*_ABAD_JOINT",
-                ],
-                preserve_order=True,
-            ),
-        }
-    )
-    leg_pos_deviate = RewTerm(
-        func=mdp.joint_deviation_l1,
-        weight=LEG_POS_DEVIATE_INIT_WEIGHT,
-        params={
-            "asset_cfg": SceneEntityCfg(
-                "robot", 
-                joint_names=[
                     ".*_HIP_JOINT",
                     ".*_KNEE_JOINT",
                 ],
@@ -101,7 +89,34 @@ class RewardsCfg:
             ),
         }
     )
-    stay_flat =RewTerm(
+    # abd_pos_deviate = RewTerm(
+    #     func=mdp.joint_deviation_l1,
+    #     weight=-0.4,
+    #     params={
+    #         "asset_cfg": SceneEntityCfg(
+    #             "robot", 
+    #             joint_names=[
+    #                 ".*_ABAD_JOINT",
+    #             ],
+    #             preserve_order=True,
+    #         ),
+    #     }
+    # )
+    # leg_pos_deviate = RewTerm(
+    #     func=mdp.joint_deviation_l1,
+    #     weight=-0.25,
+    #     params={
+    #         "asset_cfg": SceneEntityCfg(
+    #             "robot", 
+    #             joint_names=[
+    #                 ".*_HIP_JOINT",
+    #                 ".*_KNEE_JOINT",
+    #             ],
+    #             preserve_order=True,
+    #         ),
+    #     }
+    # )
+    parallel_to_terrain =RewTerm(
         func=mdp.terrain_orientation,
         weight=-1.0,
         params={
