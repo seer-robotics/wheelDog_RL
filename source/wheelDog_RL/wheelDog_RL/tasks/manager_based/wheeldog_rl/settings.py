@@ -1,5 +1,5 @@
 # Action space settings.
-JOINT_ACTION_SCALE = 1.0
+JOINT_ACTION_SCALE = 0.6
 WHEEL_ACTION_SCALE = 15.0
 
 # Observation space settings. 

@@ -20,12 +20,12 @@ class RewardsCfg:
     # -- rewards
     track_lin_vel_xy_exp = RewTerm(
         func=mdp.track_lin_vel_xy_exp,
-        weight=1.2,
+        weight=1.0,
         params={"command_name": "base_velocity", "std": math.sqrt(0.16)}
     )
     track_ang_vel_z_exp = RewTerm(
         func=mdp.track_ang_vel_z_exp,
-        weight=0.8,
+        weight=0.75,
         params={"command_name": "base_velocity", "std": math.sqrt(0.16)}
     )
     # stay_alive = RewTerm(mdp.is_alive, weight=1.0)
@@ -50,8 +50,8 @@ class RewardsCfg:
     lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
     ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.4)
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5e-1)
-    dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-3.0e-07)
-    # action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-1)
+    dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
+    dof_torque_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-2.5e-5)
     leg_action_rate_l2 = RewTerm(
         func=mdp.actionTerm_rate_l2,
         weight=-2e-2,
@@ -89,7 +89,7 @@ class RewardsCfg:
     # )
     abd_pos_deviate = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.5,
+        weight=-0.4,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", 
@@ -102,7 +102,7 @@ class RewardsCfg:
     )
     leg_pos_deviate = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.3,
+        weight=-0.2,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", 
