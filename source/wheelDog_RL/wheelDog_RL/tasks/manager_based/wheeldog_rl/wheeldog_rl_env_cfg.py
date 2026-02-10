@@ -28,7 +28,8 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import \
     CURRICULUM_ERROR_THRESHOLD_DOWN, \
     BASE_CONTACT_INIT_THRESHOLD, \
     BASE_CONTACT_TARGET_THRESHOLD, \
-    BASE_CONTACT_WARMUP_STEPS, \
+    BASE_CONTACT_FLAT_STEPS, \
+    BASE_CONTACT_DECAY_STEPS, \
     ABD_POS_DEVIATE_SCALE_LEVELS, \
     ABD_POS_DEVIATE_MIN_FACTOR, \
     ABD_POS_DEVIATE_MIN_FACTOR_TERRAIN_LEVEL, \
@@ -156,7 +157,7 @@ class TerminationsCfg:
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
     base_contact = DoneTerm(
         func=mdp.illegal_contact,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="BASE_LINK"), "threshold": BASE_CONTACT_INIT_THRESHOLD},
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="BASE_LINK"), "threshold": BASE_CONTACT_TARGET_THRESHOLD},
     )
 
 
@@ -168,16 +169,12 @@ class CurriculumCfg:
         func=mdp.modify_term_cfg,
         params={
             "address": "terminations.base_contact.params.threshold",
-            "modify_fn": lambda env, env_ids, old_value, **kwargs: (
-                kwargs["target_threshold"]
-                if env.common_step_counter >= kwargs["warmup_steps"]
-                else \
-                    kwargs["initial_threshold"] + (kwargs["target_threshold"] - kwargs["initial_threshold"]) * min(1.0, env.common_step_counter / float(kwargs["warmup_steps"]))
-            ),
+            "modify_fn": mdp.base_contact_threshold_decay,
             "modify_params": {
                 "initial_threshold": BASE_CONTACT_INIT_THRESHOLD,
                 "target_threshold": BASE_CONTACT_TARGET_THRESHOLD,
-                "warmup_steps": BASE_CONTACT_WARMUP_STEPS,
+                "flat_steps": BASE_CONTACT_FLAT_STEPS,
+                "decay_steps": BASE_CONTACT_DECAY_STEPS,
             },
         }
     )

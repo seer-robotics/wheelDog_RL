@@ -203,3 +203,34 @@ def penalty_levels_meanTerrain(
 
     # Return the current weight for logging.
     return current_weight
+
+
+def base_contact_threshold_decay(
+        env: WheelDog_BlindLocomotionEnv,
+        env_ids,
+        old_value,
+        **kwargs
+) -> float:
+    """
+    Curriculum schedule:
+      1. Flat high threshold for the first 'flat_steps'
+      2. Linear decay from initial_threshold → target_threshold over the next 'decay_steps'
+      3. Fixed at target_threshold thereafter
+    """
+    total_warmup_steps = kwargs["flat_steps"] + kwargs["decay_steps"]
+    current_step = env.common_step_counter
+
+    # Phase 1: keep threshold fixed at initial value
+    if current_step < kwargs["flat_steps"]:
+        return kwargs["initial_threshold"]
+
+    # Phase 2: linear interpolation during decay phase
+    if current_step < total_warmup_steps:
+        progress = (current_step - kwargs["flat_steps"]) / float(kwargs["decay_steps"])
+        progress = min(1.0, progress)  # safeguard
+        return (
+            kwargs["initial_threshold"] + progress * (kwargs["target_threshold"] - kwargs["initial_threshold"])
+        )
+
+    # Phase 3: stay at final target value
+    return kwargs["target_threshold"]
