@@ -40,6 +40,13 @@ class CommandCurriculumManager:
         self.num_envs = env.num_envs
         self.device = env.device
 
+        # Default settings.
+        self.global_max_ranges = {
+            "vx":    (-1.0, 2.0),
+            "vy":    (-0.3, 0.3),
+            "omega": (-1.6, 1.6),
+        }
+
         # EMA parameters - tune these.
         # The closer alpha is to 1, the longer the memory is.
         self.ema_alpha = cfg.get("ema_alpha", 0.99)
@@ -104,19 +111,53 @@ class CommandCurriculumManager:
     def should_advance_stage(self) -> bool:
         if self.total_steps - self.stage_start_step < self.min_steps_per_stage:
             return False
+        
+        min_progress_for_advance = self.cfg.get("min_progress_for_advance", 0.8)
 
-        if self.current_stage == 0:   # vx only
-            return self.avg_vx_mae < self.cfg.get("stage0_vx_threshold", 0.18)
-        elif self.current_stage == 1: # + yaw
-            retval = (
-                self.avg_vx_mae < self.cfg.get("stage1_vx_threshold", 0.15) and
-                self.avg_omega_mae < self.cfg.get("stage1_omega_threshold", 0.18)
+        # Read the *actually active* ranges from the command term
+        cmd_cfg = self.env.command_manager.get_term("base_velocity").cfg
+        curr = {
+            "vx":    cmd_cfg.ranges.lin_vel_x,
+            "vy":    cmd_cfg.ranges.lin_vel_y,
+            "omega": cmd_cfg.ranges.ang_vel_z,
+        }
+
+        if self.current_stage == 0:
+            # vx only
+            range_progress = self.range_width_compare(curr["vx"], self.global_max_ranges["vx"])
+            range_ok = range_progress > min_progress_for_advance
+            tracking_ok = (
+                self.avg_vx_mae < self.cfg.get("vx_mae_threshold", 0.18)
             )
-            return retval
+            return range_ok and tracking_ok
+        elif self.current_stage == 1:
+            # + yaw
+            range_progress = self.range_width_compare(curr["omega"], self.global_max_ranges["omega"])
+            range_ok = range_progress > min_progress_for_advance
+            tracking_ok = (
+                self.avg_vx_mae < self.cfg.get("vx_mae_threshold", 0.18) and
+                self.avg_omega_mae < self.cfg.get("omega_mae_threshold", 0.18)
+            )
+            return range_ok and tracking_ok
         elif self.current_stage == 2:
-            return self.avg_vy_mae < self.cfg.get("stage2_vy_threshold", 0.30)
+            # Final stage.
+            range_progress = self.range_width_compare(curr["vy"], self.global_max_ranges["vy"])
+            range_ok = range_progress > min_progress_for_advance
+            tracking_ok = (
+                self.avg_vx_mae < self.cfg.get("vx_mae_threshold", 0.18) and
+                self.avg_omega_mae < self.cfg.get("omega_mae_threshold", 0.18) and
+                self.avg_vy_mae< self.cfg.get("vy_mae_threshold", 0.30)
+            )
+            return range_ok and tracking_ok
         
         return False
+    
+    @staticmethod
+    def range_width_compare(curr: tuple, targ: tuple) -> float:
+        # Compute normalized progress toward final range.
+        curr_width = curr[1] - curr[0]
+        targ_width = targ[1] - targ[0]
+        return min(1.0, curr_width / targ_width)
 
     def advance_stage(self):
         if self.current_stage >= 2:
