@@ -8,6 +8,7 @@ from __future__ import annotations
 
 # Library imports
 import torch
+import math
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Dict, Any
 
@@ -20,6 +21,7 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 if TYPE_CHECKING:
     from isaaclab.assets import Articulation
     from isaaclab.terrains import TerrainImporter
+    from isaaclab.envs import mdp as isaac_mdp
     from wheelDog_RL.tasks.manager_based.wheeldog_rl.envEntry import WheelDog_BlindLocomotionEnv
 
 # Manager class that handles the command curriculum.
@@ -39,84 +41,81 @@ class CommandCurriculumManager:
         self.device = env.device
 
         # EMA parameters - tune these.
-        self.ema_alpha = cfg.get("ema_alpha", 0.995)          # 0.99 = fast, 0.999 = very smooth
-        self.min_steps_per_stage = cfg.get("min_steps_per_stage", 1_500_000)  # safety floor
+        # The closer alpha is to 1, the longer the memory is.
+        self.ema_alpha = cfg.get("ema_alpha", 0.99)
+        self.min_steps_per_stage = cfg.get("min_steps_per_stage", 1_500_000)
 
-        # Per-environment EMA of instantaneous RMSE (updated every step)
-        self.ema_vx_rmse   = torch.zeros(self.num_envs, device=self.device)
-        self.ema_omega_rmse = torch.zeros(self.num_envs, device=self.device)
-        self.ema_vy_rmse   = torch.zeros(self.num_envs, device=self.device)
+        # Per-environment EMA of instantaneous mae (updated every step)
+        self.ema_vx_mae   = torch.zeros(self.num_envs, device=self.device)
+        self.ema_omega_mae = torch.zeros(self.num_envs, device=self.device)
+        self.ema_vy_mae   = torch.zeros(self.num_envs, device=self.device)
 
         # Global (batch-averaged) values used for curriculum decisions.
-        self.avg_vx_rmse   = 0.0
-        self.avg_omega_rmse = 0.0
-        self.avg_vy_rmse   = 0.0
-        self.avg_success   = 0.0
+        self.avg_vx_mae   = 0.0
+        self.avg_omega_mae = 0.0
+        self.avg_vy_mae   = 0.0
 
         # Stage tracking.
         self.current_stage = 0
         self.stage_start_step = 0
-        self.total_steps = self.env.common_step_counter
-
-        # Accumulators for optional diagnostics / logging.
-        self.episode_vx_error_sq   = torch.zeros(self.num_envs, device=self.device)
-        self.episode_omega_error_sq = torch.zeros(self.num_envs, device=self.device)
-        self.episode_vy_error_sq   = torch.zeros(self.num_envs, device=self.device)
+        self.total_steps = 0
 
     def reset(self, env_ids: torch.Tensor):
-        # Reset episode statistics buffers.
+        # Reset episode statistics buffers for specified environments.
         if env_ids is not None:
-            self.episode_vx_error_sq[env_ids]   = 0.0
-            self.episode_omega_error_sq[env_ids] = 0.0
-            self.episode_vy_error_sq[env_ids]   = 0.0
+            self.ema_vx_mae[env_ids]   = 0.0
+            self.ema_vy_mae[env_ids] = 0.0
+            self.ema_omega_mae[env_ids]   = 0.0
 
-    def post_physics_step(self):
+    def step(self):
+        """
+        Update EMA tracking errors and global averages.
+        Called after every physics step.
+        """
+        self.total_steps = self.env.common_step_counter
+
         # Get current commands and velocities.
         robot: Articulation = self.env.scene["robot"]
         commands = self.env.command_manager.get_command("base_velocity")
         base_lin_vel = robot.data.root_lin_vel_b[:, :2]
         base_ang_vel = robot.data.root_ang_vel_b[:, 2]
-
         vx_cmd = commands[:, 0]
         vy_cmd = commands[:, 1]
         omega_cmd = commands[:, 2]
-
         vx_act = base_lin_vel[:, 0]
         vy_act = base_lin_vel[:, 1]
         omega_act = base_ang_vel[:, 2]
 
-        # Accumulate for diagnostics (optional)
-        self.episode_vx_error_sq   += (vx_cmd - vx_act) ** 2
-        self.episode_omega_error_sq += (omega_cmd - omega_act) ** 2
-        self.episode_vy_error_sq   += (vy_cmd - vy_act) ** 2
+        # Instantaneous mean absolute errors.
+        curr_vx_mae = torch.abs(vx_cmd - vx_act)
+        curr_vy_mae = torch.abs(vy_cmd - vy_act)
+        curr_omega_mae = torch.abs(omega_cmd - omega_act)
 
-        # === EMA update every step ===
-        curr_vx_rmse   = torch.sqrt((vx_cmd - vx_act) ** 2)
-        curr_omega_rmse = torch.sqrt((omega_cmd - omega_act) ** 2)
-        curr_vy_rmse   = torch.sqrt((vy_cmd - vy_act) ** 2)
+        # Per environment EMA update.
+        self.ema_vx_mae = self.ema_alpha * self.ema_vx_mae + (1 - self.ema_alpha) * curr_vx_mae
+        self.ema_omega_mae = self.ema_alpha * self.ema_omega_mae + (1 - self.ema_alpha) * curr_omega_mae
+        self.ema_vy_mae = self.ema_alpha * self.ema_vy_mae + (1 - self.ema_alpha) * curr_vy_mae
 
-        self.ema_vx_rmse   = self.ema_alpha * self.ema_vx_rmse   + (1 - self.ema_alpha) * curr_vx_rmse
-        self.ema_omega_rmse = self.ema_alpha * self.ema_omega_rmse + (1 - self.ema_alpha) * curr_omega_rmse
-        self.ema_vy_rmse   = self.ema_alpha * self.ema_vy_rmse   + (1 - self.ema_alpha) * curr_vy_rmse
-
-        # Global averages for curriculum
-        self.avg_vx_rmse   = self.ema_vx_rmse.mean().item()
-        self.avg_omega_rmse = self.ema_omega_rmse.mean().item()
-        self.avg_vy_rmse   = self.ema_vy_rmse.mean().item()
-
-        # Success proxy (fraction of envs with decent tracking this step)
-        good = (curr_vx_rmse < 0.25) & (curr_omega_rmse < 0.25)
-        self.avg_success = good.float().mean().item()
+        # Global averages.
+        self.avg_vx_mae   = self.ema_vx_mae.mean().item()
+        self.avg_omega_mae = self.ema_omega_mae.mean().item()
+        self.avg_vy_mae   = self.ema_vy_mae.mean().item()
 
     def should_advance_stage(self) -> bool:
         if self.total_steps - self.stage_start_step < self.min_steps_per_stage:
             return False
 
         if self.current_stage == 0:   # vx only
-            return self.avg_vx_rmse < self.cfg.get("stage0_vx_threshold", 0.18)
+            return self.avg_vx_mae < self.cfg.get("stage0_vx_threshold", 0.18)
         elif self.current_stage == 1: # + yaw
-            retval = (self.avg_vx_rmse < self.cfg.get("stage1_vx_threshold", 0.15) and self.avg_omega_rmse < self.cfg.get("stage1_omega_threshold", 0.18))
+            retval = (
+                self.avg_vx_mae < self.cfg.get("stage1_vx_threshold", 0.15) and
+                self.avg_omega_mae < self.cfg.get("stage1_omega_threshold", 0.18)
+            )
             return retval
+        elif self.current_stage == 2:
+            return self.avg_vy_mae < self.cfg.get("stage2_vy_threshold", 0.30)
+        
         return False
 
     def advance_stage(self):
@@ -126,44 +125,64 @@ class CommandCurriculumManager:
         self.stage_start_step = self.total_steps
         print(f"[Curriculum] → Advanced to Stage {self.current_stage} at step {self.total_steps:,}")
 
-        # Optional: speed up adaptation after stage change
-        # self.ema_alpha = max(0.98, self.ema_alpha * 0.9)  # temporarily more responsive
-
     def get_current_command_ranges(self) -> Dict[str, Any]:
         """
-        Returns current min/max and sampling params.
-        Includes gradual within-stage ramping.
+        Returns current min/max ranges for velocity commands.
+        
+        Behavior:
+        - During the first min_steps_per_stage of a stage → returns the narrowest (initial) range
+        - After min_steps_per_stage → linearly interpolates toward the maximum range
+        based on current average tracking error (progress = 1 - mae / target)
         """
+        steps_in_stage = self.total_steps - self.stage_start_step
+        force_min_range = steps_in_stage < self.min_steps_per_stage
+
         if self.current_stage == 0:
             # Use vx error to drive vx range expansion
-            target_rmse = self.cfg.get("stage0_vx_target_rmse", 0.18)  # the threshold used in gate
-            vx_progress = max(0.0, 1.0 - (self.avg_vx_rmse / target_rmse))
-            vx_progress = min(1.0, vx_progress)  # clip
+            target_vx_mae = self.cfg.get("stage0_vx_threshold", 0.18)
 
-            vx_min = -0.3 + (-0.7 * vx_progress)
-            vx_max =  0.4 + ( 1.6 * vx_progress)
-            omega_min = omega_max = vy_min = vy_max = 0.0
+            if force_min_range:
+                vx_min = -0.3
+                vx_max = 0.4
+            else:
+                progress = max(0.0, min(1.0,
+                    1.0 - (self.avg_vx_mae / target_vx_mae)
+                ))
+                vx_min = -0.3 + (-0.7 * progress)
+                vx_max =  0.4 + ( 1.6 * progress)
+
+            vy_min = vy_max = 0.0
+            omega_min = omega_max = 0.0
 
         elif self.current_stage == 1:
-            # Use ωz error for yaw range, vx already full
-            target_omega_rmse = self.cfg.get("stage1_omega_target_rmse", 0.18)
-            omega_progress = max(0.0, 1.0 - (self.avg_omega_rmse / target_omega_rmse))
-            omega_progress = min(1.0, omega_progress)
+            target_omega_mae = self.cfg.get("stage1_omega_threshold", 0.18)
+            
+            if force_min_range:
+                omega_range = 0.4
+            else:
+                progress = max(0.0, min(1.0,
+                    1.0 - (self.avg_omega_mae / target_omega_mae)
+                ))
+                omega_range = 0.4 + 1.2 * progress
 
-            vx_min, vx_max = -1.0, 2.0
-            omega_range = 0.4 + (1.2 * omega_progress)
             omega_min = -omega_range
-            omega_max =  omega_range
+            omega_max = omega_range
+            vx_min, vx_max = -1.0, 2.0
             vy_min = vy_max = 0.0
 
-        else:  # stage 2 — vy uses vy_rmse or combined metric
-            target_vy_rmse = self.cfg.get("stage2_vy_target_rmse", 0.30)
-            vy_progress = max(0.0, 1.0 - (self.avg_vy_rmse / target_vy_rmse))
-            vy_progress = min(1.0, vy_progress)
+        else:  # stage 2 — vy uses vy_mae or combined metric
+            target_vy_mae = self.cfg.get("stage2_vy_threshold", 0.30)
+            
+            if force_min_range:
+                vy_range = 0.08
+            else:
+                progress = max(0.0, min(1.0,
+                    1.0 - (self.avg_vy_mae / target_vy_mae)
+                ))
+                vy_range = 0.08 + 0.22 * progress
 
             vx_min, vx_max = -1.0, 2.0
             omega_min, omega_max = -1.6, 1.6
-            vy_range = 0.08 + (0.22 * vy_progress)
             vy_min = -vy_range
             vy_max =  vy_range
 
@@ -172,7 +191,7 @@ class CommandCurriculumManager:
             "vy": (vy_min, vy_max),
             "omega": (omega_min, omega_max),
         }
-    
+
 
 # Command curriculum function callable.
 def command_staged_curriculum(
@@ -187,16 +206,25 @@ def command_staged_curriculum(
     # if not hasattr(env, "command_curriculum_manager"):
     #     return
 
+    # Check for stage updates.
+    mgr: CommandCurriculumManager = env.command_curriculum_manager
+    if mgr.should_advance_stage():
+        mgr.advance_stage()
+
     # Get the current ranges from the manager.
-    ranges = env.command_curriculum_manager.get_current_command_ranges()
+    ranges = mgr.get_current_command_ranges()
 
     # Apply command curriculum.
     try:
         cmd_term = env.command_manager.get_term("base_velocity")
-
-        cmd_term.cfg.ranges.lin_vel_x = [ranges["vx"][0], ranges["vx"][1]]
-        cmd_term.cfg.ranges.lin_vel_y = [ranges["vy"][0], ranges["vy"][1]]
-        cmd_term.cfg.ranges.ang_vel_z = [ranges["omega"][0], ranges["omega"][1]]
+        cmd_term.cfg.ranges.lin_vel_x = ranges["vx"]
+        cmd_term.cfg.ranges.lin_vel_y = ranges["vy"]
+        cmd_term.cfg.ranges.ang_vel_z = ranges["omega"]
+        # cmd_term.cfg.ranges=isaac_mdp.UniformVelocityCommandCfg.Ranges(
+        #     lin_vel_x=ranges["vx"],
+        #     lin_vel_y=ranges["vy"],
+        #     ang_vel_z=ranges["omega"],
+        # ),
 
     except (AttributeError, KeyError) as e:
         print(f"Warning: Could not update command ranges: {e}")
@@ -226,7 +254,7 @@ class VelocityErrorRecorder():
         self._episode_cum_error[env_ids] = 0.0
         self._episode_cum_command[env_ids] = 0.0
 
-    def post_physics_step(self):
+    def step(self):
         # Record cumulative error after physics update.
         robot: Articulation = self._env.scene["robot"]
 

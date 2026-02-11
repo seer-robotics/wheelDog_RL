@@ -127,6 +127,7 @@ class RewardsCfg:
         params={
             "sensor_cfg": SceneEntityCfg(
                 "contact_forces", body_names=[
+                    "BASE_LINK",
                     ".*_HIP_LINK",
                     ".*_KNEE_LINK",
                 ]
