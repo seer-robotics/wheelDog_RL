@@ -193,7 +193,8 @@ class CommandCurriculumManager:
                 vx_max =  0.4 + ( 1.6 * progress)
 
             vy_min = vy_max = 0.0
-            omega_min = omega_max = 0.0
+            omega_min = -0.05
+            omega_max = 0.05
 
         elif self.current_stage == 1:
             target_omega_mae = self.cfg.get("stage1_omega_threshold", 0.18)
@@ -232,6 +233,46 @@ class CommandCurriculumManager:
             "vy": (vy_min, vy_max),
             "omega": (omega_min, omega_max),
         }
+    
+    def get_progress_metric(self) -> float:
+        """
+        Returns a single float encoding curriculum progress.
+        - Integer part: current stage (0, 1, 2)
+        - Fractional part:
+            - During stage < 2: normalized range progress of the active/new component
+            - During stage 2: average normalized tracking improvement across vx, ωz, vy
+        """
+        stage = float(self.current_stage)
+
+        if self.current_stage < 2:
+            # Progress = how far the newly introduced dimension has expanded
+            cmd_cfg = self.env.command_manager.get_term("base_velocity").cfg
+            
+            if self.current_stage == 0:
+                curr_range = cmd_cfg.ranges.lin_vel_x
+                targ_range = self.global_max_ranges["vx"]
+            else:  # stage 1
+                curr_range = cmd_cfg.ranges.ang_vel_z
+                targ_range = self.global_max_ranges["omega"]
+            
+            progress = self.range_width_compare(curr_range, targ_range)
+            
+        else:
+            # Stage 2: average tracking improvement (1 - mae / target)
+            targets = {
+                "vx":    self.cfg.get("vx_mae_threshold",    0.18),
+                "omega": self.cfg.get("omega_mae_threshold", 0.18),
+                "vy":    self.cfg.get("vy_mae_threshold",    0.30),
+            }
+            
+            prog_vx    = max(0.0, 1.0 - self.avg_vx_mae    / targets["vx"])
+            prog_omega = max(0.0, 1.0 - self.avg_omega_mae / targets["omega"])
+            prog_vy    = max(0.0, 1.0 - self.avg_vy_mae    / targets["vy"])
+            
+            progress = (prog_vx + prog_omega + prog_vy) / 3.0
+            progress = min(1.0, progress)
+
+        return stage + progress
 
 
 # Command curriculum function callable.
@@ -244,9 +285,6 @@ def command_staged_curriculum(
     Curriculum term callable executed by CurriculumManager.
     Updates the command sampler ranges based on current curriculum state.
     """
-    # if not hasattr(env, "command_curriculum_manager"):
-    #     return
-
     # Check for stage updates.
     mgr: CommandCurriculumManager = env.command_curriculum_manager
     if mgr.should_advance_stage():
@@ -269,6 +307,10 @@ def command_staged_curriculum(
 
     except (AttributeError, KeyError) as e:
         print(f"Warning: Could not update command ranges: {e}")
+
+    # Return progress metric.
+    metric = mgr.get_progress_metric()
+    return torch.Tensor([metric], device=env.device, dtype=torch.float32)
 
 
 # Manager class that records cumulative velocity error.
