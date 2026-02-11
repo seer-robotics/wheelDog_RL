@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from isaaclab.envs.common import VecEnvStepReturn
 
 # Import custom manager.
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.mdp import VelocityErrorRecorder
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.mdp import VelocityErrorRecorder, CommandCurriculumManager
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import watchDogs
 
 # Import settings.
@@ -19,13 +19,15 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
         # Keep a copy of the env startup MDP configurations.
         self.env_cfg_at_startup = copy.deepcopy(self.cfg)
 
-        # Initialize per-environment cumulative error tensor (shape: num_envs)
-        # self._cumulative_vel_error = torch.zeros(self.num_envs, device=self.device)
         self.velocity_error_recorder = VelocityErrorRecorder(
             config={"angular_scale": ANGULAR_ERROR_SCALE},
             env=self
         )
         print("[INFO]: Added velocity_error_recorder manager.")
+
+        self.command_curriculum_manager = CommandCurriculumManager(
+            
+        )
 
     def step(self, actions: torch.Tensor) -> VecEnvStepReturn:
         # Compute step returns.

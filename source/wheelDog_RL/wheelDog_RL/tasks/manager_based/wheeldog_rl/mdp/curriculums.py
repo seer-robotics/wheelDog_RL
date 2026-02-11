@@ -38,7 +38,7 @@ class CommandCurriculumManager:
         self.num_envs = env.num_envs
         self.device = env.device
 
-        # EMA parameters - tune these
+        # EMA parameters - tune these.
         self.ema_alpha = cfg.get("ema_alpha", 0.995)          # 0.99 = fast, 0.999 = very smooth
         self.min_steps_per_stage = cfg.get("min_steps_per_stage", 1_500_000)  # safety floor
 
@@ -47,18 +47,18 @@ class CommandCurriculumManager:
         self.ema_omega_rmse = torch.zeros(self.num_envs, device=self.device)
         self.ema_vy_rmse   = torch.zeros(self.num_envs, device=self.device)
 
-        # Global (batch-averaged) values used for curriculum decisions
+        # Global (batch-averaged) values used for curriculum decisions.
         self.avg_vx_rmse   = 0.0
         self.avg_omega_rmse = 0.0
         self.avg_vy_rmse   = 0.0
         self.avg_success   = 0.0
 
-        # Stage tracking
+        # Stage tracking.
         self.current_stage = 0
         self.stage_start_step = 0
         self.total_steps = self.env.common_step_counter
 
-        # Still keep accumulators for optional diagnostics / logging
+        # Accumulators for optional diagnostics / logging.
         self.episode_vx_error_sq   = torch.zeros(self.num_envs, device=self.device)
         self.episode_omega_error_sq = torch.zeros(self.num_envs, device=self.device)
         self.episode_vy_error_sq   = torch.zeros(self.num_envs, device=self.device)
@@ -71,7 +71,7 @@ class CommandCurriculumManager:
             self.episode_vy_error_sq[env_ids]   = 0.0
 
     def post_physics_step(self):
-        # Get current commands and velocities
+        # Get current commands and velocities.
         robot: Articulation = self.env.scene["robot"]
         commands = self.env.command_manager.get_command("base_velocity")
         base_lin_vel = robot.data.root_lin_vel_b[:, :2]
@@ -134,78 +134,69 @@ class CommandCurriculumManager:
         Returns current min/max and sampling params.
         Includes gradual within-stage ramping.
         """
-        progress = min(1.0, (self.total_steps - self.stage_start_step) / self.cfg.get("stage_duration_steps", 5_000_000))
+        if self.current_stage == 0:
+            # Use vx error to drive vx range expansion
+            target_rmse = self.cfg.get("stage0_vx_target_rmse", 0.18)  # the threshold used in gate
+            vx_progress = max(0.0, 1.0 - (self.avg_vx_rmse / target_rmse))
+            vx_progress = min(1.0, vx_progress)  # clip
 
-        if self.current_stage == 0:  # vx ramp
-            vx_min = -0.3 * progress
-            vx_max = (0.6 + 1.6 * progress)
-            omega_min = omega_max = 0.0
-            vy_min = vy_max = 0.0
-            vy_prob = 0.0
+            vx_min = -0.3 + (-0.7 * vx_progress)
+            vx_max =  0.4 + ( 1.6 * vx_progress)
+            omega_min = omega_max = vy_min = vy_max = 0.0
 
-        elif self.current_stage == 1:  # ωz ramp, vx full
-            vx_min, vx_max = -1.0, 2.2
-            omega_range = 0.3 + 1.4 * progress
+        elif self.current_stage == 1:
+            # Use ωz error for yaw range, vx already full
+            target_omega_rmse = self.cfg.get("stage1_omega_target_rmse", 0.18)
+            omega_progress = max(0.0, 1.0 - (self.avg_omega_rmse / target_omega_rmse))
+            omega_progress = min(1.0, omega_progress)
+
+            vx_min, vx_max = -1.0, 2.0
+            omega_range = 0.4 + (1.2 * omega_progress)
             omega_min = -omega_range
-            omega_max = omega_range
+            omega_max =  omega_range
             vy_min = vy_max = 0.0
-            vy_prob = 0.0
 
-        else:  # stage 2: limited vy
-            vx_min, vx_max = -1.0, 2.2
+        else:  # stage 2 — vy uses vy_rmse or combined metric
+            target_vy_rmse = self.cfg.get("stage2_vy_target_rmse", 0.30)
+            vy_progress = max(0.0, 1.0 - (self.avg_vy_rmse / target_vy_rmse))
+            vy_progress = min(1.0, vy_progress)
+
+            vx_min, vx_max = -1.0, 2.0
             omega_min, omega_max = -1.6, 1.6
-            vy_range = 0.08 + 0.25 * progress   # keep "little"
+            vy_range = 0.08 + (0.22 * vy_progress)
             vy_min = -vy_range
-            vy_max = vy_range
-            vy_prob = 0.12 + 0.18 * progress    # low probability of sampling non-zero vy
+            vy_max =  vy_range
 
         return {
             "vx": (vx_min, vx_max),
             "vy": (vy_min, vy_max),
             "omega": (omega_min, omega_max),
-            "vy_sample_prob": vy_prob,
         }
     
 
 # Command curriculum function callable.
 def command_staged_curriculum(
-    env,
-    env_ids: torch.Tensor | None = None,  # sometimes passed, often ignored here
+    env: WheelDog_BlindLocomotionEnv,
+    env_ids: torch.Tensor | None = None,
     **kwargs
-):
+) -> torch.Tensor:
     """
     Curriculum term callable executed by CurriculumManager.
     Updates the command sampler ranges based on current curriculum state.
     """
-    if not hasattr(env, "command_curriculum_manager"):
-        return
+    # if not hasattr(env, "command_curriculum_manager"):
+    #     return
 
-    mgr: CommandCurriculumManager = env.command_curriculum_manager
+    # Get the current ranges from the manager.
+    ranges = env.command_curriculum_manager.get_current_command_ranges()
 
-    # Optional: only update every N steps to avoid unnecessary writes
-    if env.common_step_counter % 200 != 0:
-        return
-
-    # Get the current ranges from the manager
-    ranges = mgr.get_current_command_ranges()
-
-    # Apply them to your actual command term
-    # Adjust the attribute names / path according to your exact CommandTerm
+    # Apply command curriculum.
     try:
-        cmd_term = env.command_manager.command_terms["base_velocity"]  # or "velocity_command", etc.
+        cmd_term = env.command_manager.get_term("base_velocity")
 
         cmd_term.cfg.ranges.lin_vel_x = [ranges["vx"][0], ranges["vx"][1]]
         cmd_term.cfg.ranges.lin_vel_y = [ranges["vy"][0], ranges["vy"][1]]
         cmd_term.cfg.ranges.ang_vel_z = [ranges["omega"][0], ranges["omega"][1]]
-
-        # If your command term supports probabilistic lateral sampling
-        if hasattr(cmd_term.cfg, "vy_sample_prob"):
-            cmd_term.cfg.vy_sample_prob = ranges["vy_sample_prob"]
-        elif hasattr(cmd_term.cfg, "lateral_sample_prob"):
-            cmd_term.cfg.lateral_sample_prob = ranges["vy_sample_prob"]
-
-        # Optional: force resample if you want immediate effect (careful with stability)
-        # env.command_manager.resample(env_ids=None)
 
     except (AttributeError, KeyError) as e:
         print(f"Warning: Could not update command ranges: {e}")
