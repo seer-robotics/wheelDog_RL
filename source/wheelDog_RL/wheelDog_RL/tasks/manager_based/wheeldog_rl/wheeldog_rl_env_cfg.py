@@ -165,19 +165,19 @@ class TerminationsCfg:
 class CurriculumCfg:
     """Curriculum terms for the MDP."""
 
-    base_contact_curriculum = CurrTerm(
-        func=mdp.modify_term_cfg,
-        params={
-            "address": "terminations.base_contact.params.threshold",
-            "modify_fn": mdp.base_contact_threshold_decay,
-            "modify_params": {
-                "initial_threshold": BASE_CONTACT_INIT_THRESHOLD,
-                "target_threshold": BASE_CONTACT_TARGET_THRESHOLD,
-                "flat_steps": BASE_CONTACT_FLAT_STEPS,
-                "decay_steps": BASE_CONTACT_DECAY_STEPS,
-            },
-        }
-    )
+    # base_contact_curriculum = CurrTerm(
+    #     func=mdp.modify_term_cfg,
+    #     params={
+    #         "address": "terminations.base_contact.params.threshold",
+    #         "modify_fn": mdp.base_contact_threshold_decay,
+    #         "modify_params": {
+    #             "initial_threshold": BASE_CONTACT_INIT_THRESHOLD,
+    #             "target_threshold": BASE_CONTACT_TARGET_THRESHOLD,
+    #             "flat_steps": BASE_CONTACT_FLAT_STEPS,
+    #             "decay_steps": BASE_CONTACT_DECAY_STEPS,
+    #         },
+    #     }
+    # )
     terrain_levels = CurrTerm(
         func=mdp.terrain_levels_velocityError,
         params={
