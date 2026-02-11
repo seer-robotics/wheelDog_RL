@@ -40,22 +40,39 @@ class CommandCurriculumManager:
         self.num_envs = env.num_envs
         self.device = env.device
 
+        ##
         # Default settings.
-        self.global_max_ranges = {
+        ##
+        self.target_max_ranges = cfg.get("target_max_ranges", {
             "vx":    (-1.0, 2.0),
             "vy":    (-0.3, 0.3),
             "omega": (-1.6, 1.6),
-        }
-
-        # EMA parameters - tune these.
-        # The closer alpha is to 1, the longer the memory is.
-        self.ema_alpha = cfg.get("ema_alpha", 0.99)
-        self.min_steps_per_stage = cfg.get("min_steps_per_stage", 1_500_000)
+        })
+        self.required_consecutive_good_checks = self.cfg.get(
+            "required_consecutive_good_checks", 100
+        )
+        self.ema_alpha = cfg.get(
+            # The closer alpha is to 1, the longer the memory is.
+            "ema_alpha", 0.99
+        )
+        self.min_steps_per_stage = cfg.get(
+            # Minimum policy steps before stage advancement is possible.
+            "min_steps_per_stage", 1_500_000
+        )
+        self.mae_thresholds = cfg.get("mae_thresholds", {
+            "vx": 0.18,
+            "vy": 0.18,
+            "omega": 0.30,
+        })
+        self.min_progress_for_advance = cfg.get(
+            "min_progress_for_advance", 0.8
+        )
 
         # Per-environment EMA of instantaneous mae (updated every step)
         self.ema_vx_mae   = torch.zeros(self.num_envs, device=self.device)
         self.ema_omega_mae = torch.zeros(self.num_envs, device=self.device)
         self.ema_vy_mae   = torch.zeros(self.num_envs, device=self.device)
+        self.consecutive_good_checks = 0
 
         # Global (batch-averaged) values used for curriculum decisions.
         self.avg_vx_mae   = 0.0
@@ -110,10 +127,17 @@ class CommandCurriculumManager:
 
     def should_advance_stage(self) -> bool:
         if self.total_steps - self.stage_start_step < self.min_steps_per_stage:
+            self.consecutive_good_checks = 0
             return False
-        
-        min_progress_for_advance = self.cfg.get("min_progress_for_advance", 0.8)
+        this_step_ok = self.should_advance_stage_singleCheck()
+        if this_step_ok:
+            self.consecutive_good_checks += 1
+        else:
+            self.consecutive_good_checks = 0
 
+        return self.consecutive_good_checks >= self.required_consecutive_good_checks
+
+    def should_advance_stage_singleCheck(self) -> bool:
         # Read the *actually active* ranges from the command term
         cmd_cfg = self.env.command_manager.get_term("base_velocity").cfg
         curr = {
@@ -124,29 +148,29 @@ class CommandCurriculumManager:
 
         if self.current_stage == 0:
             # vx only
-            range_progress = self.range_width_compare(curr["vx"], self.global_max_ranges["vx"])
-            range_ok = range_progress > min_progress_for_advance
+            range_progress = self.range_width_compare(curr["vx"], self.target_max_ranges["vx"])
+            range_ok = range_progress > self.min_progress_for_advance
             tracking_ok = (
-                self.avg_vx_mae < self.cfg.get("vx_mae_threshold", 0.18)
+                self.avg_vx_mae < self.mae_thresholds["vx"]
             )
             return range_ok and tracking_ok
         elif self.current_stage == 1:
             # + yaw
-            range_progress = self.range_width_compare(curr["omega"], self.global_max_ranges["omega"])
-            range_ok = range_progress > min_progress_for_advance
+            range_progress = self.range_width_compare(curr["omega"], self.target_max_ranges["omega"])
+            range_ok = range_progress > self.min_progress_for_advance
             tracking_ok = (
-                self.avg_vx_mae < self.cfg.get("vx_mae_threshold", 0.18) and
-                self.avg_omega_mae < self.cfg.get("omega_mae_threshold", 0.18)
+                self.avg_vx_mae < self.mae_thresholds["vx"] and
+                self.avg_omega_mae < self.mae_thresholds["omega"]
             )
             return range_ok and tracking_ok
         elif self.current_stage == 2:
             # Final stage.
-            range_progress = self.range_width_compare(curr["vy"], self.global_max_ranges["vy"])
-            range_ok = range_progress > min_progress_for_advance
+            range_progress = self.range_width_compare(curr["vy"], self.target_max_ranges["vy"])
+            range_ok = range_progress > self.min_progress_for_advance
             tracking_ok = (
-                self.avg_vx_mae < self.cfg.get("vx_mae_threshold", 0.18) and
-                self.avg_omega_mae < self.cfg.get("omega_mae_threshold", 0.18) and
-                self.avg_vy_mae< self.cfg.get("vy_mae_threshold", 0.30)
+                self.avg_vx_mae < self.self.mae_thresholds["vx"] and
+                self.avg_omega_mae < self.mae_thresholds["omega"] and
+                self.avg_vy_mae < self.mae_thresholds["vy"]
             )
             return range_ok and tracking_ok
         
@@ -180,7 +204,7 @@ class CommandCurriculumManager:
 
         if self.current_stage == 0:
             # Use vx error to drive vx range expansion
-            target_vx_mae = self.cfg.get("stage0_vx_threshold", 0.18)
+            target_vx_mae = self.mae_thresholds["vx"]
 
             if force_min_range:
                 vx_min = -0.3
@@ -197,7 +221,7 @@ class CommandCurriculumManager:
             omega_max = 0.05
 
         elif self.current_stage == 1:
-            target_omega_mae = self.cfg.get("stage1_omega_threshold", 0.18)
+            target_omega_mae = self.mae_thresholds["omega"]
             
             if force_min_range:
                 omega_range = 0.4
@@ -213,7 +237,7 @@ class CommandCurriculumManager:
             vy_min = vy_max = 0.0
 
         else:  # stage 2 — vy uses vy_mae or combined metric
-            target_vy_mae = self.cfg.get("stage2_vy_threshold", 0.30)
+            target_vy_mae = self.mae_thresholds["vy"]
             
             if force_min_range:
                 vy_range = 0.08
@@ -250,20 +274,16 @@ class CommandCurriculumManager:
             
             if self.current_stage == 0:
                 curr_range = cmd_cfg.ranges.lin_vel_x
-                targ_range = self.global_max_ranges["vx"]
+                targ_range = self.target_max_ranges["vx"]
             else:  # stage 1
                 curr_range = cmd_cfg.ranges.ang_vel_z
-                targ_range = self.global_max_ranges["omega"]
+                targ_range = self.target_max_ranges["omega"]
             
             progress = self.range_width_compare(curr_range, targ_range)
             
         else:
             # Stage 2: average tracking improvement (1 - mae / target)
-            targets = {
-                "vx":    self.cfg.get("vx_mae_threshold",    0.18),
-                "omega": self.cfg.get("omega_mae_threshold", 0.18),
-                "vy":    self.cfg.get("vy_mae_threshold",    0.30),
-            }
+            targets = self.mae_thresholds
             
             prog_vx    = max(0.0, 1.0 - self.avg_vx_mae    / targets["vx"])
             prog_omega = max(0.0, 1.0 - self.avg_omega_mae / targets["omega"])
