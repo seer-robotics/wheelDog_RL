@@ -175,13 +175,13 @@ class CommandCurriculumManager:
             )
             return range_ok and tracking_ok
         elif self.current_stage == 2:
-            # Final stage.
+            # + vy.
             range_progress = self.range_width_compare(curr["vy"], self.target_max_ranges["vy"])
             range_ok = range_progress > self.min_progress_for_advance
             tracking_ok = (
-                self.avg_vx_mae < self.mae_thresholds["vx"] and
-                self.avg_omega_mae < self.mae_thresholds["omega"] and
-                self.avg_vy_mae < self.mae_thresholds["vy"]
+                self.avg_vx_mae < self.mae_thresholds["vx"] * 1.15 and
+                self.avg_omega_mae < self.mae_thresholds["omega"] * 1.15 and
+                self.avg_vy_mae < self.mae_thresholds["vy"] * 1.3
             )
             return range_ok and tracking_ok
         
@@ -195,11 +195,11 @@ class CommandCurriculumManager:
         return min(1.0, curr_width / targ_width)
 
     def advance_stage(self):
-        if self.current_stage >= 2:
+        if self.current_stage >= 3:
             return
         self.current_stage += 1
         self.stage_start_step = self.total_steps
-        print(f"[Curriculum] → Advanced to Stage {self.current_stage} at step {self.total_steps:,}")
+        print(f"[Curriculum]: Command curriculum advanced to Stage {self.current_stage} at step {self.total_steps:,}")
 
     def get_current_command_ranges(self) -> Dict[str, Any]:
         """
@@ -252,7 +252,7 @@ class CommandCurriculumManager:
             vx_max = self.target_max_ranges["vx"][1]
             vy_min = vy_max = 0.0
 
-        else:
+        elif self.current_stage == 2:
             target_vy_mae = self.mae_thresholds["vy"] * self.range_progress_scales["vy"]
             
             if force_min_range:
@@ -269,6 +269,11 @@ class CommandCurriculumManager:
             omega_max = self.target_max_ranges["omega"][1]
             vy_min = -vy_range
             vy_max = vy_range
+            
+        else:
+            vx_min, vx_max = self.target_max_ranges["vx"]
+            vy_min, vy_max = self.target_max_ranges["vy"]
+            omega_min, omega_max = self.target_max_ranges["omega"]
 
         return {
             "vx": (vx_min, vx_max),
@@ -284,23 +289,24 @@ class CommandCurriculumManager:
             - During stage < 2: normalized range progress of the active/new component
             - During stage 2: average normalized tracking improvement across vx, ωz, vy
         """
-        stage = float(self.current_stage)
-
-        if self.current_stage < 2:
-            # Progress = how far the newly introduced dimension has expanded
-            cmd_cfg = self.env.command_manager.get_term("base_velocity").cfg
-            
+        cmd_cfg = self.env.command_manager.get_term("base_velocity").cfg
+        if self.current_stage < 3:
             if self.current_stage == 0:
+                # Stage 0.
                 curr_range = cmd_cfg.ranges.lin_vel_x
                 targ_range = self.target_max_ranges["vx"]
-            else:  # stage 1
+            elif self.current_stage == 1:
+                # Stage 1.
                 curr_range = cmd_cfg.ranges.ang_vel_z
                 targ_range = self.target_max_ranges["omega"]
-            
+            elif self.current_stage == 2:
+                # Stage 2.
+                curr_range = cmd_cfg.ranges.ang_vel_y
+                targ_range = self.target_max_ranges["vy"]
             progress = self.range_width_compare(curr_range, targ_range)
-            
+
         else:
-            # Stage 2: average tracking improvement (1 - mae / target)
+            # Stage 3: average tracking performance (1 - mae / target).
             targets = self.mae_thresholds
             
             prog_vx    = max(0.0, 1.0 - self.avg_vx_mae    / targets["vx"])
@@ -310,6 +316,7 @@ class CommandCurriculumManager:
             progress = (prog_vx + prog_omega + prog_vy) / 3.0
             progress = min(1.0, progress)
 
+        stage = float(self.current_stage)
         return stage + progress
 
 
