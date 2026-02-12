@@ -22,6 +22,34 @@ if TYPE_CHECKING:
     from typing import List
 
 
+def good_stance(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg,
+    std: float,
+) -> torch.Tensor:
+    """Reward for abdomen (hip abduction/adduction) joints being close to their default positions.
+
+    Returns:
+        torch.Tensor: Shape (num_envs,) reward in [0, 1] range.
+    """
+    # Retrieve the robot articulation
+    asset: Articulation = env.scene[asset_cfg.name]
+
+    # Current joint positions (num_envs, num_joints)
+    current_pos = wrap_to_pi(asset.data.joint_pos[:, asset_cfg.joint_ids])
+
+    # Target positions as default positions
+    target_pos = asset.data.default_joint_pos[:, asset_cfg.joint_ids]
+
+    # Squared L2 error per environment (sum over joints)
+    squared_error = torch.sum(torch.square(current_pos - target_pos), dim=1)
+
+    # Exponential reward: exp(-error / std**2)
+    # → 1 when error=0, decays to ~0 for large error
+    reward = torch.exp(-squared_error / std**2)
+    return reward
+
+
 def feet_ground_time(
     env: ManagerBasedRLEnv,
     command_name: str,
