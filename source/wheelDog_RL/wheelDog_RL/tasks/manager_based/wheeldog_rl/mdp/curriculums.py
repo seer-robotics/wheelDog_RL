@@ -216,6 +216,10 @@ class CommandCurriculumManager:
         force_min_range = steps_in_stage < self.min_steps_per_stage
 
         if self.current_stage == 0:
+            # Force more environments to stand still during the first stage.
+            cmd_term = self.env.command_manager.get_term("base_velocity")
+            cmd_term.cfg.rel_standing_envs = 0.7
+
             target_vx_mae = self.mae_thresholds["vx"] * self.range_progress_scales["vx"]
 
             if force_min_range:
@@ -238,6 +242,10 @@ class CommandCurriculumManager:
             vy_min = vy_max = 0.0
 
         elif self.current_stage == 1:
+            # Normal proportions of stand still environments for second stage.
+            cmd_term = self.env.command_manager.get_term("base_velocity")
+            cmd_term.cfg.rel_standing_envs = 0.1
+
             target_omega_mae = self.mae_thresholds["omega"] * self.range_progress_scales["omega"]
             
             if force_min_range:
