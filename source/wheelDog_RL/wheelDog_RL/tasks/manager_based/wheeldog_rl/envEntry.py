@@ -40,6 +40,8 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
         print("[INFO]: Added command_curriculum_manager manager.")
         self.tilt_detection_manager = TiltDetectionManager(
             env=self,
+            grace_steps=15000,
+            tilt_threshold_degrees=70,
         )
         print("[INFO]: Added tilt_detection_manager manager.")
 

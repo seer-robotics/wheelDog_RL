@@ -10,6 +10,11 @@ SHORT_HISTORY  = 3
 CPU_POOL_BUCKET_SIZE = 256
 
 # Command curriculum settings.
+CMD_CURRICULUM_RANGE_PROGRESS_SCALES = {
+    "vx": 1.8,
+    "omega": 1.8,
+    "vy": 2.4
+}
 # CMD_CURRICULUM_INIT_MIN_RANGES = {
 #     "vx":    0.3,     # half-width → range [-0.3, 0.3]
 #     "vy":    0.0,     # or very small if you want tiny lateral noise
@@ -24,8 +29,8 @@ CURRICULUM_ERROR_THRESHOLD_DOWN = 1.6
 # Base contact curriculum settings.
 BASE_CONTACT_INIT_THRESHOLD = 1.0e4
 BASE_CONTACT_TARGET_THRESHOLD = 1.0
-BASE_CONTACT_FLAT_STEPS = 1500
-BASE_CONTACT_DECAY_STEPS = 1500
+BASE_CONTACT_FLAT_STEPS = 6000
+BASE_CONTACT_DECAY_STEPS = 6000
 
 ABD_POS_DEVIATE_INIT_WEIGHT = -5.0
 ABD_POS_DEVIATE_SCALE_LEVELS = 3

@@ -95,7 +95,7 @@ class CommandCurriculumManager:
         self.stage_start_step = 0
         self.total_steps = 0
 
-    def reset(self, env_ids: torch.Tensor):
+    def reset(self, env_ids: Sequence[int]):
         # Reset episode statistics buffers for specified environments.
         if env_ids is not None:
             self.ema_vx_mae[env_ids]   = 0.0
@@ -218,7 +218,7 @@ class CommandCurriculumManager:
         if self.current_stage == 0:
             # Force more environments to stand still during the first stage.
             cmd_term = self.env.command_manager.get_term("base_velocity")
-            cmd_term.cfg.rel_standing_envs = 0.7
+            cmd_term.cfg.rel_standing_envs = 0.3
 
             target_vx_mae = self.mae_thresholds["vx"] * self.range_progress_scales["vx"]
 
@@ -244,7 +244,7 @@ class CommandCurriculumManager:
         elif self.current_stage == 1:
             # Normal proportions of stand still environments for second stage.
             cmd_term = self.env.command_manager.get_term("base_velocity")
-            cmd_term.cfg.rel_standing_envs = 0.1
+            cmd_term.cfg.rel_standing_envs = 0.15
 
             target_omega_mae = self.mae_thresholds["omega"] * self.range_progress_scales["omega"]
             
@@ -333,7 +333,7 @@ class CommandCurriculumManager:
 # Command curriculum function callable.
 def command_staged_curriculum(
     env: WheelDog_BlindLocomotionEnv,
-    env_ids: torch.Tensor | None = None,
+    env_ids: Sequence[int] | None = None,
     **kwargs
 ) -> torch.Tensor:
     """
