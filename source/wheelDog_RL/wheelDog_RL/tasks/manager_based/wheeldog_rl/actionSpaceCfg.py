@@ -26,7 +26,7 @@ class ActionsCfg:
             "RBL_ABAD_JOINT",
             "RAR_ABAD_JOINT",
         ],
-        scale=JOINT_ACTION_SCALE,
+        scale=0.25,
         preserve_order=True,
         use_default_offset=True,
     )
