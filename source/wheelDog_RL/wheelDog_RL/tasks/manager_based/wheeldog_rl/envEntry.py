@@ -6,11 +6,13 @@ from collections.abc import Sequence
 from isaaclab.envs.common import VecEnvStepReturn
 
 # Import custom manager.
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.mdp import VelocityErrorRecorder, CommandCurriculumManager
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.mdp import VelocityErrorRecorder, CommandCurriculumManager, TiltDetectionManager
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import watchDogs
 
 # Import settings.
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import ANGULAR_ERROR_SCALE
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import \
+    ANGULAR_ERROR_SCALE, \
+    CMD_CURRICULUM_RANGE_PROGRESS_SCALES
 
 # # Import settings. 
 # from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import \
@@ -31,8 +33,15 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
         print("[INFO]: Added velocity_error_recorder manager.")
         self.command_curriculum_manager = CommandCurriculumManager(
             env=self,
+            cfg={
+                "range_progress_scales": CMD_CURRICULUM_RANGE_PROGRESS_SCALES,
+            },
         )
-        print("[INFO]: Added command curriculum manager.")
+        print("[INFO]: Added command_curriculum_manager manager.")
+        self.tilt_detection_manager = TiltDetectionManager(
+            env=self,
+        )
+        print("[INFO]: Added tilt_detection_manager manager.")
 
     def step(self, actions: torch.Tensor) -> VecEnvStepReturn:
         # Compute step returns.
@@ -42,6 +51,7 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
         # Iterate custom managers.
         self.velocity_error_recorder.step()
         self.command_curriculum_manager.step()
+        self.tilt_detection_manager.step()
 
         # Observations' numerical corruption detection.
         watchDogs.check_observations_for_nans_infs(obs, self.common_step_counter, self.num_envs)
@@ -58,3 +68,4 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
         # Reset custom managers.
         self.velocity_error_recorder.reset(env_ids)
         self.command_curriculum_manager.reset(env_ids)
+        self.tilt_detection_manager.reset(env_ids)

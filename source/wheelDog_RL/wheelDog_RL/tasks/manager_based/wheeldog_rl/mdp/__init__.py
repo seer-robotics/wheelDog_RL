@@ -12,3 +12,4 @@ from isaaclab.envs.mdp import *  # noqa: F401, F403
 from .rewards import *
 from .observations import *
 from .curriculums import *
+from .terminations import *
