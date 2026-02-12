@@ -33,10 +33,10 @@ class CommandCurriculumManager:
 
     def __init__(self,
         env: WheelDog_BlindLocomotionEnv,
-        cfg: Dict[str, Any],
+        cfg: Dict[str, Any] | None = None,
     ):
         self.env = env
-        self.cfg = cfg
+        self.cfg = cfg if cfg is not None else {}
         self.num_envs = env.num_envs
         self.device = env.device
 
@@ -179,6 +179,7 @@ class CommandCurriculumManager:
             range_progress = self.range_width_compare(curr["vy"], self.target_max_ranges["vy"])
             range_ok = range_progress > self.min_progress_for_advance
             tracking_ok = (
+                # Advance into the final full task range under slightly more leniant metrics.
                 self.avg_vx_mae < self.mae_thresholds["vx"] * 1.15 and
                 self.avg_omega_mae < self.mae_thresholds["omega"] * 1.15 and
                 self.avg_vy_mae < self.mae_thresholds["vy"] * 1.3
@@ -195,6 +196,7 @@ class CommandCurriculumManager:
         return min(1.0, curr_width / targ_width)
 
     def advance_stage(self):
+        self.consecutive_good_checks = 0
         if self.current_stage >= 3:
             return
         self.current_stage += 1
@@ -284,10 +286,10 @@ class CommandCurriculumManager:
     def get_progress_metric(self) -> float:
         """
         Returns a single float encoding curriculum progress.
-        - Integer part: current stage (0, 1, 2)
+        - Integer part: current stage (0, 1, 2, 3)
         - Fractional part:
-            - During stage < 2: normalized range progress of the active/new component
-            - During stage 2: average normalized tracking improvement across vx, ωz, vy
+            - During stage < 3: normalized range progress of the active/new component
+            - During stage 3: average normalized tracking improvement across vx, ωz, vy
         """
         cmd_cfg = self.env.command_manager.get_term("base_velocity").cfg
         if self.current_stage < 3:
@@ -301,7 +303,7 @@ class CommandCurriculumManager:
                 targ_range = self.target_max_ranges["omega"]
             elif self.current_stage == 2:
                 # Stage 2.
-                curr_range = cmd_cfg.ranges.ang_vel_y
+                curr_range = cmd_cfg.ranges.lin_vel_y
                 targ_range = self.target_max_ranges["vy"]
             progress = self.range_width_compare(curr_range, targ_range)
 
@@ -344,11 +346,6 @@ def command_staged_curriculum(
         cmd_term.cfg.ranges.lin_vel_x = ranges["vx"]
         cmd_term.cfg.ranges.lin_vel_y = ranges["vy"]
         cmd_term.cfg.ranges.ang_vel_z = ranges["omega"]
-        # cmd_term.cfg.ranges=isaac_mdp.UniformVelocityCommandCfg.Ranges(
-        #     lin_vel_x=ranges["vx"],
-        #     lin_vel_y=ranges["vy"],
-        #     ang_vel_z=ranges["omega"],
-        # ),
 
     except (AttributeError, KeyError) as e:
         print(f"Warning: Could not update command ranges: {e}")
