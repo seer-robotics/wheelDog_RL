@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from typing import List
 
 
-def good_stance(
+def default_joint_pos(
     env: ManagerBasedRLEnv,
     asset_cfg: SceneEntityCfg,
     std: float,
@@ -50,59 +50,29 @@ def good_stance(
     return reward
 
 
-def feet_ground_time(
+def terrain_orientation_reward(
     env: ManagerBasedRLEnv,
-    command_name: str,
-    sensor_cfg: SceneEntityCfg,
-    threshold: float = 0.04,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    sensor_cfg: SceneEntityCfg = SceneEntityCfg("height_scanner"),
+    reward_temperature: float = 5.0,
 ) -> torch.Tensor:
-    """Rewards long continuous ground contact periods using L2-norm.
-
-    The reward is accumulated only when ground contact has been maintained
-    longer than the specified threshold.
-    If the command norm is very small (agent is not supposed to move), the reward is zeroed out to avoid incentivizing freezing in place when motion is expected.
     """
-
-    # Extract the contact sensor
-    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
-
-    # Time since last loss of contact  →  how long the foot has been continuously on ground
-    last_ground_time = contact_sensor.data.last_contact_time[:, sensor_cfg.body_ids]
-
-    # Whether a new contact has been established in this very small time window
-    # (helps detect when contact is actively continuing right now)
-    new_or_ongoing_contact = contact_sensor.compute_first_contact(env.step_dt)[:, sensor_cfg.body_ids]
-
-    # Reward grows with how long the foot has already been in stable contact
-    reward = torch.sum(
-        torch.clamp(last_ground_time - threshold, min=0.0) * new_or_ongoing_contact,
-        dim=1
-    )
-
-    # No reward for zero command.
-    command = env.command_manager.get_command(command_name)[:, :2]
-    command_norm = torch.norm(command, dim=1)
-    # Zero command threshold — tune as needed (m/s)
-    moving = command_norm > 0.1
-    reward = reward * moving.float()
-
-    return reward
-
-
-def feet_slide(env, sensor_cfg: SceneEntityCfg, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
-    """Penalize feet sliding.
-
-    This function penalizes the agent for sliding its feet on the ground. The reward is computed as the
-    norm of the linear velocity of the feet multiplied by a binary contact sensor. This ensures that the
-    agent is penalized only when the feet are in contact with the ground.
+    Reward base alignment with terrain normal, where terrain normal is scanned with ray-caster sensor.
     """
-    # Penalize feet sliding
-    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
-    contacts = contact_sensor.data.net_forces_w_history[:, :, sensor_cfg.body_ids, :].norm(dim=-1).max(dim=1)[0] > 1.0
-    asset = env.scene[asset_cfg.name]
+    # Enable type hints.
+    # robot: RigidObject = env.scene[asset_cfg.name]
 
-    body_vel = asset.data.body_lin_vel_w[:, asset_cfg.body_ids, :2]
-    reward = torch.sum(body_vel.norm(dim=-1) * contacts, dim=1)
+    # Get current terrain normal under the robot, in robot base frame.
+    terrain_normal_b = terrain_normals(env, sensor_cfg)
+    base_up_b = torch.zeros_like(terrain_normal_b)
+    base_up_b[:, 2] = 1.0
+
+    # Calculate cosine similarity.
+    cos_sim = torch.sum(base_up_b * terrain_normal_b, dim=1)
+    cos_sim = torch.clamp(cos_sim, -1.0, 1.0)
+
+    # Penalize using L2 squared kernel.
+    reward = torch.exp(-reward_temperature * (1.0 - cos_sim))
     return reward
 
 
@@ -173,22 +143,43 @@ def actionTerm_rate_l2(
     return total_penalty
 
 
-def terrain_orientation(
+def feet_ground_time(
     env: ManagerBasedRLEnv,
-    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-    sensor_cfg: SceneEntityCfg = SceneEntityCfg("height_scanner"),
+    command_name: str,
+    sensor_cfg: SceneEntityCfg,
+    threshold: float = 0.04,
 ) -> torch.Tensor:
-    """Penalize deviation between base projected gravity and the negative terrain normal.
+    """Rewards long continuous ground contact periods using L2-norm.
+
+    The reward is accumulated only when ground contact has been maintained
+    longer than the specified threshold.
+    If the command norm is very small (agent is not supposed to move), the reward is zeroed out to avoid incentivizing freezing in place when motion is expected.
     """
-    # Enable type hints.
-    # robot: RigidObject = env.scene[asset_cfg.name]
 
-    # Get current terrain normal under the robot, in robot base frame.
-    terrain_normal_b = terrain_normals(env, sensor_cfg)
+    # Extract the contact sensor
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
 
-    # Penalize using L2 squared kernel.
-    penalty = torch.sum(torch.square(terrain_normal_b[:, :2]), dim=1)
-    return penalty
+    # Time since last loss of contact  →  how long the foot has been continuously on ground
+    last_ground_time = contact_sensor.data.last_contact_time[:, sensor_cfg.body_ids]
+
+    # Whether a new contact has been established in this very small time window
+    # (helps detect when contact is actively continuing right now)
+    new_or_ongoing_contact = contact_sensor.compute_first_contact(env.step_dt)[:, sensor_cfg.body_ids]
+
+    # Reward grows with how long the foot has already been in stable contact
+    reward = torch.sum(
+        torch.clamp(last_ground_time - threshold, min=0.0) * new_or_ongoing_contact,
+        dim=1
+    )
+
+    # No reward for zero command.
+    command = env.command_manager.get_command(command_name)[:, :2]
+    command_norm = torch.norm(command, dim=1)
+    # Zero command threshold — tune as needed (m/s)
+    moving = command_norm > 0.1
+    reward = reward * moving.float()
+
+    return reward
 
 
 def joint_pos_target_l2(env: ManagerBasedRLEnv, target: float, asset_cfg: SceneEntityCfg) -> torch.Tensor:
@@ -199,3 +190,20 @@ def joint_pos_target_l2(env: ManagerBasedRLEnv, target: float, asset_cfg: SceneE
     joint_pos = wrap_to_pi(asset.data.joint_pos[:, asset_cfg.joint_ids])
     # compute the reward
     return torch.sum(torch.square(joint_pos - target), dim=1)
+
+
+def feet_slide(env, sensor_cfg: SceneEntityCfg, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    """Penalize feet sliding.
+
+    This function penalizes the agent for sliding its feet on the ground. The reward is computed as the
+    norm of the linear velocity of the feet multiplied by a binary contact sensor. This ensures that the
+    agent is penalized only when the feet are in contact with the ground.
+    """
+    # Penalize feet sliding
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    contacts = contact_sensor.data.net_forces_w_history[:, :, sensor_cfg.body_ids, :].norm(dim=-1).max(dim=1)[0] > 1.0
+    asset = env.scene[asset_cfg.name]
+
+    body_vel = asset.data.body_lin_vel_w[:, asset_cfg.body_ids, :2]
+    reward = torch.sum(body_vel.norm(dim=-1) * contacts, dim=1)
+    return reward

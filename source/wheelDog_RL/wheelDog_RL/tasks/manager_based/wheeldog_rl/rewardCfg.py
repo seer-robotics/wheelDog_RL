@@ -25,11 +25,19 @@ class RewardsCfg:
     )
     track_ang_vel_z_exp = RewTerm(
         func=mdp.track_ang_vel_z_exp,
-        weight=0.75,
+        weight=0.8,
         params={"command_name": "base_velocity", "std": math.sqrt(0.16)}
     )
+    parallel_to_terrain =RewTerm(
+        func=mdp.terrain_orientation_reward,
+        weight=1.0,
+        params={
+            "sensor_cfg": SceneEntityCfg("height_scanner"),
+            "reward_temperature": 5.0,
+        },
+    )
     good_stance = RewTerm(
-        func=mdp.good_stance,
+        func=mdp.default_joint_pos,
         weight=1.0,
         params={
             "asset_cfg": SceneEntityCfg(
@@ -39,6 +47,7 @@ class RewardsCfg:
                 ],
                 preserve_order=True,
             ),
+            "std": math.sqrt(0.16),
         }
     )
     # stay_alive = RewTerm(mdp.is_alive, weight=1.0)
@@ -100,19 +109,6 @@ class RewardsCfg:
             ),
         }
     )
-    # abd_pos_deviate = RewTerm(
-    #     func=mdp.joint_deviation_l1,
-    #     weight=-0.4,
-    #     params={
-    #         "asset_cfg": SceneEntityCfg(
-    #             "robot", 
-    #             joint_names=[
-    #                 ".*_ABAD_JOINT",
-    #             ],
-    #             preserve_order=True,
-    #         ),
-    #     }
-    # )
     # leg_pos_deviate = RewTerm(
     #     func=mdp.joint_deviation_l1,
     #     weight=-0.2,
@@ -127,13 +123,6 @@ class RewardsCfg:
     #         ),
     #     }
     # )
-    parallel_to_terrain =RewTerm(
-        func=mdp.terrain_orientation,
-        weight=-1.0,
-        params={
-            "sensor_cfg": SceneEntityCfg("height_scanner"),
-        },
-    )
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-1.0,
@@ -148,12 +137,12 @@ class RewardsCfg:
             "threshold": 1.0
         },
     )
-    base_height_threshold = RewTerm(
-        func=mdp.base_height_threshold,
-        weight=-2.0,
-        params={
-            "height_threshold": BASE_HEIGHT_THRESHOLD,
-            "asset_cfg": SceneEntityCfg("robot"),
-            "sensor_cfg": SceneEntityCfg("height_scanner"),
-        }
-    )
+    # base_height_threshold = RewTerm(
+    #     func=mdp.base_height_threshold,
+    #     weight=-2.0,
+    #     params={
+    #         "height_threshold": BASE_HEIGHT_THRESHOLD,
+    #         "asset_cfg": SceneEntityCfg("robot"),
+    #         "sensor_cfg": SceneEntityCfg("height_scanner"),
+    #     }
+    # )
