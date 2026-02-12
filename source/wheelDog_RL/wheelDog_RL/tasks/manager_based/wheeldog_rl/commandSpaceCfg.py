@@ -7,6 +7,10 @@ from isaaclab.utils import configclass
 # Local mdp module inherited from Isaac.
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
+# Import settings. 
+# from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import \
+#     CMD_CURRICULUM_INIT_MIN_RANGES
+
 @configclass
 class CommandsCfg:
     """Command specifications for the MDP."""
@@ -20,6 +24,9 @@ class CommandsCfg:
         heading_command=False,
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(-1.2, 1.2), lin_vel_y=(-0.05, 0.05), ang_vel_z=(-0.8, 0.8), heading=(-math.pi, math.pi)
+            lin_vel_x=(-0.3, 0.3),
+            lin_vel_y=(-0.0, 0.0),
+            ang_vel_z=(-0.08, 0.08),
+            heading=(-math.pi, math.pi)
         ),
     )

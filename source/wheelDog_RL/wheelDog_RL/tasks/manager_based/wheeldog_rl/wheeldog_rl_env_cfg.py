@@ -178,6 +178,9 @@ class CurriculumCfg:
     #         },
     #     }
     # )
+    command_stages = CurrTerm(
+        func=mdp.command_staged_curriculum,
+    )
     terrain_levels = CurrTerm(
         func=mdp.terrain_levels_velocityError,
         params={

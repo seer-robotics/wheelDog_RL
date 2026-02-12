@@ -12,6 +12,10 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl import watchDogs
 # Import settings.
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import ANGULAR_ERROR_SCALE
 
+# # Import settings. 
+# from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import \
+#     CMD_CURRICULUM_INIT_MIN_RANGES
+
 
 class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
     def __init__(self, cfg, **kwargs):

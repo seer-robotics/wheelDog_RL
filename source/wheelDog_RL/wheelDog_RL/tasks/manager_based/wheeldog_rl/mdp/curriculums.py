@@ -33,22 +33,22 @@ class CommandCurriculumManager:
 
     def __init__(self,
         env: WheelDog_BlindLocomotionEnv,
-        cfg: Dict[str, Any] | None = None,
+        cfg: Dict[str, Any] = {},
     ):
         self.env = env
-        self.cfg = cfg if cfg is not None else {}
+        self.cfg = cfg
         self.num_envs = env.num_envs
         self.device = env.device
 
         ##
         # Default settings.
         ##
-        self.target_max_ranges = cfg.get("target_max_ranges", {
+        self.target_max_ranges = self.cfg.get("target_max_ranges", {
             "vx":    (-1.0, 2.0),
             "vy":    (-0.3, 0.3),
             "omega": (-1.6, 1.6),
         })
-        self.init_min_ranges = cfg.get("init_min_ranges", {
+        self.init_min_ranges = self.cfg.get("init_min_ranges", {
             "vx": 0.3,
             "vy": 0.08,
             "omega": 0.4,
@@ -56,26 +56,26 @@ class CommandCurriculumManager:
         self.required_consecutive_good_checks = self.cfg.get(
             "required_consecutive_good_checks", 100
         )
-        self.ema_alpha = cfg.get(
+        self.ema_alpha = self.cfg.get(
             # The closer alpha is to 1, the longer the memory is.
             "ema_alpha", 0.99
         )
-        self.min_steps_per_stage = cfg.get(
+        self.min_steps_per_stage = self.cfg.get(
             # Minimum policy steps before stage advancement is possible.
             "min_steps_per_stage", 1_500_000
         )
-        self.mae_thresholds = cfg.get("mae_thresholds", {
+        self.mae_thresholds = self.cfg.get("mae_thresholds", {
             "vx": 0.18,
             "omega": 0.18,
             "vy": 0.30,
         })
-        self.range_progress_scales = cfg.get("range_progress_scales", {
+        self.range_progress_scales = self.cfg.get("range_progress_scales", {
             # Coefficients that scale the mae_thresholds to be used for range progressing within a stage.
             "vx":    1.4,
             "omega": 1.4,
             "vy":    1.6, # often want even more leniency for lateral
         })
-        self.min_progress_for_advance = cfg.get(
+        self.min_progress_for_advance = self.cfg.get(
             "min_progress_for_advance", 0.8
         )
 
@@ -112,8 +112,8 @@ class CommandCurriculumManager:
         # Get current commands and velocities.
         robot: Articulation = self.env.scene["robot"]
         commands = self.env.command_manager.get_command("base_velocity")
-        base_lin_vel = robot.data.root_lin_vel_b[:, :2]
-        base_ang_vel = robot.data.root_ang_vel_b[:, 2]
+        base_lin_vel = robot.data.root_lin_vel_b
+        base_ang_vel = robot.data.root_ang_vel_b
         vx_cmd = commands[:, 0]
         vy_cmd = commands[:, 1]
         omega_cmd = commands[:, 2]
@@ -352,7 +352,7 @@ def command_staged_curriculum(
 
     # Return progress metric.
     metric = mgr.get_progress_metric()
-    return torch.Tensor([metric], device=env.device, dtype=torch.float32)
+    return torch.Tensor([metric])
 
 
 # Manager class that records cumulative velocity error.

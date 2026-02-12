@@ -9,6 +9,13 @@ SHORT_HISTORY  = 3
 # Event RNG settings.
 CPU_POOL_BUCKET_SIZE = 256
 
+# Command curriculum settings.
+# CMD_CURRICULUM_INIT_MIN_RANGES = {
+#     "vx":    0.3,     # half-width → range [-0.3, 0.3]
+#     "vy":    0.0,     # or very small if you want tiny lateral noise
+#     "omega": 0.08,    # half-width → range [-0.08, 0.08]
+# }
+
 # Terrain curriculum settings.
 ANGULAR_ERROR_SCALE = 1.0
 CURRICULUM_ERROR_THRESHOLD_UP = 0.4
