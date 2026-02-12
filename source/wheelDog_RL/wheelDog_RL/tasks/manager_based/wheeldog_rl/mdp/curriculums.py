@@ -48,6 +48,11 @@ class CommandCurriculumManager:
             "vy":    (-0.3, 0.3),
             "omega": (-1.6, 1.6),
         })
+        self.init_min_ranges = cfg.get("init_min_ranges", {
+            "vx": 0.3,
+            "vy": 0.08,
+            "omega": 0.4,
+        })
         self.required_consecutive_good_checks = self.cfg.get(
             "required_consecutive_good_checks", 100
         )
@@ -61,8 +66,14 @@ class CommandCurriculumManager:
         )
         self.mae_thresholds = cfg.get("mae_thresholds", {
             "vx": 0.18,
-            "vy": 0.18,
-            "omega": 0.30,
+            "omega": 0.18,
+            "vy": 0.30,
+        })
+        self.range_progress_scales = cfg.get("range_progress_scales", {
+            # Coefficients that scale the mae_thresholds to be used for range progressing within a stage.
+            "vx":    1.4,
+            "omega": 1.4,
+            "vy":    1.6, # often want even more leniency for lateral
         })
         self.min_progress_for_advance = cfg.get(
             "min_progress_for_advance", 0.8
@@ -168,7 +179,7 @@ class CommandCurriculumManager:
             range_progress = self.range_width_compare(curr["vy"], self.target_max_ranges["vy"])
             range_ok = range_progress > self.min_progress_for_advance
             tracking_ok = (
-                self.avg_vx_mae < self.self.mae_thresholds["vx"] and
+                self.avg_vx_mae < self.mae_thresholds["vx"] and
                 self.avg_omega_mae < self.mae_thresholds["omega"] and
                 self.avg_vy_mae < self.mae_thresholds["vy"]
             )
@@ -203,54 +214,61 @@ class CommandCurriculumManager:
         force_min_range = steps_in_stage < self.min_steps_per_stage
 
         if self.current_stage == 0:
-            # Use vx error to drive vx range expansion
-            target_vx_mae = self.mae_thresholds["vx"]
+            target_vx_mae = self.mae_thresholds["vx"] * self.range_progress_scales["vx"]
 
             if force_min_range:
-                vx_min = -0.3
-                vx_max = 0.4
+                vx_min = -self.init_min_ranges["vx"]
+                vx_max = self.init_min_ranges["vx"]
             else:
                 progress = max(0.0, min(1.0,
                     1.0 - (self.avg_vx_mae / target_vx_mae)
                 ))
-                vx_min = -0.3 + (-0.7 * progress)
-                vx_max =  0.4 + ( 1.6 * progress)
+                vx_min = -self.init_min_ranges["vx"] + (
+                    (self.target_max_ranges["vx"][0] + self.init_min_ranges["vx"]) * progress
+                )
+                vx_max =  self.init_min_ranges["vx"] + (
+                    (self.target_max_ranges["vx"][1] - self.init_min_ranges["vx"]) * progress
+                )
 
+            # Small omega noise to help facilitate yaw learning later on.
+            omega_min = -0.08
+            omega_max = 0.08
             vy_min = vy_max = 0.0
-            omega_min = -0.05
-            omega_max = 0.05
 
         elif self.current_stage == 1:
-            target_omega_mae = self.mae_thresholds["omega"]
+            target_omega_mae = self.mae_thresholds["omega"] * self.range_progress_scales["omega"]
             
             if force_min_range:
-                omega_range = 0.4
+                omega_range = self.init_min_ranges["omega"]
             else:
                 progress = max(0.0, min(1.0,
                     1.0 - (self.avg_omega_mae / target_omega_mae)
                 ))
-                omega_range = 0.4 + 1.2 * progress
+                omega_range = self.init_min_ranges["omega"] + ((self.target_max_ranges["omega"][1] - self.target_max_ranges["omega"][0]) / 2 - self.init_min_ranges["omega"]) * progress
 
             omega_min = -omega_range
             omega_max = omega_range
-            vx_min, vx_max = -1.0, 2.0
+            vx_min = self.target_max_ranges["vx"][0]
+            vx_max = self.target_max_ranges["vx"][1]
             vy_min = vy_max = 0.0
 
-        else:  # stage 2 — vy uses vy_mae or combined metric
-            target_vy_mae = self.mae_thresholds["vy"]
+        else:
+            target_vy_mae = self.mae_thresholds["vy"] * self.range_progress_scales["vy"]
             
             if force_min_range:
-                vy_range = 0.08
+                vy_range = self.init_min_ranges["vy"]
             else:
                 progress = max(0.0, min(1.0,
                     1.0 - (self.avg_vy_mae / target_vy_mae)
                 ))
-                vy_range = 0.08 + 0.22 * progress
+                vy_range = self.init_min_ranges["vy"] + ((self.target_max_ranges["vy"][1] - self.target_max_ranges["vy"][0]) / 2 - self.init_min_ranges["vy"]) * progress
 
-            vx_min, vx_max = -1.0, 2.0
-            omega_min, omega_max = -1.6, 1.6
+            vx_min = self.target_max_ranges["vx"][0]
+            vx_max = self.target_max_ranges["vx"][1]
+            omega_min = self.target_max_ranges["omega"][0]
+            omega_max = self.target_max_ranges["omega"][1]
             vy_min = -vy_range
-            vy_max =  vy_range
+            vy_max = vy_range
 
         return {
             "vx": (vx_min, vx_max),
