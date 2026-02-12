@@ -188,33 +188,6 @@ class CurriculumCfg:
             "error_threshold_down": CURRICULUM_ERROR_THRESHOLD_DOWN,
         }
     )
-    # stay_flat_penalty_weight_levels = CurrTerm(
-    #     func=mdp.flat_reward_anneal_terrainLevels,
-    #     params={
-    #         "target_term_name": "stay_flat",
-    #         "scale_levels": 4,
-    #         "min_factor": 0.1,
-    #         "min_factor_terrainLevel": 4,
-    #     },
-    # )
-    # abd_deviate_penalty_weight_levels = CurrTerm(
-    #     func=mdp.joint_deviation_penalty_levels,
-    #     params={
-    #         "target_term_name": "abd_pos_deviate",
-    #         "scale_levels": ABD_POS_DEVIATE_SCALE_LEVELS,
-    #         "min_factor": ABD_POS_DEVIATE_MIN_FACTOR,
-    #         "min_factor_terrainLevel": ABD_POS_DEVIATE_MIN_FACTOR_TERRAIN_LEVEL,
-    #     },
-    # )
-    # leg_deviate_penalty_weight_levels = CurrTerm(
-    #     func=mdp.joint_deviation_penalty_levels,
-    #     params={
-    #         "target_term_name": "leg_pos_deviate",
-    #         "scale_levels": LEG_POS_DEVIATE_SCALE_LEVELS,
-    #         "min_factor": LEG_POS_DEVIATE_MIN_FACTOR,
-    #         "min_factor_terrainLevel": LEG_POS_DEVIATE_MIN_FACTOR_TERRAIN_LEVEL,
-    #     },
-    # )
 
 
 ##
