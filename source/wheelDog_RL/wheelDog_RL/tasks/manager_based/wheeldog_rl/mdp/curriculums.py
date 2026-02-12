@@ -476,12 +476,12 @@ def terrain_levels_velocityError(
     move_up   *= is_moving_cmd
     move_down *= is_moving_cmd
 
-    ##
-    # Do something here to cooperate with the command curriculum.
-    """
-    Such as only begin to increment terrain levels after a certain stage in the command curriculum.
-    """
-    ##
+    # Filter to only update terrain levels when the command curriculum has reached stage 3.
+    if hasattr(env, 'command_curriculum_manager'):
+        cmd_stage = env.command_curriculum_manager.current_stage
+        if cmd_stage < 3:
+            # Block all upward movements until command stage 3
+            move_up.fill_(False)
 
     # Update terrain levels.
     terrain: TerrainImporter = env.scene.terrain
@@ -574,25 +574,3 @@ def base_contact_threshold_decay(
 
     # Phase 3: stay at final target value
     return kwargs["target_threshold"]
-
-
-def command_curriculum(
-    env: WheelDog_BlindLocomotionEnv,
-    env_ids: Sequence[int],
-    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-    command_name: str = "base_velocity",
-) -> torch.Tensor:
-    """
-    Docstring for command_curriculum
-    
-    :param env: Description
-    :type env: WheelDog_BlindLocomotionEnv
-    :param env_ids: Description
-    :type env_ids: Sequence[int]
-    :param asset_cfg: Description
-    :type asset_cfg: SceneEntityCfg
-    :param command_name: Description
-    :type command_name: str
-    :return: Description
-    :rtype: Tensor
-    """
