@@ -62,7 +62,7 @@ class CommandCurriculumManager:
         )
         self.min_steps_per_stage = self.cfg.get(
             # Minimum policy steps before stage advancement is possible.
-            "min_steps_per_stage", 1_500_000
+            "min_steps_per_stage", 750
         )
         self.mae_thresholds = self.cfg.get("mae_thresholds", {
             "vx": 0.18,
