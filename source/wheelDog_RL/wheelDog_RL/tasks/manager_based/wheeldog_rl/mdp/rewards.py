@@ -42,7 +42,7 @@ def default_joint_pos(
     target_pos = asset.data.default_joint_pos[:, asset_cfg.joint_ids]
 
     # Squared L2 error per environment (sum over joints)
-    squared_error = torch.sum(torch.square(current_pos - target_pos), dim=1)
+    squared_error = torch.mean(torch.square(current_pos - target_pos), dim=1)
 
     # Exponential reward: exp(-error / std**2)
     # → 1 when error=0, decays to ~0 for large error

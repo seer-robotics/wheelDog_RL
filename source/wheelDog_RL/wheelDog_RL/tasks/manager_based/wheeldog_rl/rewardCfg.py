@@ -18,6 +18,20 @@ class RewardsCfg:
     """Reward terms for the MDP."""
 
     # -- rewards
+    good_stance = RewTerm(
+        func=mdp.default_joint_pos,
+        weight=1.0,
+        params={
+            "asset_cfg": SceneEntityCfg(
+                "robot", 
+                joint_names=[
+                    ".*_ABAD_JOINT",
+                ],
+                preserve_order=True,
+            ),
+            "std": math.sqrt(0.16),
+        }
+    )
     track_lin_vel_xy_exp = RewTerm(
         func=mdp.track_lin_vel_xy_exp,
         weight=1.0,
@@ -35,20 +49,6 @@ class RewardsCfg:
             "sensor_cfg": SceneEntityCfg("height_scanner"),
             "reward_temperature": 5.0,
         },
-    )
-    good_stance = RewTerm(
-        func=mdp.default_joint_pos,
-        weight=1.0,
-        params={
-            "asset_cfg": SceneEntityCfg(
-                "robot", 
-                joint_names=[
-                    ".*_ABAD_JOINT",
-                ],
-                preserve_order=True,
-            ),
-            "std": math.sqrt(0.16),
-        }
     )
     # stay_alive = RewTerm(mdp.is_alive, weight=1.0)
     # feet_ground_time = RewTerm(
@@ -76,7 +76,7 @@ class RewardsCfg:
     dof_torque_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-2.5e-5)
     leg_action_rate_l2 = RewTerm(
         func=mdp.actionTerm_rate_l2,
-        weight=-2e-2,
+        weight=-1e-2,
         params={
             "term_names": [
                 "abdomen_joint_pos",
@@ -87,7 +87,7 @@ class RewardsCfg:
     )
     wheel_action_rate_l2 = RewTerm(
         func=mdp. actionTerm_rate_l2,
-        weight=-1e-2,
+        weight=-0.5e-2,
         params={
             "term_names": [
                 "wheel_joint_vel",
@@ -96,7 +96,7 @@ class RewardsCfg:
     )
     dof_pos_deviate = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.15,
+        weight=-0.3,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", 
