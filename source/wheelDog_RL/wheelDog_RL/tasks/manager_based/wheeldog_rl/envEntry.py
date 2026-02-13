@@ -12,7 +12,11 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl import watchDogs
 # Import settings.
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import \
     ANGULAR_ERROR_SCALE, \
-    CMD_CURRICULUM_RANGE_PROGRESS_SCALES
+    CMD_CURRICULUM_RANGE_PROGRESS_SCALES, \
+    CMD_CURRICULUM_TARGET_MAX_RANGES, \
+    FALL_GRACE_STEPS, \
+    FALL_TILT_DEGREES, \
+    FALL_TILT_DURATION
 
 # # Import settings. 
 # from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import \
@@ -31,17 +35,19 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
             env=self,
         )
         print("[INFO]: Added velocity_error_recorder manager.")
-        self.command_curriculum_manager = CommandCurriculumManager(
-            env=self,
-            cfg={
-                "range_progress_scales": CMD_CURRICULUM_RANGE_PROGRESS_SCALES,
-            },
-        )
-        print("[INFO]: Added command_curriculum_manager manager.")
+        # self.command_curriculum_manager = CommandCurriculumManager(
+        #     env=self,
+        #     cfg={
+        #         "range_progress_scales": CMD_CURRICULUM_RANGE_PROGRESS_SCALES,
+        #         "target_max_ranges": CMD_CURRICULUM_TARGET_MAX_RANGES,
+        #     },
+        # )
+        # print("[INFO]: Added command_curriculum_manager manager.")
         self.tilt_detection_manager = TiltDetectionManager(
             env=self,
-            grace_steps=15000,
-            tilt_threshold_degrees=70,
+            grace_steps=FALL_GRACE_STEPS,
+            tilt_threshold_degrees=FALL_TILT_DEGREES,
+            tilt_duration_seconds=FALL_TILT_DURATION,
         )
         print("[INFO]: Added tilt_detection_manager manager.")
 
@@ -52,7 +58,7 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
 
         # Iterate custom managers.
         self.velocity_error_recorder.step()
-        self.command_curriculum_manager.step()
+        # self.command_curriculum_manager.step()
         self.tilt_detection_manager.step()
 
         # Observations' numerical corruption detection.
@@ -69,5 +75,5 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
 
         # Reset custom managers.
         self.velocity_error_recorder.reset(env_ids)
-        self.command_curriculum_manager.reset(env_ids)
+        # self.command_curriculum_manager.reset(env_ids)
         self.tilt_detection_manager.reset(env_ids)

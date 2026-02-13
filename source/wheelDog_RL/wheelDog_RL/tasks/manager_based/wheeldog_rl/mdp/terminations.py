@@ -84,16 +84,8 @@ def terminate_fallen(
         projected_gravity = robot.data.projected_gravity_b
         is_bad_tilt_now = manager.is_bad_tilt(projected_gravity)
         markedForTermination = has_illegal_contact | is_bad_tilt_now
-
-        # fall_termination_cfg = env.termination_manager.get_term_cfg(term_name)
-        # fall_termination_cfg.time_out = False
-        # env.termination_manager.set_term_cfg(term_name=term_name, cfg=fall_termination_cfg)
     else:
         # During grace: only terminate on prolonged bad tilt (4 seconds)
         markedForTermination = manager.consecutive_bad_tilt >= manager.tilt_threshold_steps
-
-        # fall_termination_cfg = env.termination_manager.get_term_cfg(term_name)
-        # fall_termination_cfg.time_out = True
-        # env.termination_manager.set_term_cfg(term_name=term_name, cfg=fall_termination_cfg)
 
     return markedForTermination
