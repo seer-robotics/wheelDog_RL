@@ -68,6 +68,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg: dict):
             # apply actions
             obs, rew, terminated, truncated, info = env.step(actions)
 
+            # Environment access reference.
+            # projected_gravity_b = env.env.scene["robot"].data.projected_gravity_b
+            # print(f"projected gravity: {projected_gravity_b}")
+
     # close the simulator
     env.close()
 
