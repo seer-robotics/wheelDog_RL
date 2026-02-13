@@ -27,12 +27,12 @@ class TiltDetectionManager:
     ):
         self.env = env
         self.grace_steps = grace_steps
-        self.tilt_threshold_steps = int(tilt_duration_seconds / env.step_dt)
+        self.tilt_threshold_steps = int(tilt_duration_seconds / self.env.step_dt)
         self.cos_threshold = math.cos(math.radians(tilt_threshold_degrees))
 
         # Per-environment state buffer.
         self.consecutive_bad_tilt = torch.zeros(
-            env.num_envs, dtype=torch.int64, device=env.device
+            env.num_envs, dtype=torch.int64, device=self.env.device
         )
 
     def reset(self, env_ids: Sequence[int]):
@@ -50,11 +50,11 @@ class TiltDetectionManager:
         self.consecutive_bad_tilt = torch.where(
             self.is_bad_tilt(projected_gravity),
             self.consecutive_bad_tilt + 1,
-            torch.zeros_like(self.consecutive_bad_tilt),
+            torch.zeros_like(self.consecutive_bad_tilt, device=self.env.device),
         )
 
     def is_bad_tilt(self, projected_gravity):
-        return projected_gravity[:, 2] <= self.cos_threshold
+        return -projected_gravity[:, 2] < self.cos_threshold
 
     def is_grace_period_over(self) -> bool:
         """Global grace period based on common_step_counter."""
@@ -64,6 +64,7 @@ def terminate_fallen(
     env: WheelDog_BlindLocomotionEnv,
     sensor_cfg: SceneEntityCfg,
     threshold: float,
+    term_name: str = "fallen",
 ) -> torch.Tensor:
     """Terminate when the contact force on the sensor exceeds the force threshold."""
     # Enable type-hints.
@@ -83,8 +84,16 @@ def terminate_fallen(
         projected_gravity = robot.data.projected_gravity_b
         is_bad_tilt_now = manager.is_bad_tilt(projected_gravity)
         markedForTermination = has_illegal_contact | is_bad_tilt_now
+
+        # fall_termination_cfg = env.termination_manager.get_term_cfg(term_name)
+        # fall_termination_cfg.time_out = False
+        # env.termination_manager.set_term_cfg(term_name=term_name, cfg=fall_termination_cfg)
     else:
         # During grace: only terminate on prolonged bad tilt (4 seconds)
         markedForTermination = manager.consecutive_bad_tilt >= manager.tilt_threshold_steps
+
+        # fall_termination_cfg = env.termination_manager.get_term_cfg(term_name)
+        # fall_termination_cfg.time_out = True
+        # env.termination_manager.set_term_cfg(term_name=term_name, cfg=fall_termination_cfg)
 
     return markedForTermination

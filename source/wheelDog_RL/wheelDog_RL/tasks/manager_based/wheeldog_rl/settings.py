@@ -1,5 +1,6 @@
 # Action space settings.
-JOINT_ACTION_SCALE = 0.6
+ABD_ACTION_SCALE = 0.25
+LEG_ACTION_SCALE = 0.5
 WHEEL_ACTION_SCALE = 15.0
 
 # Observation space settings. 
@@ -9,11 +10,21 @@ SHORT_HISTORY  = 3
 # Event RNG settings.
 CPU_POOL_BUCKET_SIZE = 256
 
+# Termination settings.
+FALL_GRACE_STEPS = 15000
+FALL_TILT_DEGREES = 70.0
+FALL_TILT_DURATION = 5.0
+
 # Command curriculum settings.
 CMD_CURRICULUM_RANGE_PROGRESS_SCALES = {
-    "vx": 1.8,
-    "omega": 1.8,
-    "vy": 2.4
+    "vx": 1.6,
+    "omega": 1.6,
+    "vy": 1.8
+}
+CMD_CURRICULUM_TARGET_MAX_RANGES = {
+    "vx":    (-1.2, 1.2),
+    "vy":    (-0.3, 0.3),
+    "omega": (-1.6, 1.6),
 }
 # CMD_CURRICULUM_INIT_MIN_RANGES = {
 #     "vx":    0.3,     # half-width → range [-0.3, 0.3]
