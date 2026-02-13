@@ -8,7 +8,7 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 from wheelDog_RL.assets.configs.xg_wheel_su import XG_WHEEL_SU_CFG
 
 # Import settings. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import JOINT_ACTION_SCALE, WHEEL_ACTION_SCALE
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import LEG_ACTION_SCALE, WHEEL_ACTION_SCALE, ABD_ACTION_SCALE
 
 
 @configclass
@@ -26,7 +26,7 @@ class ActionsCfg:
             "RBL_ABAD_JOINT",
             "RAR_ABAD_JOINT",
         ],
-        scale=0.25,
+        scale=ABD_ACTION_SCALE,
         preserve_order=True,
         use_default_offset=True,
     )
@@ -38,7 +38,7 @@ class ActionsCfg:
             "RBL_HIP_JOINT",
             "RAR_HIP_JOINT",
         ],
-        scale=JOINT_ACTION_SCALE,
+        scale=LEG_ACTION_SCALE,
         preserve_order=True,
         use_default_offset=True,
     )
@@ -50,7 +50,7 @@ class ActionsCfg:
             "RBL_KNEE_JOINT",
             "RAR_KNEE_JOINT",
         ],
-        scale=JOINT_ACTION_SCALE,
+        scale=LEG_ACTION_SCALE,
         preserve_order=True,
         use_default_offset=True,
     )
