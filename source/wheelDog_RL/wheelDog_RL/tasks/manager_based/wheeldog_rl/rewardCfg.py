@@ -39,7 +39,7 @@ class RewardsCfg:
     )
     track_ang_vel_z_exp = RewTerm(
         func=mdp.track_ang_vel_z_exp,
-        weight=0.8,
+        weight=1.0,
         params={"command_name": "base_velocity", "std": math.sqrt(0.16)}
     )
     parallel_to_terrain =RewTerm(

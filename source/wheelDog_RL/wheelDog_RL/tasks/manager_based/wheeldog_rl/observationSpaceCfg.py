@@ -24,16 +24,16 @@ class ObservationsCfg:
         ##
 
         # Base states.
-        base_lin_vel = ObsTerm(
-            func=mdp.base_lin_vel, 
-            noise=Gnoise(mean=0, std=0.20),
-            history_length=STATE_HISTORY,
-        )
-        base_ang_vel = ObsTerm(
-            func=mdp.base_ang_vel, 
-            noise=Gnoise(mean=0, std=0.08),
-            history_length=STATE_HISTORY,
-        )
+        # base_lin_vel = ObsTerm(
+        #     func=mdp.base_lin_vel, 
+        #     noise=Gnoise(mean=0, std=0.20),
+        #     history_length=STATE_HISTORY,
+        # )
+        # base_ang_vel = ObsTerm(
+        #     func=mdp.base_ang_vel, 
+        #     noise=Gnoise(mean=0, std=0.08),
+        #     history_length=STATE_HISTORY,
+        # )
 
         # IMU sensor. 
         # imu_lin_acc = ObsTerm(
