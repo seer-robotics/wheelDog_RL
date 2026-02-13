@@ -155,6 +155,12 @@ class TerminationsCfg:
     """Termination terms for the MDP."""
 
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
+    # base_contact = DoneTerm(
+    #     func=mdp.illegal_contact,
+    #     params={
+    #     "sensor_cfg": SceneEntityCfg("contact_forces", body_names="BASE_LINK"), "threshold": 1.0
+    #     },
+    # )
     fallen = DoneTerm(
         func=mdp.terminate_fallen,
         params={
@@ -180,9 +186,9 @@ class CurriculumCfg:
     #         },
     #     }
     # )
-    command_stages = CurrTerm(
-        func=mdp.command_staged_curriculum,
-    )
+    # command_stages = CurrTerm(
+    #     func=mdp.command_staged_curriculum,
+    # )
     terrain_levels = CurrTerm(
         func=mdp.terrain_levels_velocityError,
         params={

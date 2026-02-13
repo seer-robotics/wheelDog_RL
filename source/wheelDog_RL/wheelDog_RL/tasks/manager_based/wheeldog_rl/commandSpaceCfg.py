@@ -23,10 +23,16 @@ class CommandsCfg:
         rel_heading_envs=0.99,
         heading_command=False,
         debug_vis=True,
+        # ranges=mdp.UniformVelocityCommandCfg.Ranges(
+        #     lin_vel_x=(-0.3, 0.3),
+        #     lin_vel_y=(-0.0, 0.0),
+        #     ang_vel_z=(-0.08, 0.08),
+        #     heading=(-math.pi, math.pi)
+        # ),
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(-0.3, 0.3),
-            lin_vel_y=(-0.0, 0.0),
-            ang_vel_z=(-0.08, 0.08),
+            lin_vel_x=(-1.2, 1.2),
+            lin_vel_y=(-0.08, 0.08),
+            ang_vel_z=(-1.0, 1.0),
             heading=(-math.pi, math.pi)
         ),
     )

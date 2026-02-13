@@ -54,6 +54,25 @@ class ActionsCfg:
         preserve_order=True,
         use_default_offset=True,
     )
+    # joint_pos = mdp.JointPositionToLimitsActionCfg(
+    #     asset_name="robot",
+    #     joint_names=[
+    #         "FBL_ABAD_JOINT",
+    #         "FAR_ABAD_JOINT",
+    #         "RBL_ABAD_JOINT",
+    #         "RAR_ABAD_JOINT",
+    #         "FBL_HIP_JOINT",
+    #         "FAR_HIP_JOINT",
+    #         "RBL_HIP_JOINT",
+    #         "RAR_HIP_JOINT",
+    #         "FBL_KNEE_JOINT",
+    #         "FAR_KNEE_JOINT",
+    #         "RBL_KNEE_JOINT",
+    #         "RAR_KNEE_JOINT",
+    #     ],
+    #     scale=1.0,
+    #     preserve_order=True,
+    # )
     wheel_joint_vel = mdp.JointVelocityActionCfg(
         asset_name="robot",
         joint_names=[

@@ -20,7 +20,7 @@ class RewardsCfg:
     # -- rewards
     good_stance = RewTerm(
         func=mdp.default_joint_pos,
-        weight=1.0,
+        weight=1.5,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", 
@@ -96,7 +96,7 @@ class RewardsCfg:
     )
     dof_pos_deviate = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.3,
+        weight=-0.2,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", 
