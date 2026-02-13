@@ -64,7 +64,7 @@ def terrain_orientation_reward(
 
     # Get current terrain normal under the robot, in robot base frame.
     terrain_normal_b = terrain_normals(env, sensor_cfg)
-    base_up_b = torch.zeros_like(terrain_normal_b)
+    base_up_b = torch.zeros_like(terrain_normal_b, device=env.device)
     base_up_b[:, 2] = 1.0
 
     # Calculate cosine similarity.
