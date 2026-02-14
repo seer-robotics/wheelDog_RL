@@ -76,6 +76,24 @@ def terrain_orientation_reward(
     return reward
 
 
+def terrain_orientation(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    sensor_cfg: SceneEntityCfg = SceneEntityCfg("height_scanner"),
+) -> torch.Tensor:
+    """Penalize deviation between base projected gravity and the negative terrain normal.
+    """
+    # Enable type hints.
+    # robot: RigidObject = env.scene[asset_cfg.name]
+
+    # Get current terrain normal under the robot, in robot base frame.
+    terrain_normal_b = terrain_normals(env, sensor_cfg)
+
+    # Penalize using L2 squared kernel.
+    penalty = torch.sum(torch.square(terrain_normal_b[:, :2]), dim=1)
+    return penalty
+
+
 def base_height_threshold(
     env: ManagerBasedRLEnv,
     height_threshold: float,
