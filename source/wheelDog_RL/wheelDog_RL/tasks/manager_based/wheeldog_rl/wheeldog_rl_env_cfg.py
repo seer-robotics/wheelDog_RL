@@ -1,9 +1,11 @@
 # Library imports. 
 import math
+import torch
 
 # Isaac Lab imports
 from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab.managers import CurriculumTermCfg as CurrTerm
+from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
@@ -84,37 +86,37 @@ class EventCfg:
         },
     )
 
-    # add_link_mass = EventTerm(
-    #     func=mdp.randomize_rigid_body_mass,
-    #     mode="startup",
-    #     params={
-    #         "asset_cfg": SceneEntityCfg("robot", body_names=["F.*", "R.*"]),
-    #         "mass_distribution_params": (-0.1, 0.1),
-    #         "recompute_inertia": True,
-    #         "operation": "add",
-    #     },
-    # )
+    add_link_mass = EventTerm(
+        func=mdp.randomize_rigid_body_mass,
+        mode="startup",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", body_names=["F.*", "R.*"]),
+            "mass_distribution_params": (-0.1, 0.1),
+            "recompute_inertia": True,
+            "operation": "add",
+        },
+    )
 
-    # add_joint_friction = EventTerm(
-    #     func=mdp.randomize_joint_parameters,
-    #     mode="startup",
-    #     params={
-    #         "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
-    #         "operation": "add",
-    #         "friction_distribution_params": (-0.2, 0.2),
-    #     },
-    # )
+    add_joint_friction = EventTerm(
+        func=mdp.randomize_joint_parameters,
+        mode="startup",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
+            "operation": "add",
+            "friction_distribution_params": (-0.2, 0.2),
+        },
+    )
 
     # Reset events
-    # base_external_force_torque = EventTerm(
-    #     func=mdp.apply_external_force_torque,
-    #     mode="reset",
-    #     params={
-    #         "asset_cfg": SceneEntityCfg("robot", body_names="BASE_LINK"),
-    #         "force_range": (-2.0, 2.0),
-    #         "torque_range": (-1.0, 1.0),
-    #     },
-    # )
+    base_external_force_torque = EventTerm(
+        func=mdp.apply_external_force_torque,
+        mode="reset",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", body_names="BASE_LINK"),
+            "force_range": (-8.0, 8.0),
+            "torque_range": (-10.0, 10.0),
+        },
+    )
 
     reset_base = EventTerm(
         func=mdp.reset_root_state_uniform,
@@ -142,12 +144,12 @@ class EventCfg:
     )
 
     # Interval events
-    # push_robot = EventTerm(
-    #     func=mdp.push_by_setting_velocity,
-    #     mode="interval",
-    #     interval_range_s=(10.0, 15.0),
-    #     params={"velocity_range": {"x": (-0.4, 0.4), "y": (-0.4, 0.4)}},
-    # )
+    push_robot = EventTerm(
+        func=mdp.push_by_setting_velocity,
+        mode="interval",
+        interval_range_s=(8.0, 10.0),
+        params={"velocity_range": {"x": (-1.2, 1.2), "y": (-0.8, 0.8)}},
+    )
 
 
 @configclass
@@ -155,16 +157,10 @@ class TerminationsCfg:
     """Termination terms for the MDP."""
 
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
-    # base_contact = DoneTerm(
-    #     func=mdp.illegal_contact,
-    #     params={
-    #     "sensor_cfg": SceneEntityCfg("contact_forces", body_names="BASE_LINK"), "threshold": 1.0
-    #     },
-    # )
     fallen = DoneTerm(
         func=mdp.terminate_fallen,
         params={
-        "sensor_cfg": SceneEntityCfg("contact_forces", body_names="BASE_LINK"), "threshold": 1.0
+        "sensor_cfg": SceneEntityCfg("contact_forces", body_names="BASE_LINK"),"threshold": 1.0
         },
     )
 
@@ -173,19 +169,6 @@ class TerminationsCfg:
 class CurriculumCfg:
     """Curriculum terms for the MDP."""
 
-    # base_contact_curriculum = CurrTerm(
-    #     func=mdp.modify_term_cfg,
-    #     params={
-    #         "address": "terminations.base_contact.params.threshold",
-    #         "modify_fn": mdp.base_contact_threshold_decay,
-    #         "modify_params": {
-    #             "initial_threshold": BASE_CONTACT_INIT_THRESHOLD,
-    #             "target_threshold": BASE_CONTACT_TARGET_THRESHOLD,
-    #             "flat_steps": BASE_CONTACT_FLAT_STEPS,
-    #             "decay_steps": BASE_CONTACT_DECAY_STEPS,
-    #         },
-    #     }
-    # )
     # command_stages = CurrTerm(
     #     func=mdp.command_staged_curriculum,
     # )
@@ -231,13 +214,6 @@ class BlindLocomotionCfg(ManagerBasedRLEnvCfg):
         self.sim.physics_material = self.scene.terrain.physics_material
         self.sim.physx.gpu_max_rigid_patch_count = 10 * 2**15
 
-        # Update sensor update periods
-        # Tick priviledged sensors based on the smallest update period (physics update period)
-        # if self.scene.height_scanner is not None:
-        #     self.scene.height_scanner.update_period = self.sim.dt
-        # if self.scene.contact_forces is not None:
-        #     self.scene.contact_forces.update_period = self.sim.dt
-
         # Check terrain generator existence and enable terrain curriculum
         if getattr(self.curriculum, "terrain_levels", None) is not None:
             if self.scene.terrain.terrain_generator is not None:
@@ -245,3 +221,72 @@ class BlindLocomotionCfg(ManagerBasedRLEnvCfg):
         else:
             if self.scene.terrain.terrain_generator is not None:
                 self.scene.terrain.terrain_generator.curriculum = False
+
+@configclass
+class CrippleLocomotionCfg(BlindLocomotionCfg):
+    """
+    Configuration for the cripple locomotion velocity-tracking environment.
+    """
+    def __post_init__(self):
+        # Post init of parent.
+        super().__post_init__()
+
+        # Override commands.
+        self.commands.base_velocity.ranges.lin_vel_x = (-0.4, 0.4)
+        self.commands.base_velocity.ranges.lin_vel_y = (-0.08, 0.08)
+        self.commands.base_velocity.ranges.ang_vel_z = (-0.6, 0.6)
+
+        # Override rewards.
+        self.rewards.good_stance = None
+        self.rewards.parallel_to_terrain = None
+        self.rewards.dof_pos_deviate = None
+        self.rewards.flat_orientation_l2 = RewTerm(
+            func=mdp.flat_orientation_l2, weight=-2.5
+        )
+        self.rewards.base_height = RewTerm(
+            func=mdp.base_height_l2,
+            weight=-1.0,
+            params={"target_height": 0.4}
+        )
+        self.rewards.pretend_cripple = RewTerm(
+            # Cripple target: [0.4, 1.5, -2.5, 0.0]
+            func=mdp.joint_pos_target_l2,
+            weight=2.0,
+            params={
+                "target": torch.Tensor([0.4, 1.5, -2.5, 0.0]),
+                "std": math.sqrt(0.16),
+                "asset_cfg": SceneEntityCfg(
+                    "robot",
+                    joint_names=[
+                        "FAR_ABAD_JOINT",
+                        "FAR_HIP_JOINT",
+                        "FAR_KNEE_JOINT",
+                        "FAR_FOOT_JOINT",
+                    ],
+                    preserve_order=True,
+                ),
+            }
+        )
+
+        # Change terrain to flat.
+        self.scene.terrain.terrain_type = "plane"
+        self.scene.terrain.terrain_generator = None
+
+        # No height scans needed.
+        self.scene.fl_leg_ray = None
+        self.scene.fr_leg_ray = None
+        self.scene.rl_leg_ray = None
+        self.scene.rr_leg_ray = None
+        self.scene.height_scanner = None
+        self.observations.critic.fl_foot_normals = None
+        self.observations.critic.fr_foot_normals = None
+        self.observations.critic.rl_foot_normals = None
+        self.observations.critic.rr_foot_normals = None
+        self.observations.critic.fl_foot_scan = None
+        self.observations.critic.fr_foot_scan = None
+        self.observations.critic.rl_foot_scan = None
+        self.observations.critic.rr_foot_scan = None
+        self.observations.critic.base_height_scan = None
+
+        # No terrain curriculum.
+        self.curriculum.terrain_levels = None
