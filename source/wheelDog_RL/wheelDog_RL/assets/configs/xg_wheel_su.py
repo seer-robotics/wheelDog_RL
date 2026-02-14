@@ -43,8 +43,8 @@ XG_WHEEL_SU_CFG = ArticulationCfg(
     actuators={
         "legs": DCMotorCfg(
             joint_names_expr=[".*_ABAD_JOINT", ".*_HIP_JOINT", ".*_KNEE_JOINT"],
-            effort_limit=33.5,
-            saturation_effort=33.5,
+            effort_limit=30.0,
+            saturation_effort=30.0,
             velocity_limit=28.0,
             stiffness=30.0,
             damping=0.5,
@@ -52,10 +52,10 @@ XG_WHEEL_SU_CFG = ArticulationCfg(
         ),
         "wheels": ImplicitActuatorCfg(
             joint_names_expr=[".*_FOOT_JOINT"],
-            effort_limit_sim=80.0,
-            velocity_limit_sim=60.0,
+            effort_limit_sim=10.5,
+            velocity_limit_sim=160.0,
             stiffness=0.0,
-            damping=1.5,
+            damping=50.0,
         )
     },
 )
