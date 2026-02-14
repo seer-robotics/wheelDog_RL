@@ -42,31 +42,6 @@ class RewardsCfg:
         weight=1.0,
         params={"command_name": "base_velocity", "std": math.sqrt(0.16)}
     )
-    parallel_to_terrain =RewTerm(
-        func=mdp.terrain_orientation_reward,
-        weight=1.0,
-        params={
-            "sensor_cfg": SceneEntityCfg("height_scanner"),
-            "reward_temperature": 5.0,
-        },
-    )
-    # stay_alive = RewTerm(mdp.is_alive, weight=1.0)
-    # feet_ground_time = RewTerm(
-    #     # Reward keeping the feet on the ground.
-    #     func=mdp.feet_ground_time,
-    #     weight=1.0,
-    #     params={
-    #         "sensor_cfg": SceneEntityCfg(
-    #             "contact_forces",
-    #             body_names=[
-    #                 ".*FOOT_LINK",
-    #             ],
-    #             preserve_order=True,
-    #         ),
-    #         "command_name": "base_velocity",
-    #         "threshold": 0.04,
-    #     },
-    # )
     
     # -- penalties
     lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
@@ -74,6 +49,7 @@ class RewardsCfg:
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5e-1)
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
     dof_torque_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-2.5e-5)
+    # dof_energy_l1 = RewTerm(func=mdp.joint_energy_l1, weight=-1.0e-5)
     leg_action_rate_l2 = RewTerm(
         func=mdp.actionTerm_rate_l2,
         weight=-1e-2,
@@ -135,6 +111,13 @@ class RewardsCfg:
                 ]
             ),
             "threshold": 1.0
+        },
+    )
+    parallel_to_terrain =RewTerm(
+        func=mdp.terrain_orientation,
+        weight=-1.0,
+        params={
+            "sensor_cfg": SceneEntityCfg("height_scanner"),
         },
     )
     # base_height_threshold = RewTerm(
