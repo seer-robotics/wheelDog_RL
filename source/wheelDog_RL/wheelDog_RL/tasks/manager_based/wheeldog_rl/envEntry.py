@@ -30,6 +30,13 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
         self.env_cfg_at_startup = copy.deepcopy(self.cfg)
 
         # Initialize custom managers.
+        self.tilt_detection_manager = TiltDetectionManager(
+            env=self,
+            grace_steps=FALL_GRACE_STEPS,
+            tilt_threshold_degrees=FALL_TILT_DEGREES,
+            tilt_duration_seconds=FALL_TILT_DURATION,
+        )
+        print("[INFO]: Added tilt_detection_manager manager.")
         self.velocity_error_recorder = VelocityErrorRecorder(
             config={"angular_scale": ANGULAR_ERROR_SCALE},
             env=self,
@@ -43,13 +50,6 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
         #     },
         # )
         # print("[INFO]: Added command_curriculum_manager manager.")
-        self.tilt_detection_manager = TiltDetectionManager(
-            env=self,
-            grace_steps=FALL_GRACE_STEPS,
-            tilt_threshold_degrees=FALL_TILT_DEGREES,
-            tilt_duration_seconds=FALL_TILT_DURATION,
-        )
-        print("[INFO]: Added tilt_detection_manager manager.")
 
     def step(self, actions: torch.Tensor) -> VecEnvStepReturn:
         # Compute step returns.
@@ -57,9 +57,9 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
         obs, rew, terminated, truncated, info = super().step(actions)
 
         # Iterate custom managers.
+        self.tilt_detection_manager.step()
         self.velocity_error_recorder.step()
         # self.command_curriculum_manager.step()
-        self.tilt_detection_manager.step()
 
         # Observations' numerical corruption detection.
         watchDogs.check_observations_for_nans_infs(obs, self.common_step_counter, self.num_envs)
@@ -74,6 +74,6 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
         super()._reset_idx(env_ids)
 
         # Reset custom managers.
+        self.tilt_detection_manager.reset(env_ids)
         self.velocity_error_recorder.reset(env_ids)
         # self.command_curriculum_manager.reset(env_ids)
-        self.tilt_detection_manager.reset(env_ids)
