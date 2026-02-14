@@ -50,6 +50,20 @@ def default_joint_pos(
     return reward
 
 
+def joint_energy_l1(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+) -> torch.Tensor:
+    """
+    Penalizes joint energy exertion.
+    """
+    asset: Articulation = env.scene[asset_cfg.name]
+    torques = asset.data.applied_torque[:, asset_cfg.joint_ids]
+    velocities = asset.data.joint_vel[:, asset_cfg.joint_ids]
+    energy = torch.sum(torch.abs(torques * velocities))
+    return energy
+
+
 def terrain_orientation_reward(
     env: ManagerBasedRLEnv,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
