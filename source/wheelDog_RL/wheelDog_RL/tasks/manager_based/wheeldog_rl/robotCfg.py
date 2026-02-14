@@ -46,3 +46,15 @@ class WheelDog_BlindLocomotionEnvPlayCfg(WheelDog_BlindLocomotionEnvCfg):
         # Remove random events.
         self.events.base_external_force_torque = None
         self.events.push_robot = None
+
+
+@configclass
+class CrippleDog_BlindLocomotionEnvCfg(BlindLocomotionCfg):
+    def __post_init__(self):
+        # Finish parent post init first.
+        super().__post_init__()
+        # Assign robot asset. 
+        self.scene.robot = XG_WHEEL_SU_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+
+        # Tick priviledged sensors based on the smallest update period (physics update period).
+        self.scene.contact_forces.update_period = self.sim.dt

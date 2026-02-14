@@ -246,7 +246,7 @@ class CrippleLocomotionCfg(BlindLocomotionCfg):
         self.rewards.base_height = RewTerm(
             func=mdp.base_height_l2,
             weight=-1.0,
-            params={"target_height": 0.4}
+            params={"target_height": 0.4},
         )
         self.rewards.pretend_cripple = RewTerm(
             # Cripple target: [0.4, 1.5, -2.5, 0.0]
@@ -265,7 +265,7 @@ class CrippleLocomotionCfg(BlindLocomotionCfg):
                     ],
                     preserve_order=True,
                 ),
-            }
+            },
         )
 
         # Change terrain to flat.
