@@ -1,10 +1,16 @@
+# Library imports.
+from pathlib import Path
 import isaaclab.sim as sim_utils
 from isaaclab.assets.articulation import ArticulationCfg
 from isaaclab.actuators import DCMotorCfg, ImplicitActuatorCfg
 
 XG_WHEEL_SU_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path="/home/renda/workspace/Projects/USD_Files/xg_wheel_su_USD/xg_wheel_su.usd",
+        # Path(__file__).resolve().parents[6] is the folder that contains the entire project folder.
+        usd_path=str(
+            Path(__file__).resolve().parents[6] / \
+            "USD_Files" / "xg_wheel_su_USD" / "xg_wheel_su.usd"
+        ),
         activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
