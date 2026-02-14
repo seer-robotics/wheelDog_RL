@@ -268,9 +268,16 @@ class CrippleLocomotionCfg(BlindLocomotionCfg):
             },
         )
 
+        # Override events.
+        self.events.push_robot = None
+        self.events.base_external_force_torque = None
+
         # Change terrain to flat.
         self.scene.terrain.terrain_type = "plane"
         self.scene.terrain.terrain_generator = None
+
+        # No terrain curriculum.
+        self.curriculum.terrain_levels = None
 
         # No height scans needed.
         self.scene.fl_leg_ray = None
@@ -287,6 +294,3 @@ class CrippleLocomotionCfg(BlindLocomotionCfg):
         self.observations.critic.rl_foot_scan = None
         self.observations.critic.rr_foot_scan = None
         self.observations.critic.base_height_scan = None
-
-        # No terrain curriculum.
-        self.curriculum.terrain_levels = None
