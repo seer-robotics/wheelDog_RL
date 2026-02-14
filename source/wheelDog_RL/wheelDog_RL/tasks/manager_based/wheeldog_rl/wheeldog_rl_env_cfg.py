@@ -236,6 +236,9 @@ class CrippleLocomotionCfg(BlindLocomotionCfg):
         self.commands.base_velocity.ranges.lin_vel_y = (-0.08, 0.08)
         self.commands.base_velocity.ranges.ang_vel_z = (-0.6, 0.6)
 
+        # Override actions.
+        # Make sure actions ranges can reach the pretend-cripple target.
+
         # Override rewards.
         self.rewards.good_stance = None
         self.rewards.parallel_to_terrain = None
