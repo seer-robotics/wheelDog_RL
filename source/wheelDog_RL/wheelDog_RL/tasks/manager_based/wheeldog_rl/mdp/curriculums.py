@@ -360,7 +360,7 @@ def command_staged_curriculum(
 
     # Return progress metric.
     metric = mgr.get_progress_metric()
-    return torch.Tensor([metric])
+    return torch.tensor([metric])
 
 
 # Manager class that records cumulative velocity error.
