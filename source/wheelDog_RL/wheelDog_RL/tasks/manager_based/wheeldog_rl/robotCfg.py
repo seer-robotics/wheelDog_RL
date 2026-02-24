@@ -5,7 +5,7 @@ from isaaclab.utils import configclass
 from wheelDog_RL.assets.configs.xg_wheel_su import XG_WHEEL_SU_CFG
 
 # Import training environment definition. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.wheeldog_rl_env_cfg import BlindLocomotionCfg
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.wheeldog_rl_env_cfg import BlindLocomotionCfg, CrippleLocomotionCfg
 
 
 @configclass
@@ -49,7 +49,7 @@ class WheelDog_BlindLocomotionEnvPlayCfg(WheelDog_BlindLocomotionEnvCfg):
 
 
 @configclass
-class CrippleDog_BlindLocomotionEnvCfg(BlindLocomotionCfg):
+class CrippleDog_BlindLocomotionEnvCfg(CrippleLocomotionCfg):
     def __post_init__(self):
         # Finish parent post init first.
         super().__post_init__()
