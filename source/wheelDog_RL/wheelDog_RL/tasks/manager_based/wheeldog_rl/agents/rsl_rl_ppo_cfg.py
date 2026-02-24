@@ -47,7 +47,7 @@ class PPORunnerCfg_crippleDog(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 32
     max_iterations = 1600
     save_interval = 50
-    experiment_name = "cripplelDog_Blind_Managed"
+    experiment_name = "crippleDog_Blind_Managed"
     policy = RslRlPpoActorCriticCfg(
         init_noise_std=1.0,
         actor_obs_normalization=True,
