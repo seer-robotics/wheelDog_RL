@@ -113,7 +113,7 @@ class EventCfg:
         mode="reset",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names="BASE_LINK"),
-            "force_range": (-8.0, 8.0),
+            "force_range": (-20.0, 20.0),
             "torque_range": (-10.0, 10.0),
         },
     )
