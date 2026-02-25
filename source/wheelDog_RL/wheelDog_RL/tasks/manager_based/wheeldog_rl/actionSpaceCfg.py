@@ -8,7 +8,14 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 from wheelDog_RL.assets.configs.xg_wheel_su import XG_WHEEL_SU_CFG
 
 # Import settings. 
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import LEG_ACTION_SCALE, WHEEL_ACTION_SCALE, ABD_ACTION_SCALE
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import \
+    ABD_OFFSET, \
+    ABD_ACTION_SCALE, \
+    HIP_OFFSET, \
+    HIP_ACTION_SCALE, \
+    KNEE_OFFSET, \
+    KNEE_ACTION_SCALE, \
+    WHEEL_ACTION_SCALE
 
 
 @configclass
@@ -26,9 +33,10 @@ class ActionsCfg:
             "RBL_ABAD_JOINT",
             "RAR_ABAD_JOINT",
         ],
+        use_default_offset=False,
+        offset=ABD_OFFSET,
         scale=ABD_ACTION_SCALE,
         preserve_order=True,
-        use_default_offset=True,
         clip={".*": (-0.49, 0.49)},
     )
     hip_joint_pos = mdp.JointPositionActionCfg(
@@ -39,9 +47,10 @@ class ActionsCfg:
             "RBL_HIP_JOINT",
             "RAR_HIP_JOINT",
         ],
-        scale=LEG_ACTION_SCALE,
+        use_default_offset=False,
+        offset=HIP_OFFSET,
+        scale=HIP_ACTION_SCALE,
         preserve_order=True,
-        use_default_offset=True,
         clip={".*": (-1.15, 2.97)},
     )
     knee_joint_pos = mdp.JointPositionActionCfg(
@@ -52,12 +61,13 @@ class ActionsCfg:
             "RBL_KNEE_JOINT",
             "RAR_KNEE_JOINT",
         ],
-        scale=LEG_ACTION_SCALE,
+        use_default_offset=False,
+        offset=KNEE_OFFSET,
+        scale=KNEE_ACTION_SCALE,
         preserve_order=True,
-        use_default_offset=True,
         clip={".*": (-2.72, -0.60)},
     )
-    # joint_pos = mdp.JointPositionToLimitsActionCfg(
+    # leg_joint_pos = mdp.JointPositionToLimitsActionCfg(
     #     asset_name="robot",
     #     joint_names=[
     #         "FBL_ABAD_JOINT",
