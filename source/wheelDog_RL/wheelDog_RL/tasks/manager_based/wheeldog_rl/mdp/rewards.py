@@ -239,11 +239,11 @@ def feet_ground_time(
     return reward
 
 
-def joint_pos_target_l2(
-        env: ManagerBasedRLEnv,
-        target: torch.Tensor,
-        std: float,
-        asset_cfg: SceneEntityCfg,
+def joint_pos_target_reward_l2(
+    env: ManagerBasedRLEnv,
+    target: List[float],
+    std: float,
+    asset_cfg: SceneEntityCfg,
 ) -> torch.Tensor:
     """Reward joint position adherence to a target value."""
     # Extract the used quantities (to enable type-hinting).
@@ -251,8 +251,25 @@ def joint_pos_target_l2(
     # Wrap the joint positions to (-pi, pi).
     joint_pos = wrap_to_pi(asset.data.joint_pos[:, asset_cfg.joint_ids])
     # Compute the reward.
-    squared_error = torch.sum(torch.square(joint_pos - target.unsqueeze(0)), dim=1)
+    targetTensor = torch.tensor(target, device=env.device, dtype=torch.float32)
+    squared_error = torch.sum(torch.square(joint_pos - targetTensor.unsqueeze(0)), dim=1)
     return torch.exp(-squared_error / std**2)
+
+
+def joint_pos_target_penalty_l2(
+    env: ManagerBasedRLEnv,
+    target: List[float],
+    asset_cfg: SceneEntityCfg,
+) -> torch.Tensor:
+    """Penalize joint position deviation from a target value."""
+    # Extract the used quantities (to enable type-hinting).
+    asset: Articulation = env.scene[asset_cfg.name]
+    # Wrap the joint positions to (-pi, pi).
+    joint_pos = wrap_to_pi(asset.data.joint_pos[:, asset_cfg.joint_ids])
+    # Compute the reward.
+    targetTensor = torch.tensor(target, device=env.device, dtype=torch.float32)
+    squared_error = torch.sum(torch.square(joint_pos - targetTensor.unsqueeze(0)), dim=1)
+    return squared_error
 
 
 def feet_slide(env, sensor_cfg: SceneEntityCfg, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
