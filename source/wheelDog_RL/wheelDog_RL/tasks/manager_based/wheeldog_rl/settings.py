@@ -62,3 +62,6 @@ WHEEL_RATE_MIN_FACTOR_TERRAIN_LEVEL = 3
 
 # Base height scan settings.
 BASE_HEIGHT_THRESHOLD = 0.35
+
+# Cripple target.
+CRIPPLE_TARGET = [0.4, 1.4, -2.5, 0.0]
