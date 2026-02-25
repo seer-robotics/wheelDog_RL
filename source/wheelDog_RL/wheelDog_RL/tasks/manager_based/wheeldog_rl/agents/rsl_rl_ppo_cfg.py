@@ -27,7 +27,7 @@ class PPORunnerCfg(RslRlOnPolicyRunnerCfg):
         "critic": ["policy", "critic"],
     }
     algorithm = RslRlPpoAlgorithmCfg(
-        value_loss_coef=1.0,
+        value_loss_coef=1.5,
         use_clipped_value_loss=True,
         clip_param=0.2,
         entropy_coef=1e-2,
