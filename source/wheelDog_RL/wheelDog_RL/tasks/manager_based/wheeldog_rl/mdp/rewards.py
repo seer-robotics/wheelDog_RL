@@ -186,17 +186,16 @@ def actionTerm_rate_l2(
 
 def ang_vel_xy_l2_clipped(
     env: ManagerBasedRLEnv,
-    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    clip: float = 10.0,
 ) -> torch.Tensor:
     """
     Penalize xy-axis base angular velocity using L2 squared kernel.
-
-    Output clipped at 2.0
     """
     # extract the used quantities (to enable type-hinting)
     asset: RigidObject = env.scene[asset_cfg.name]
     penalty = torch.sum(torch.square(asset.data.root_ang_vel_b[:, :2]), dim=1)
-    penalty_clipped = torch.clamp(penalty, max=2.0)
+    penalty_clipped = torch.clamp(penalty, max=clip)
     return penalty_clipped
 
 

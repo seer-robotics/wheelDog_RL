@@ -30,7 +30,7 @@ class RewardsCfg:
     )
     good_stance = RewTerm(
         func=mdp.default_joint_pos,
-        weight=1.5,
+        weight=1.0,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", 
@@ -45,11 +45,41 @@ class RewardsCfg:
     
     # -- penalties
     lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
-    ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.4)
+    ang_vel_xy_l2 = RewTerm(
+        func=mdp.ang_vel_xy_l2_clipped,
+        weight=-0.2,
+        params={"clip": 8.0}
+    )
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5e-1)
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
-    dof_torque_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-2.5e-5)
-    # dof_energy_l1 = RewTerm(func=mdp.joint_energy_l1, weight=-1.0e-5)
+    # dof_torque_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-2.5e-5)
+    dof_energy_l1 = RewTerm(func=mdp.joint_energy_l1, weight=-4.0e-7)
+    # dof_energy_legs = RewTerm(
+    #     func=mdp.joint_energy_l1,
+    #     weight=-1.0e-5,
+    #     params={
+    #         "asset_cfg": SceneEntityCfg(
+    #             "robot", 
+    #             joint_names=[
+    #                 ".*_ABAD_JOINT",
+    #                 ".*_HIP_JOINT",
+    #                 ".*_KNEE_JOINT",
+    #             ],
+    #             preserve_order=True,
+    #         ),
+    #     }
+    # )
+    # dof_energy_wheels = RewTerm(
+    #     func=mdp.joint_energy_l1,
+    #     weight=-1.0e-6,
+    #     params={
+    #         "asset_cfg": SceneEntityCfg(
+    #             "robot", 
+    #             joint_names=[".*_FOOT_JOINT"],
+    #             preserve_order=True,
+    #         ),
+    #     }
+    # )
     leg_action_rate_l2 = RewTerm(
         func=mdp.actionTerm_rate_l2,
         weight=-1e-2,
