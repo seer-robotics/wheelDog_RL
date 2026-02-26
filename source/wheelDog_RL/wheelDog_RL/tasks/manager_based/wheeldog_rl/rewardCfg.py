@@ -199,6 +199,20 @@ class CrippledRewardsCfg:
     lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
     ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.3)
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5e-1)
+    abd_pos_deviate = RewTerm(
+        func=mdp.joint_deviation_l1,
+        weight=-0.2,
+        params={
+            "asset_cfg": SceneEntityCfg(
+                "robot", 
+                joint_names=[
+                    "RBL_ABAD_JOINT",
+                    "RAR_ABAD_JOINT",
+                ],
+                preserve_order=True,
+            ),
+        }
+    )
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
     dof_torque_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-2.5e-5)
     leg_action_rate_l2 = RewTerm(
