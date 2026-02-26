@@ -10,7 +10,7 @@ from isaaclab.managers import SceneEntityCfg
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
 # Import settings.
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import BASE_HEIGHT_THRESHOLD, WHEEL_RATE_INIT_WEIGHT
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import CRIPPLE_TARGET
 
 
 @configclass
@@ -155,3 +155,104 @@ class RewardsCfg:
     #         "sensor_cfg": SceneEntityCfg("height_scanner"),
     #     }
     # )
+
+
+@configclass
+class CrippledRewardsCfg:
+    """Reward terms for the MDP."""
+
+    # -- rewards
+    pretend_cripple_reward = RewTerm(
+        func=mdp.joint_pos_target_reward_l2,
+        weight=2.0,
+        params={
+            "target": CRIPPLE_TARGET,
+            "std": math.sqrt(0.36),
+            "asset_cfg": SceneEntityCfg(
+                "robot",
+                joint_names=[
+                    "FAR_ABAD_JOINT",
+                    "FAR_HIP_JOINT",
+                    "FAR_KNEE_JOINT",
+                    "FAR_FOOT_JOINT",
+                ],
+                preserve_order=True,
+            ),
+        },
+    )
+    track_lin_vel_xy_exp = RewTerm(
+        func=mdp.track_lin_vel_xy_exp,
+        weight=1.0,
+        params={"command_name": "base_velocity", "std": math.sqrt(0.16)}
+    )
+    track_ang_vel_z_exp = RewTerm(
+        func=mdp.track_ang_vel_z_exp,
+        weight=1.0,
+        params={"command_name": "base_velocity", "std": math.sqrt(0.16)}
+    )
+    
+    # -- penalties
+    lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
+    ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.3)
+    dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5e-1)
+    dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
+    dof_torque_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-2.5e-5)
+    leg_action_rate_l2 = RewTerm(
+        func=mdp.actionTerm_rate_l2,
+        weight=-1e-2,
+        params={
+            "term_names": [
+                "abdomen_joint_pos",
+                "hip_joint_pos",
+                "knee_joint_pos",
+            ]
+        }
+    )
+    wheel_action_rate_l2 = RewTerm(
+        func=mdp. actionTerm_rate_l2,
+        weight=-0.5e-2,
+        params={
+            "term_names": [
+                "wheel_joint_vel",
+            ]
+        }
+    )
+    undesired_contacts = RewTerm(
+        func=mdp.undesired_contacts,
+        weight=-1.0,
+        params={
+            "sensor_cfg": SceneEntityCfg(
+                "contact_forces", body_names=[
+                    "BASE_LINK",
+                    ".*_HIP_LINK",
+                    ".*_KNEE_LINK",
+                ]
+            ),
+            "threshold": 1.0
+        },
+    )
+    flat_orientation_l2 = RewTerm(
+        func=mdp.flat_orientation_l2, weight=-2.0
+    )
+    base_height = RewTerm(
+        func=mdp.base_height_l2,
+        weight=-1.0,
+        params={"target_height": 0.35},
+    )
+    pretend_cripple_penalty = RewTerm(
+        func=mdp.joint_pos_target_penalty_l2,
+        weight=-2.0,
+        params={
+            "target": CRIPPLE_TARGET,
+            "asset_cfg": SceneEntityCfg(
+                "robot",
+                joint_names=[
+                    "FAR_ABAD_JOINT",
+                    "FAR_HIP_JOINT",
+                    "FAR_KNEE_JOINT",
+                    "FAR_FOOT_JOINT",
+                ],
+                preserve_order=True,
+            ),
+        },
+    )
