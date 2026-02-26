@@ -286,3 +286,19 @@ def feet_slide(env, sensor_cfg: SceneEntityCfg, asset_cfg: SceneEntityCfg = Scen
     body_vel = asset.data.body_lin_vel_w[:, asset_cfg.body_ids, :2]
     reward = torch.sum(body_vel.norm(dim=-1) * contacts, dim=1)
     return reward
+
+
+def rear_feet_com_alignment(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
+) -> torch.Tensor:
+    """Penalize rear feet midpoint deviation from the projected CoM."""
+    # Retrieve the robot articulation
+    asset: Articulation = env.scene[asset_cfg.name]
+    
+    com_pos_w = asset.data.root_com_pos_w[:, :2]
+    rear_feet_pos_w = asset.data.body_pos_w[:, asset_cfg.body_ids, :2]
+    midpoint_pos_w = torch.mean(rear_feet_pos_w, dim=1)
+    distance = torch.norm(com_pos_w - midpoint_pos_w, dim=1)
+    
+    return distance**2

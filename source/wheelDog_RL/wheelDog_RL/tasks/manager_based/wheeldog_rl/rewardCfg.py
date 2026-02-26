@@ -246,6 +246,20 @@ class CrippledRewardsCfg:
         weight=-1.0,
         params={"target_height": 0.35},
     )
+    support_deviation = RewTerm(
+        func=mdp.rear_feet_com_alignment,
+        weight=-2.0,
+        params={
+            "asset_cfg": SceneEntityCfg(
+                "robot", 
+                body_names=[
+                    "RBL_FOOT_LINK",
+                    "RAR_FOOT_LINK",
+                ],
+                preserve_order=True,
+            ),
+        }
+    )
     pretend_cripple_penalty = RewTerm(
         func=mdp.joint_pos_target_penalty_l2,
         weight=-1.0,
