@@ -16,7 +16,10 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import \
     CMD_CURRICULUM_TARGET_MAX_RANGES, \
     FALL_GRACE_STEPS, \
     FALL_TILT_DEGREES, \
-    FALL_TILT_DURATION
+    FALL_TILT_DURATION, \
+    CRIPPLE_FALL_GRACE_STEPS, \
+    CRIPPLE_FALL_TILT_DEGREES, \
+    CRIPPLE_FALL_TILT_DURATION
 
 # # Import settings. 
 # from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import \
@@ -88,9 +91,9 @@ class CrippleDog_BlindLocomotionEnv(ManagerBasedRLEnv):
         # Initialize custom managers.
         self.tilt_detection_manager = TiltDetectionManager(
             env=self,
-            grace_steps=FALL_GRACE_STEPS,
-            tilt_threshold_degrees=FALL_TILT_DEGREES,
-            tilt_duration_seconds=FALL_TILT_DURATION,
+            grace_steps=CRIPPLE_FALL_GRACE_STEPS,
+            tilt_threshold_degrees=CRIPPLE_FALL_TILT_DEGREES,
+            tilt_duration_seconds=CRIPPLE_FALL_TILT_DURATION,
         )
         print("[INFO]: Added tilt_detection_manager manager.")
         # self.velocity_error_recorder = VelocityErrorRecorder(
