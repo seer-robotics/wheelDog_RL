@@ -36,3 +36,30 @@ class CommandsCfg:
             heading=(-math.pi, math.pi)
         ),
     )
+
+
+@configclass
+class CrippledCommandsCfg:
+    """Command specifications for the MDP."""
+
+    # https://github.com/isaac-sim/IsaacLab/discussions/2620
+    base_velocity = mdp.UniformVelocityCommandCfg(
+        asset_name="robot",
+        resampling_time_range=(6.0, 10.0),
+        rel_standing_envs=0.15,
+        rel_heading_envs=0.99,
+        heading_command=False,
+        debug_vis=True,
+        # ranges=mdp.UniformVelocityCommandCfg.Ranges(
+        #     lin_vel_x=(-0.3, 0.3),
+        #     lin_vel_y=(-0.0, 0.0),
+        #     ang_vel_z=(-0.08, 0.08),
+        #     heading=(-math.pi, math.pi)
+        # ),
+        ranges=mdp.UniformVelocityCommandCfg.Ranges(
+            lin_vel_x=(-0.4, 0.4),
+            lin_vel_y=(-0.08, 0.08),
+            ang_vel_z=(-0.5, 0.5),
+            heading=(-math.pi, math.pi)
+        ),
+    )
