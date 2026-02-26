@@ -12,7 +12,7 @@ import argparse
 from isaaclab.app import AppLauncher
 
 # add argparse arguments
-parser = argparse.ArgumentParser(description="Random agent for Isaac Lab environments.")
+parser = argparse.ArgumentParser(description="zero agent for Isaac Lab environments.")
 parser.add_argument("--task", type=str, default="Wheeldog-Rl-v0", help="Name of the task.")
 parser.add_argument(
     "--agent", type=str, default="rsl_rl_cfg_entry_point", help="Name of the RL agent configuration entry point."
@@ -35,21 +35,20 @@ simulation_app = app_launcher.app
 """Rest everything follows."""
 
 # Library imports. 
-from isaaclab_tasks.utils.hydra import hydra_task_config
-from isaaclab.envs import ManagerBasedRLEnvCfg
+from isaaclab_tasks.utils import parse_env_cfg
 import gymnasium as gym
 import torch
 
 # Import the module to register the gym environment. 
 import wheelDog_RL.tasks  # noqa: F401
+import isaaclab_tasks  # noqa: F401
 
 
-@hydra_task_config(args_cli.task, args_cli.agent)
-def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg: dict): 
-    """Zero actions agent with Isaac Lab environment."""
-    # Parse the environment configuration from pseudo cli.
-    env_cfg.scene.num_envs = args_cli.num_envs if args_cli.num_envs is not None else env_cfg.scene.num_envs
-    env_cfg.sim.device = args_cli.device if args_cli.device is not None else env_cfg.sim.device
+def main():
+    """zero actions agent with Isaac Lab environment."""
+    env_cfg = parse_env_cfg(
+        args_cli.task, device=args_cli.device, num_envs=args_cli.num_envs
+    )
 
     # Create the environment. 
     env = gym.make(args_cli.task, cfg=env_cfg)
@@ -67,6 +66,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg: dict):
             actions = torch.zeros(env.action_space.shape, device=env.unwrapped.device)
             # apply actions
             obs, rew, terminated, truncated, info = env.step(actions)
+
+            # Environment access reference.
+            # projected_gravity_b = env.env.scene["robot"].data.projected_gravity_b
+            # print(f"projected gravity: {projected_gravity_b}")
 
     # close the simulator
     env.close()
