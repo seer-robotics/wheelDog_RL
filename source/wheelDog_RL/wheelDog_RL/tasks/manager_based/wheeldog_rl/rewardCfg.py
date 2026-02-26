@@ -164,13 +164,17 @@ class CrippledRewardsCfg:
     # -- rewards
     pretend_cripple_reward = RewTerm(
         func=mdp.joint_pos_target_reward_l2,
-        weight=2.0,
+        weight=1.0,
         params={
             "target": CRIPPLE_TARGET,
             "std": math.sqrt(0.36),
             "asset_cfg": SceneEntityCfg(
                 "robot",
                 joint_names=[
+                    "FBL_ABAD_JOINT",
+                    "FBL_HIP_JOINT",
+                    "FBL_KNEE_JOINT",
+                    "FBL_FOOT_JOINT",
                     "FAR_ABAD_JOINT",
                     "FAR_HIP_JOINT",
                     "FAR_KNEE_JOINT",
@@ -203,8 +207,11 @@ class CrippledRewardsCfg:
         params={
             "term_names": [
                 "abdomen_joint_pos",
-                "hip_joint_pos",
-                "knee_joint_pos",
+                "front_hip_joint_pos",
+                "rear_hip_joint_pos",
+                "front_knee_joint_pos",
+                "rear_knee_joint_pos",
+                "front_wheel_joint_pos",
             ]
         }
     )
@@ -213,7 +220,7 @@ class CrippledRewardsCfg:
         weight=-0.5e-2,
         params={
             "term_names": [
-                "wheel_joint_vel",
+                "rear_wheel_joint_vel",
             ]
         }
     )
@@ -226,14 +233,14 @@ class CrippledRewardsCfg:
                     "BASE_LINK",
                     ".*_HIP_LINK",
                     ".*_KNEE_LINK",
+                    "FBL_FOOT_LINK",
+                    "FAR_FOOT_LINK",
                 ]
             ),
             "threshold": 1.0
         },
     )
-    flat_orientation_l2 = RewTerm(
-        func=mdp.flat_orientation_l2, weight=-2.0
-    )
+    flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-1.0)
     base_height = RewTerm(
         func=mdp.base_height_l2,
         weight=-1.0,
@@ -241,12 +248,16 @@ class CrippledRewardsCfg:
     )
     pretend_cripple_penalty = RewTerm(
         func=mdp.joint_pos_target_penalty_l2,
-        weight=-2.0,
+        weight=-1.0,
         params={
             "target": CRIPPLE_TARGET,
             "asset_cfg": SceneEntityCfg(
                 "robot",
                 joint_names=[
+                    "FBL_ABAD_JOINT",
+                    "FBL_HIP_JOINT",
+                    "FBL_KNEE_JOINT",
+                    "FBL_FOOT_JOINT",
                     "FAR_ABAD_JOINT",
                     "FAR_HIP_JOINT",
                     "FAR_KNEE_JOINT",

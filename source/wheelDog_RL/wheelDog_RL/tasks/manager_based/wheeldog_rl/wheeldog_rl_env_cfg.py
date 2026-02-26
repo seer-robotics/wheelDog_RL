@@ -18,26 +18,19 @@ from wheelDog_RL.tasks.manager_based.wheeldog_rl.sceneCfg import wheelDog_RL_sce
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import mdp
 
 # Import custom modules.
-from .commandSpaceCfg import CommandsCfg
-from .actionSpaceCfg import ActionsCfg
+from .commandSpaceCfg import CommandsCfg, CrippledCommandsCfg
+from .actionSpaceCfg import ActionsCfg, CrippledActionsCfg
 from .observationSpaceCfg import ObservationsCfg
-from .rewardCfg import RewardsCfg
+from .rewardCfg import RewardsCfg, CrippledRewardsCfg
 
 # Import settings. 
 from wheelDog_RL.tasks.manager_based.wheeldog_rl.settings import \
     CPU_POOL_BUCKET_SIZE, \
     CURRICULUM_ERROR_THRESHOLD_UP, \
     CURRICULUM_ERROR_THRESHOLD_DOWN, \
-    BASE_CONTACT_INIT_THRESHOLD, \
-    BASE_CONTACT_TARGET_THRESHOLD, \
-    BASE_CONTACT_FLAT_STEPS, \
-    BASE_CONTACT_DECAY_STEPS, \
-    ABD_POS_DEVIATE_SCALE_LEVELS, \
-    ABD_POS_DEVIATE_MIN_FACTOR, \
-    ABD_POS_DEVIATE_MIN_FACTOR_TERRAIN_LEVEL, \
-    LEG_POS_DEVIATE_SCALE_LEVELS, \
-    LEG_POS_DEVIATE_MIN_FACTOR, \
-    LEG_POS_DEVIATE_MIN_FACTOR_TERRAIN_LEVEL
+    CRIPPLE_PENALTY_TARGET_WEIGHT, \
+    CRIPPLE_PENALTY_FLAT_STEPS, \
+    CRIPPLE_PENALTY_DECAY_STEPS
 
 
 ##
@@ -181,6 +174,24 @@ class CurriculumCfg:
     )
 
 
+@configclass
+class CrippledCurriculumCfg:
+    """Curriculum terms for the MDP."""
+
+    cripplePosePenalty_curriculum = CurrTerm(
+        func=mdp.modify_term_cfg,
+        params={
+            "address": "rewards.pretend_cripple_penalty.weight",
+            "modify_fn": mdp.reward_weight_anneal,
+            "modify_params": {
+                "target_threshold": CRIPPLE_PENALTY_TARGET_WEIGHT,
+                "flat_steps": CRIPPLE_PENALTY_FLAT_STEPS,
+                "decay_steps": CRIPPLE_PENALTY_DECAY_STEPS,
+            },
+        }
+    )
+
+
 ##
 # Environment configuration
 ##
@@ -222,67 +233,52 @@ class BlindLocomotionCfg(ManagerBasedRLEnvCfg):
             if self.scene.terrain.terrain_generator is not None:
                 self.scene.terrain.terrain_generator.curriculum = False
 
+
 @configclass
-class CrippleLocomotionCfg(BlindLocomotionCfg):
+class CrippleLocomotionCfg(ManagerBasedRLEnvCfg):
     """
     Configuration for the cripple locomotion velocity-tracking environment.
     """
+    # Scene settings
+    scene: wheelDog_RL_sceneCfg = wheelDog_RL_sceneCfg(num_envs=4096, env_spacing=8)
+    # State settings
+    commands: CommandsCfg = CrippledCommandsCfg()
+    actions: ActionsCfg = CrippledActionsCfg()
+    observations: ObservationsCfg = ObservationsCfg()
+    # MDP settings
+    rewards: RewardsCfg = CrippledRewardsCfg()
+    terminations: TerminationsCfg = TerminationsCfg()
+    events: EventCfg = EventCfg()
+    # curriculum: CurriculumCfg = CrippledCurriculumCfg()
+    # recorder: RecorderCfg = RecorderCfg()
+
+    # Post initialization overrides.
     def __post_init__(self):
-        # Post init of parent.
-        super().__post_init__()
+        """Post initialization."""
+        # Simulation and episode settings
+        # Note that control period is sim.dt*decimation
+        self.sim.dt = 0.005
+        self.decimation = 4
+        self.episode_length_s = 15.0
+        self.sim.render_interval = self.decimation
+        self.sim.physics_material = self.scene.terrain.physics_material
+        self.sim.physx.gpu_max_rigid_patch_count = 10 * 2**15
 
         # Override commands.
-        self.commands.base_velocity.ranges.lin_vel_x = (-0.4, 0.4)
-        self.commands.base_velocity.ranges.lin_vel_y = (-0.08, 0.08)
-        self.commands.base_velocity.ranges.ang_vel_z = (-0.6, 0.6)
-
-        # Override actions.
-        # Make sure actions ranges can reach the pretend-cripple target.
-
-        # Override rewards.
-        self.rewards.good_stance = None
-        self.rewards.parallel_to_terrain = None
-        self.rewards.dof_pos_deviate = None
-        self.rewards.flat_orientation_l2 = RewTerm(
-            func=mdp.flat_orientation_l2, weight=-2.5
-        )
-        self.rewards.base_height = RewTerm(
-            func=mdp.base_height_l2,
-            weight=-1.0,
-            params={"target_height": 0.4},
-        )
-        self.rewards.pretend_cripple = RewTerm(
-            # Cripple target: [0.4, 1.5, -2.5, 0.0]
-            func=mdp.joint_pos_target_l2,
-            weight=2.0,
-            params={
-                "target": torch.Tensor([0.4, 1.5, -2.5, 0.0]),
-                "std": math.sqrt(0.16),
-                "asset_cfg": SceneEntityCfg(
-                    "robot",
-                    joint_names=[
-                        "FAR_ABAD_JOINT",
-                        "FAR_HIP_JOINT",
-                        "FAR_KNEE_JOINT",
-                        "FAR_FOOT_JOINT",
-                    ],
-                    preserve_order=True,
-                ),
-            },
-        )
+        self.commands.base_velocity.rel_standing_envs = 1.0
 
         # Override events.
         self.events.push_robot = None
         self.events.base_external_force_torque = None
+        self.events.add_base_mass.params["mass_distribution_params"] = (0.85, 1.15)
 
         # Change terrain to flat.
         self.scene.terrain.terrain_type = "plane"
-        self.scene.terrain.terrain_generator = None
 
         # No terrain curriculum.
-        self.curriculum.terrain_levels = None
+        self.scene.terrain.terrain_generator = None
 
-        # No height scans needed.
+        # No height scans for cripple dog.
         self.scene.fl_leg_ray = None
         self.scene.fr_leg_ray = None
         self.scene.rl_leg_ray = None
@@ -297,3 +293,11 @@ class CrippleLocomotionCfg(BlindLocomotionCfg):
         self.observations.critic.rl_foot_scan = None
         self.observations.critic.rr_foot_scan = None
         self.observations.critic.base_height_scan = None
+
+        # Check terrain generator existence and enable terrain curriculum
+        if getattr(self.curriculum, "terrain_levels", None) is not None:
+            if self.scene.terrain.terrain_generator is not None:
+                self.scene.terrain.terrain_generator.curriculum = True
+        else:
+            if self.scene.terrain.terrain_generator is not None:
+                self.scene.terrain.terrain_generator.curriculum = False
