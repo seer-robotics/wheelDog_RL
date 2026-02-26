@@ -45,15 +45,11 @@ class RewardsCfg:
     
     # -- penalties
     lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
-    ang_vel_xy_l2 = RewTerm(
-        func=mdp.ang_vel_xy_l2_clipped,
-        weight=-0.2,
-        params={"clip": 8.0}
-    )
+    ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.3)
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5e-1)
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
-    # dof_torque_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-2.5e-5)
-    dof_energy_l1 = RewTerm(func=mdp.joint_energy_l1, weight=-4.0e-7)
+    dof_torque_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-2.5e-5)
+    # dof_energy_l1 = RewTerm(func=mdp.joint_energy_l1, weight=-2.5e-8)
     # dof_energy_legs = RewTerm(
     #     func=mdp.joint_energy_l1,
     #     weight=-1.0e-5,
@@ -102,7 +98,7 @@ class RewardsCfg:
     )
     dof_pos_deviate = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.2,
+        weight=-0.3,
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot", 
