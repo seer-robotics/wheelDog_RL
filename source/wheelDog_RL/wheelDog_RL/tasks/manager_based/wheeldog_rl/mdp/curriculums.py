@@ -600,20 +600,18 @@ def reward_weight_anneal(
     total_warmup_steps = kwargs["flat_steps"] + kwargs["decay_steps"]
     current_step = env.common_step_counter
 
-    target_term = kwargs["target_term"]
-    initial_weight = env.env_cfg_at_startup.rewards[target_term].weight
+    initial_weight = getattr(env.env_cfg_at_startup.rewards, kwargs["target_term"]).weight
 
     # Phase 1: keep threshold fixed at initial value
     if current_step < kwargs["flat_steps"]:
-        return kwargs["initial_threshold"]
-        # return mdp.modify_env_param.NO_CHANGE
+        return initial_weight
 
     # Phase 2: linear interpolation during decay phase
     if current_step < total_warmup_steps:
         progress = (current_step - kwargs["flat_steps"]) / float(kwargs["decay_steps"])
         progress = min(1.0, progress)  # safeguard
         return (
-            kwargs["initial_threshold"] + progress * (kwargs["target_weight"] - kwargs["initial_threshold"])
+            initial_weight + progress * (kwargs["target_weight"] - initial_weight)
         )
 
     # Phase 3: stay at final target value
