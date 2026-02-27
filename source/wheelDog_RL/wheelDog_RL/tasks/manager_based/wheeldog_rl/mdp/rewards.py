@@ -347,6 +347,4 @@ def kinematic_slip(
         slip_i = v_exp - (wheel_joint_vels[:, idx] * wheel_radius)
         penalty += torch.square(slip_i)
 
-    penalty = torch.clamp(penalty, max=8)
-
     return penalty

@@ -139,6 +139,24 @@ class RewardsCfg:
             "zero_cmd_threshold": 0.1,
         }
     )
+    # kinematic_slip_l2 = RewTerm(
+    #     func=mdp.kinematic_slip,
+    #     weight=-1e-3,
+    #     params={
+    #         "asset_cfg": SceneEntityCfg(
+    #             "robot", 
+    #             joint_names=[
+    #                 "FBL_FOOT_JOINT",
+    #                 "FAR_FOOT_JOINT",
+    #                 "RBL_FOOT_JOINT",
+    #                 "RAR_FOOT_JOINT",
+    #             ],
+    #             preserve_order=True,
+    #         ),
+    #         "wheel_y_positions": [0.2, -0.2, 0.24, -0.24],
+    #         "wheel_radius": 0.08,
+    #     }
+    # )
     # base_height_threshold = RewTerm(
     #     func=mdp.base_height_threshold,
     #     weight=-2.0,
