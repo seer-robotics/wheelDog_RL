@@ -321,3 +321,32 @@ def zero_drift_l2(
     penalty = torch.sum(base_lin_vel**2, dim=-1) * is_zero_cmd.float()
 
     return penalty
+
+
+def kinematic_slip(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg,
+    wheel_y_positions: List = [0.2, -0.2, 0.24, -0.24],
+    wheel_radius: float = 0.08,
+) -> torch.Tensor:
+    """
+    Penalize wheel velocity difference from kinematic projection.
+    """
+    asset: Articulation = env.scene[asset_cfg.name]
+    vel_cmd = env.command_manager.get_command("base_velocity")
+
+    is_small_cmd = torch.abs(vel_cmd[:, 0])
+    lin_x_cmd = vel_cmd[:, 0] * is_small_cmd.float()
+    omega_z_cmd = vel_cmd[:, 2]
+    wheel_joint_vels = asset.data.joint_vel[:, asset_cfg.joint_ids]
+
+    penalty = 0
+    for idx in range(0, 4):
+        y_i = wheel_y_positions[idx]
+        v_exp = lin_x_cmd - omega_z_cmd * y_i
+        slip_i = v_exp - (wheel_joint_vels[:, idx] * wheel_radius)
+        penalty += torch.square(slip_i)
+
+    penalty = torch.clamp(penalty, max=8)
+
+    return penalty
