@@ -22,26 +22,7 @@ class ObservationsCfg:
         # observation terms (order preserved)
         # Implement observation history on a per-term basis.
         ##
-
-        # Base states.
-        # base_lin_vel = ObsTerm(
-        #     func=mdp.base_lin_vel, 
-        #     noise=Gnoise(mean=0, std=0.20),
-        #     history_length=STATE_HISTORY,
-        # )
-        # base_ang_vel = ObsTerm(
-        #     func=mdp.base_ang_vel, 
-        #     noise=Gnoise(mean=0, std=0.08),
-        #     history_length=STATE_HISTORY,
-        # )
-
         # IMU sensor. 
-        # imu_lin_acc = ObsTerm(
-        #     func=mdp.imu_lin_acc,
-        #     noise=Gnoise(mean=0, std=0.1),
-        #     params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
-        #     history_length=STATE_HISTORY,
-        # )
         imu_ang_vel = ObsTerm(
             func=mdp.imu_ang_vel,
             noise=Gnoise(mean=0, std=0.035),
