@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from isaaclab.assets import Articulation
     from isaaclab.terrains import TerrainImporter
     from isaaclab.envs import mdp as isaac_mdp
-    from wheelDog_RL.tasks.manager_based.wheeldog_rl.envEntry import WheelDog_BlindLocomotionEnv
+    from wheelDog_RL.tasks.manager_based.wheeldog_rl.envEntry import WheelDog_BlindLocomotionEnv, CrippleDog_BlindLocomotionEnv
 
 # Manager class that handles the command curriculum.
 class CommandCurriculumManager:
@@ -582,3 +582,39 @@ def base_contact_threshold_decay(
 
     # Phase 3: stay at final target value
     return kwargs["target_threshold"]
+
+
+# Work in progress!!!!!!!!!
+def reward_weight_anneal(
+        env: WheelDog_BlindLocomotionEnv | CrippleDog_BlindLocomotionEnv,
+        env_ids,
+        old_value,
+        **kwargs
+) -> float:
+    """
+    Curriculum schedule:
+      1. Maintain initial reward weight for the first 'flat_steps'
+      2. Linear decay from initial weight → target_weight over the next 'decay_steps'
+      3. Fixed at target_weight thereafter
+    """
+    total_warmup_steps = kwargs["flat_steps"] + kwargs["decay_steps"]
+    current_step = env.common_step_counter
+
+    target_term = kwargs["target_term"]
+    initial_weight = env.env_cfg_at_startup.rewards[target_term].weight
+
+    # Phase 1: keep threshold fixed at initial value
+    if current_step < kwargs["flat_steps"]:
+        return kwargs["initial_threshold"]
+        # return mdp.modify_env_param.NO_CHANGE
+
+    # Phase 2: linear interpolation during decay phase
+    if current_step < total_warmup_steps:
+        progress = (current_step - kwargs["flat_steps"]) / float(kwargs["decay_steps"])
+        progress = min(1.0, progress)  # safeguard
+        return (
+            kwargs["initial_threshold"] + progress * (kwargs["target_weight"] - kwargs["initial_threshold"])
+        )
+
+    # Phase 3: stay at final target value
+    return kwargs["target_weight"]
