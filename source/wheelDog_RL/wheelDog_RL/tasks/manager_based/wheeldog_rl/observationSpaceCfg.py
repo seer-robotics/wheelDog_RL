@@ -29,15 +29,15 @@ class ObservationsCfg:
             params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
             history_length=STATE_HISTORY,
         )
-        imu_projected_gravity = ObsTerm(
-            func=mdp.imu_projected_gravity,
-            noise=Gnoise(mean=0, std=0.06),
+        imu_lin_acc = ObsTerm(
+            func=mdp.imu_lin_acc,
+            noise=Gnoise(mean=0, std=0.1),
             params={"asset_cfg": SceneEntityCfg(name="base_IMU")},
             history_length=STATE_HISTORY,
         )
 
         # Commands. 
-        commands_history = ObsTerm(
+        commands = ObsTerm(
             func=mdp.generated_commands, 
             params={"command_name": "base_velocity"},
         )
@@ -122,7 +122,7 @@ class ObservationsCfg:
         projected_gravity = ObsTerm(func=mdp.projected_gravity)
 
         # Commands.
-        commands_history = ObsTerm(
+        commands = ObsTerm(
             func=mdp.generated_commands, 
             params={"command_name": "base_velocity"},
         )

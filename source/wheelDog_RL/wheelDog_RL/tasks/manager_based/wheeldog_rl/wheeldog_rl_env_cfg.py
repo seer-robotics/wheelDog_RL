@@ -172,6 +172,19 @@ class CurriculumCfg:
             "error_threshold_down": CURRICULUM_ERROR_THRESHOLD_DOWN,
         }
     )
+    # kinematic_slip_anneal = CurrTerm(
+    #     func=mdp.modify_term_cfg,
+    #     params={
+    #         "address": "rewards.kinematic_slip_l2.weight",
+    #         "modify_fn": mdp.reward_weight_anneal,
+    #         "modify_params": {
+    #             "target_term": "kinematic_slip_l2",
+    #             "target_weight": -1.0,
+    #             "flat_steps": 6400,
+    #             "decay_steps": 6400,
+    #         },
+    #     }
+    # )
 
 
 @configclass
