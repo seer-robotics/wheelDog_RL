@@ -111,20 +111,6 @@ class RewardsCfg:
             ),
         }
     )
-    # leg_pos_deviate = RewTerm(
-    #     func=mdp.joint_deviation_l1,
-    #     weight=-0.2,
-    #     params={
-    #         "asset_cfg": SceneEntityCfg(
-    #             "robot", 
-    #             joint_names=[
-    #                 ".*_HIP_JOINT",
-    #                 ".*_KNEE_JOINT",
-    #             ],
-    #             preserve_order=True,
-    #         ),
-    #     }
-    # )
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-1.0,
@@ -145,6 +131,13 @@ class RewardsCfg:
         params={
             "sensor_cfg": SceneEntityCfg("height_scanner"),
         },
+    )
+    zero_drift_l2 = RewTerm(
+        func=mdp.zero_drift_l2,
+        weight=-10.0,
+        params={
+            "zero_cmd_threshold": 0.1,
+        }
     )
     # base_height_threshold = RewTerm(
     #     func=mdp.base_height_threshold,

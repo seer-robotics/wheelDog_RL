@@ -302,3 +302,22 @@ def rear_feet_com_alignment(
     distance = torch.norm(com_pos_w - midpoint_pos_w, dim=1)
     
     return distance**2
+
+def zero_drift_l2(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    zero_cmd_threshold: float = 0.1,
+) -> torch.Tensor:
+    """
+    Penalize drift under zero or small command using the l2 kernal.
+    Teaches the robot to ignore minor tracking incentives.
+    """
+    asset: Articulation = env.scene[asset_cfg.name]
+    lin_vel_cmd = env.command_manager.get_command("base_velocity")[:, :2]
+    base_lin_vel = asset.data.root_lin_vel_b[:, :2]
+
+    # Determine whether the current command counts as zero
+    is_zero_cmd = torch.norm(lin_vel_cmd, dim=-1) < zero_cmd_threshold
+    penalty = torch.sum(base_lin_vel**2, dim=-1) * is_zero_cmd.float()
+
+    return penalty
