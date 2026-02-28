@@ -60,17 +60,17 @@ def joint_deviation_l2(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = Scene
     return torch.sum(torch.square(angle), dim=1)
 
 
-def joint_energy_l1(
+def joint_energy_l2(
     env: ManagerBasedRLEnv,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ) -> torch.Tensor:
     """
-    Penalizes joint energy exertion.
+    Penalizes joint energy exertion using the l2 kernel.
     """
     asset: Articulation = env.scene[asset_cfg.name]
     torques = asset.data.applied_torque[:, asset_cfg.joint_ids]
     velocities = asset.data.joint_vel[:, asset_cfg.joint_ids]
-    energy = torch.sum(torch.abs(torques * velocities))
+    energy = torch.sum(torch.square(torques * velocities))
     return energy
 
 
