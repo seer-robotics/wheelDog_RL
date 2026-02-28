@@ -76,10 +76,36 @@ def main():
 
     # reset environment
     env.reset()
+    actions = torch.zeros(env.action_space.shape, device=env.unwrapped.device)
+    obs, rew, terminated, truncated, info = env.step(actions)
 
     # simulate environment
     while simulation_app.is_running():
         # run everything under inference mode
         with torch.inference_mode():
             # Hardcoded command for testing
-            command = np.array([0.6, 0.0, 0.0], dtype=np.float32)
+            commands = np.array([0.6, 0.0, 0.0], dtype=np.float32)
+
+            # Insert command into policy observations
+            policyObs = obs["policy"]
+            policyObs[..., :3] = commands
+
+            # Run policy inference
+            input_data = policyObs.cpu().numpy() if isinstance(policyObs, torch.Tensor) else policyObs
+            actions = session.run([output_name], {input_name: input_data})[0]
+
+            # Convert back to torch if needed
+            if isinstance(actions, np.ndarray):
+                actions = torch.from_numpy(actions).to(env.unwrapped.device)
+
+            # Apply actions
+            obs, rew, terminated, truncated, info = env.step(actions)
+
+    # close the simulator
+    env.close()
+
+if __name__ == "__main__":
+    # run the main function
+    main()
+    # close sim app
+    simulation_app.close()
