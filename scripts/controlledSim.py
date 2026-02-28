@@ -55,6 +55,9 @@ import gymnasium as gym
 import numpy as np
 import torch
 
+# Import the module to register the gym environment. 
+import wheelDog_RL.tasks  # noqa: F401
+
 
 def main():
     """Random actions agent with Isaac Lab environment."""
@@ -84,15 +87,16 @@ def main():
         # run everything under inference mode
         with torch.inference_mode():
             # Hardcoded command for testing
-            commands = np.array([0.6, 0.0, 0.0], dtype=np.float32)
+            # commands = np.array([0.6, 0.0, 0.0], dtype=np.float32)
 
             # Insert command into policy observations
             policyObs = obs["policy"]
-            policyObs[..., :3] = commands
+            # policyObs[..., :3] = torch.from_numpy(commands).to(policyObs.device, dtype=policyObs.dtype)
 
             # Run policy inference
             input_data = policyObs.cpu().numpy() if isinstance(policyObs, torch.Tensor) else policyObs
-            actions = session.run([output_name], {input_name: input_data})[0]
+            onnxActions = session.run([output_name], {input_name: input_data})[0]
+            actions = onnxActions
 
             # Convert back to torch if needed
             if isinstance(actions, np.ndarray):
