@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
     from isaaclab.managers import ActionTerm
     from typing import List
+    from collections.abc import Sequence
 
 
 def default_joint_pos(
@@ -302,6 +303,68 @@ def rear_feet_com_alignment(
     distance = torch.norm(com_pos_w - midpoint_pos_w, dim=1)
     
     return distance**2
+
+
+class ZeroDriftManager:
+    """
+    Custom manager that tracks zero-command periods and computes position drift for penalty calculation.
+    """
+    def __init__(
+        self,
+        env: ManagerBasedRLEnv,
+        zero_cmd_threshold: float = 0.1,
+    ):
+        self.env = env
+        self.zero_cmd_threshold = zero_cmd_threshold
+        self.device = self.env.device
+
+        # Per-environment state buffers.
+        self.is_in_zero_cmd = torch.zeros(
+            env.num_envs, dtype=torch.bool, device=self.device
+        )
+        self.start_pos = torch.zeros(
+            env.num_envs, 2, dtype=torch.float, device=self.device
+        )
+
+    def reset(self, env_ids: Sequence[int]):
+        """Called from env._reset_idx(env_ids)."""
+        if env_ids is not None:
+            self.is_in_zero_cmd[env_ids] = False
+
+    def step(self):
+        """Call this every environment step (after physics step, before reward computation)."""
+        # Retrieve current command and position data.
+        asset: Articulation = self.env.scene["robot"]
+        lin_vel_cmd = self.env.command_manager.get_command("base_velocity")[:, :2]
+        current_pos = asset.data.root_pos_w[:, :2]
+        current_is_zero = torch.norm(lin_vel_cmd, dim=-1) < self.zero_cmd_threshold
+
+        # Detect transitions to zero-command state.
+        became_zero = (~self.is_in_zero_cmd) & current_is_zero
+        self.start_pos[became_zero] = current_pos[became_zero]
+
+        # Update zero-command state.
+        self.is_in_zero_cmd = current_is_zero
+
+
+def zero_drift_pos_l2(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+) -> torch.Tensor:
+    """
+    Penalize position drift during zero or small command periods based on deviation from the zero or small command starting position.
+    Teaches the robot to ignore minor tracking incentives.
+    """
+    # Enable type-hints
+    mgr: ZeroDriftManager = env.zero_drift_manager
+    asset: Articulation = env.scene[asset_cfg.name]
+    current_pos = asset.data.root_pos_w[:, :2]
+
+    # Compute position deviation only during zero-command periods
+    deviation = torch.norm(current_pos - mgr.start_pos, dim=-1)
+    penalty = (deviation**2) * mgr.is_in_zero_cmd.float()
+    return penalty
+
 
 def zero_drift_l2(
     env: ManagerBasedRLEnv,

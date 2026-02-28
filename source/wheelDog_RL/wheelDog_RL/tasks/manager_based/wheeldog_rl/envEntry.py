@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from isaaclab.envs.common import VecEnvStepReturn
 
 # Import custom manager.
-from wheelDog_RL.tasks.manager_based.wheeldog_rl.mdp import VelocityErrorRecorder, CommandCurriculumManager, TiltDetectionManager
+from wheelDog_RL.tasks.manager_based.wheeldog_rl.mdp import VelocityErrorRecorder, CommandCurriculumManager, TiltDetectionManager, ZeroDriftManager
 from wheelDog_RL.tasks.manager_based.wheeldog_rl import watchDogs
 
 # Import settings.
@@ -45,6 +45,11 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
             env=self,
         )
         print("[INFO]: Added velocity_error_recorder manager.")
+        self.zero_drift_manager = ZeroDriftManager(
+            env=self,
+            zero_cmd_threshold=0.1
+        )
+        print("[INFO]: Added zero_drift_manager manager.")
         # self.command_curriculum_manager = CommandCurriculumManager(
         #     env=self,
         #     cfg={
@@ -62,6 +67,7 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
         # Iterate custom managers.
         self.tilt_detection_manager.step()
         self.velocity_error_recorder.step()
+        self.zero_drift_manager.step()
         # self.command_curriculum_manager.step()
 
         # Observations' numerical corruption detection.
@@ -79,6 +85,7 @@ class WheelDog_BlindLocomotionEnv(ManagerBasedRLEnv):
         # Reset custom managers.
         self.tilt_detection_manager.reset(env_ids)
         self.velocity_error_recorder.reset(env_ids)
+        self.zero_drift_manager.reset(env_ids)
         # self.command_curriculum_manager.reset(env_ids)
 
 

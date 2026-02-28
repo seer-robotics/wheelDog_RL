@@ -132,13 +132,7 @@ class RewardsCfg:
             "sensor_cfg": SceneEntityCfg("height_scanner"),
         },
     )
-    zero_drift_l2 = RewTerm(
-        func=mdp.zero_drift_l2,
-        weight=-10.0,
-        params={
-            "zero_cmd_threshold": 0.1,
-        }
-    )
+    zero_drift_pos_l2 = RewTerm(func=mdp.zero_drift_pos_l2, weight=-1.0)
     # kinematic_slip_l2 = RewTerm(
     #     func=mdp.kinematic_slip,
     #     weight=-1e-3,
