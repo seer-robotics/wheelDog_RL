@@ -4,13 +4,13 @@ from __future__ import annotations
 import torch
 import math
 from typing import TYPE_CHECKING, Dict, Any
-from collections.abc import Sequence
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.sensors import ContactSensor
 from isaaclab.assets import Articulation
 
 if TYPE_CHECKING:
     from wheelDog_RL.tasks.manager_based.wheeldog_rl.envEntry import WheelDog_BlindLocomotionEnv
+    from collections.abc import Sequence
 
 
 # Manager class that handles the command curriculum.
