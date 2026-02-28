@@ -1,3 +1,4 @@
+from __future__ import annotations
 # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
 # All rights reserved.
 #
@@ -10,6 +11,10 @@
 import argparse
 
 from isaaclab.app import AppLauncher
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from isaaclab.envs import ManagerBasedRLEnv
 
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Random agent for Isaac Lab environments.")
@@ -70,6 +75,12 @@ def main():
             # Environment access reference.
             # projected_gravity_b = env.env.scene["robot"].data.projected_gravity_b
             # print(f"projected gravity: {projected_gravity_b}")
+            # isaacEnv: ManagerBasedRLEnv = env.env
+            # policyTerms = isaacEnv.observation_manager.active_terms["policy"]
+            # obsCommandDim = isaacEnv.observation_manager.group_obs_term_dim["policy"][policyTerms.index("commands")]
+            # # print(f"obsCommandDim: {obsCommandDim}")
+            # commandsObs = obs["policy"][0, :obsCommandDim[0]]
+            # print(f"commands in observations{commandsObs}")
 
     # close the simulator
     env.close()
