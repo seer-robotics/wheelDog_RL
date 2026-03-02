@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Override path to have onnxruntime use conda's libraries.
+export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
+
 # Run the controlledSim.py script with arguments
 python scripts/controlledSim.py \
     --task Wheeldog-Rl-v0-play \
