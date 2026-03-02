@@ -12,7 +12,7 @@ It allows you to develop in an isolated environment, outside of the core Isaac L
 
 **Keywords:** extension, template, isaaclab
 
-**Isaac Lab version: release/2.3.0**
+**Isaac Lab version: release/2.3.2**
 
 ## Installation
 
