@@ -48,8 +48,8 @@ class RewardsCfg:
     ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.3)
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5e-1)
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
-    dof_torque_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-2.5e-5)
-    # dof_energy_l1 = RewTerm(func=mdp.joint_energy_l1, weight=-2.5e-8)
+    # dof_torque_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-2.5e-5)
+    dof_energy_l2 = RewTerm(func=mdp.joint_energy_l2, weight=-2.5e-9)
     # dof_energy_legs = RewTerm(
     #     func=mdp.joint_energy_l1,
     #     weight=-1.0e-5,
@@ -78,7 +78,7 @@ class RewardsCfg:
     # )
     leg_action_rate_l2 = RewTerm(
         func=mdp.actionTerm_rate_l2,
-        weight=-1e-2,
+        weight=-2e-2,
         params={
             "term_names": [
                 "abdomen_joint_pos",
@@ -89,7 +89,7 @@ class RewardsCfg:
     )
     wheel_action_rate_l2 = RewTerm(
         func=mdp. actionTerm_rate_l2,
-        weight=-0.5e-2,
+        weight=-1e-2,
         params={
             "term_names": [
                 "wheel_joint_vel",
