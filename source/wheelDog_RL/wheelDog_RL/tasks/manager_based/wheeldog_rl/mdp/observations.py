@@ -83,6 +83,8 @@ def terrain_normals(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch
     centroids = scans_w.mean(dim=1)
     centered_points = scans_w - centroids.unsqueeze(1)
     cov_matrices = (centered_points .transpose(1, 2) @ centered_points) / (B - 1)
+    jitter = 1e-6
+    cov_matrices += jitter * torch.eye(3, device=cov_matrices.device, dtype=cov_matrices.dtype)
     eigenvecs = torch.linalg.eigh(cov_matrices)[1]
     normals_w = eigenvecs[:, :, 0]
     normals_w = torch.nn.functional.normalize(normals_w, dim=-1)
