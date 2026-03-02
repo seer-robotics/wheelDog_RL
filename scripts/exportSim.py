@@ -9,8 +9,7 @@ from isaaclab.app import AppLauncher
 
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Controlled simulation of an RL agent from RSL-RL.")
-parser = argparse.ArgumentParser(description="Train an RL agent with RSL-RL.")
-parser.add_argument("--video", action="store_true", default=False, help="Record videos during training.")
+parser.add_argument("--video", action="store_true", default=False, help="Record videos during simulation.")
 parser.add_argument("--video_length", type=int, default=200, help="Length of the recorded video (in steps).")
 parser.add_argument(
     "--disable_fabric", action="store_true", default=False, help="Disable fabric and use USD I/O operations."
@@ -61,10 +60,6 @@ import wheelDog_RL.tasks  # noqa: F401
 
 def main():
     """Random actions agent with Isaac Lab environment."""
-    env_cfg = parse_env_cfg(
-        args_cli.task, device=args_cli.device, num_envs=args_cli.num_envs
-    )
-
     # Load ONNX model
     providers = ['CUDAExecutionProvider'] if torch.cuda.is_available() else ['CPUExecutionProvider']
     session = ort.InferenceSession(args_cli.onnx_path, providers=providers)
@@ -77,23 +72,15 @@ def main():
     )
     env = gym.make(args_cli.task, cfg=env_cfg)
 
-    # reset environment
-    env.reset()
-    actions = torch.zeros(env.action_space.shape, device=env.unwrapped.device)
-    obs, rew, terminated, truncated, info = env.step(actions)
+    # Initialize the environment
+    obs, info = env.reset()
 
     # simulate environment
     while simulation_app.is_running():
         # run everything under inference mode
         with torch.inference_mode():
-            # Hardcoded command for testing
-            # commands = np.array([0.6, 0.0, 0.0], dtype=np.float32)
-
-            # Insert command into policy observations
-            policyObs = obs["policy"]
-            # policyObs[..., :3] = torch.from_numpy(commands).to(policyObs.device, dtype=policyObs.dtype)
-
             # Run policy inference
+            policyObs = obs["policy"]
             input_data = policyObs.cpu().numpy() if isinstance(policyObs, torch.Tensor) else policyObs
             onnxActions = session.run([output_name], {input_name: input_data})[0]
             actions = onnxActions
